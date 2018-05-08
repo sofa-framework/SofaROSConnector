@@ -5,8 +5,6 @@ Please do not modify it by hand.
 The contents will be overwritten and re-generated.
 ************************************************************************/
 
-
-
 #include "ZyROSConnectorTopicPublisher.inl"
 
 using namespace Zyklio::ROSConnector;
@@ -2033,4 +2031,3 @@ boost::shared_ptr<ZyROSPublisher> ZyROSConnectorMessagePublisherFactory::createT
 		msg_warning("ZyROSConnectorMessagePublisherFactory") << "ROS message type NOT supported: " << messageType;
 	}	return topicPublisher;
 }
-

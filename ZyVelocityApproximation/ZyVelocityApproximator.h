@@ -128,7 +128,6 @@ namespace Zyklio
             defaulttype::RigidTypes::VecCoord currentPosition; // for setting the object position
 
             std::vector< defaulttype::Vec3Types::VecCoord > oldPosVec3Vec; // for approximating the velocity
-
             bool positionChange;
             double lastResetTime;
 

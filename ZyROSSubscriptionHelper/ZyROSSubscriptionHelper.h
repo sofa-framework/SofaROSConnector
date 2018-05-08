@@ -1,5 +1,5 @@
-#ifndef ZY_SOFA_SUBSCRIPTIONHELPER_TMP_H
-#define ZY_SOFA_SUBSCRIPTIONHELPER_TMP_H
+#ifndef ZY_SOFA_SUBSCRIPTIONHELPER_H
+#define ZY_SOFA_SUBSCRIPTIONHELPER_H
 
 #ifdef _WIN32
 // Ensure that Winsock2.h is included before Windows.h, which can get
@@ -50,4 +50,4 @@ namespace Zyklio
 	}
 }
 
-#endif // ZY_SOFA_SUBSCRIPTIONHELPER_TMP_H
+#endif // ZY_SOFA_SUBSCRIPTIONHELPER_H

@@ -25,7 +25,7 @@ namespace Zyklio
 				~WorkerThread_SingleTask();
 
 			protected:
-                virtual void main();
+                		virtual void main();
 		};
 	}
 }

@@ -88,7 +88,6 @@ namespace Zyklio
             Data<unsigned int> movementDuration;
             Data<double> gripperMoveStep;
             Data<char> movementAxis;
-
         private:
             short int dir; // either 1 or -1
             bool currentlyClosing, currentlyOpening;

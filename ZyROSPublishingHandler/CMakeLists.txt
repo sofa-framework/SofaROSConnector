@@ -18,6 +18,7 @@ find_package(Log4cxx QUIET REQUIRED)
 
 include_directories(${CMAKE_SOURCE_DIR}/applications/plugins/SofaROSConnector/ZyROSConnector)
 include_directories(${CMAKE_SOURCE_DIR}/applications/plugins/SofaROSConnector/ZyROSConnectionManager)
+
 # ROS
 include_directories(${ROS_INCLUDE_DIR})
 include_directories(${LOG4CXX_INCLUDE_DIRS})

@@ -1,5 +1,10 @@
+<<<<<<< HEAD
 #ifndef ZY_SOFA_VELOCITYAPPROXIMATIONHANDLER_H
 #define ZY_SOFA_VELOCITYAPPROXIMATIONHANDLER_H
+=======
+#ifndef TRU_SOFA_VELOCITYAPPROXIMATIONHANDLER_H
+#define TRU_SOFA_VELOCITYAPPROXIMATIONHANDLER_H
+>>>>>>> SofaROSConnector plugin plus dependencies added.
 
 #include "init_ZyVelocityApproximationHandler.h"
 

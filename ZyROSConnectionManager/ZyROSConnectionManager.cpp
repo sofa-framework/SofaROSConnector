@@ -88,6 +88,11 @@ void ZyROSConnectionManager::init()
 {
     msg_info("ZyROSConnectionManager") << "ZyROSConnectionManager::init()";
 
+void ZyROSConnectionManager::init()
+{
+    std::cout << "ZyROSConnectionManager::init()" << std::endl;
+
+    m_ros_connector = new ZyROSConnector();
     m_ros_connector->setRosMasterURI(m_rosMasterURI.getValue());
     m_ros_connector->startComponent();
     m_ros_connector->resumeComponent();

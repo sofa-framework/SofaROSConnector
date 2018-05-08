@@ -55,7 +55,6 @@ namespace Zyklio
         {
             oldPos = defaulttype::Vec3d(0, 0, 0);
             targetCounter = 0;
-
             boost::posix_time::ptime theTime = boost::posix_time::microsec_clock::local_time();
             boost::posix_time::ptime epoch(boost::gregorian::date(2017, 1, 1)); // 2017 instead of 1970, so that the numbers don't get so big
             timeAtStart = (theTime - epoch).total_seconds();
@@ -69,14 +68,6 @@ namespace Zyklio
         void ZyROSSimulationAnalyzer::bwdInit()
         {
             Inherit::bwdInit();
-
-            connectionManagerFound = publishingHandler.setROSConnectionManagerByContext(getContext());
-
-            if (connectionManagerFound)
-            {
-                simResultPublisher = new Zyklio::ROSConnector::ZyROSFloat32MultiArrayPublisher(publishingHandler.getROSNodeHandle(), "truSimResult");
-                publishingHandler.registerPublisher(simResultPublisher);
-            }
         }
 
         void ZyROSSimulationAnalyzer::reinit()
@@ -164,7 +155,7 @@ namespace Zyklio
 
             if (!objectFound)
             {
-                std::cout << "(ZyklioAnimationLoop::analyzeSimulationStateAndPublishResult) Rigid object '" << targetName << "' not found in scene. Publishing zeroes." << std::endl;
+                msg_info("") << "(ZyklioAnimationLoop::analyzeSimulationStateAndPublishResult) Rigid object '" << targetName << "' not found in scene. Publishing zeroes.";
                 dataVec.at((rigidCount* dim[dataDim].stride) + 0) = 0.0;
                 dataVec.at((rigidCount* dim[dataDim].stride) + 1) = 0.0;
                 dataVec.at((rigidCount* dim[dataDim].stride) + 2) = 0.0;
