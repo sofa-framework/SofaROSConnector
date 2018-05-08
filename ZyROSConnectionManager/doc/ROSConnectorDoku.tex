@@ -1,0 +1,133 @@
+\documentclass[a4paper, 10pt]{article}
+
+%textheight in cm: 19.32755cm
+%textwidth in cm: 12.12364cm
+
+\usepackage{fullpage}
+%\usepackage[margin=100pt]{geometry}
+
+\usepackage[T1]{fontenc}
+\usepackage{underscore}
+
+\usepackage{graphicx}
+\usepackage{listings}
+
+
+\pagestyle{empty}
+\begin{document}
+\lstset{language=[Visual]C++}
+\section*{TruPhysics ROSConnector documentation (\today)}
+    \subsection*{Subscribing to topics}
+    \begin{itemize}
+        \item Needs the TruRosConnectionManager-plugin (TruRosConnectionManager.dll) and additionally TruRosConnector.dll
+
+        \item Add a TruRosConnectionManager-Element to the scene graph. This element has the following two parameters:
+            \begin{itemize}
+                \item rosMasterURI: A ROS master URI
+                \item rosTopics: (optional) A list of subscribed ROS-topics. A list entry has the following format: <topic name>:::<message type>. List entries are separated by ';'
+            \end{itemize}
+        \item Example:\\
+            <TruRosConnectionManager name="truPhysicsRos" \\
+            rosMasterURI="http://10.1.1.3:11311" \\
+            rosTopics="/joint_states:::sensor_msgs::JointState;/gripper_state:::std_msgs::Bool"/>
+    \end{itemize}
+            
+    Currently, the TruRosConnectionManager supports subscribing to messages of type 'sensor_msgs::JointState' and 'std_msgs::Bool'. To implement subscribing to a new message type, a few lines of code that instantiate the subscriber class when needed must be added to the function TruRosConnectionManager::bwdInit(). For std_msgs::Bool messages this is:
+\begin{lstlisting}[frame=single]
+if (messageType.compare("std_msgs::Bool") == 0)
+{
+  supported = true;
+
+  boost::shared_ptr< TruRosConnectorTopicSubscriber<std_msgs::Bool> > tmp(
+    new TruRosConnectorTopicSubscriber<std_msgs::Bool>(
+      m_ros_connector->getROSNode(),
+      rosTopic
+    )
+  );
+  //add a message queue length (default: 50) and 'true' to the constructor
+  //parameters of the TruRosConnectorTopicSubscriber, to get a subscriber
+  //that writes every incoming message to the command line (for testing)
+
+  m_ros_connector->addTopicListener(
+    boost::dynamic_pointer_cast<TruRosListener>(tmp)
+  );
+  topicListeners.push_back(
+    boost::dynamic_pointer_cast<TruRosListener>(tmp)
+  );
+}
+\end{lstlisting}        
+For other message types, this can be adapted easily.
+    
+\subsubsection*{Processing messages to subscribed topics}
+When a message is published to a subscribed topic, the subscriber class emits a boost::signal2. Connecting to this signal is currently work in progress. The file connectToSubscriberSignalExample.txt contains a code example of how it works currently.
+
+\clearpage
+\subsection*{Publishing topics}
+\begin{itemize}
+    \item Needs the TruRosConnectionManager-plugin (TruRosConnectionManager.dll) and also TruRosConnector.dll and TruRosPublishingHandler.dll
+    
+    \item Add a TruRosConnectionManager-Element to the scene graph (same as for subscribing, see above). Note that published rostopics do not need to be given as parameters of the TruRosConnectionManager-Element.
+
+    \item The project in which messages are to be published needs to link against TruRosConnector and TruRosPublishingHandler and include the directories with their headers.
+    
+    \item The class that is supposed to publish messages needs to include 'TruPhysicsROSConnector.h', 'TruRosPublishingHandler.h'. The publisher then needs to be initialized once, before messages can be published.
+    
+    \item to initialize the publisher:
+    \begin{itemize}
+        \item first instantiate an object of class TruRosPublishingHandler and call the 'setROSConnectionManagerByContext(BaseContext*)' method with a scene-graph context as an argument.
+        
+        The method looks for a TruRosConnectionManager in the scene graph and returns true if successful.
+        
+        (CAREFUL! When this is called, the TruRosConnectionManager in the scene graph must already be instantiated, so a constructor or an init() method are bad places to call setROSConnectionManagerByContext - I usually use a bwdInit() method)
+        \item instantiate the TruRosConnectorTopicPublisher object, using the message-type as template-argument. The constructor-arguments are the 'getROSNodeHandle()' method of the TruRosPublishingHandler and a string with the name of the topic to publish.
+        \item call the 'registerPublisher(ROSConnector::TruRosPublisher*)' method of the TruRosPublishingHandler, using a pointer to the publisher object as argument
+    \end{itemize}
+        
+    \item to publish a message: 
+    \begin{itemize}
+        \item create an object of the message type that is supposed to be published and fill it with data
+        \item call the 'publishMessage' method of the publisher
+    \end{itemize}
+
+\end{itemize}
+\clearpage
+\noindent Example, initialization: 
+\begin{lstlisting}[frame=single]
+TruPhysics::ROSPublishing::TruRosPublishingHandler publishingHandler;
+TruPhysics::ROSConnector::TruRosConnectorTopicPublisher<
+  std_msgs::Float32
+>* timePublisher;
+    
+connectionManagerFound =
+  publishingHandler.setROSConnectionManagerByContext(
+    getContext()
+  );
+
+if (connectionManagerFound)
+{
+  timePublisher =
+    new TruPhysics::ROSConnector::TruRosConnectorTopicPublisher<
+      std_msgs::Float32
+    >
+    (
+      publishingHandler.getROSNodeHandle(),
+      "sofaSimTime"
+    );
+  publishingHandler.registerPublisher(timePublisher);
+}
+\end{lstlisting}
+Example, publish message:
+\begin{lstlisting}[frame=single]
+if (connectionManagerFound)
+{
+  // publish simulation time
+  std_msgs::Float32 msgFloat32;
+  msgFloat32.data = getContext()->getTime();
+  if (timePublisher)
+  {
+    timePublisher->publishMessage(msgFloat32);
+  }
+}
+\end{lstlisting}    
+
+\end{document}

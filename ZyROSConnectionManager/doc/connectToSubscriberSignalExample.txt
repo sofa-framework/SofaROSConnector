@@ -1,0 +1,41 @@
+void TruPhysicsAnimationLoop::bwdInit()
+{
+ // ...
+#ifdef TRUPHYSICS_USE_ROS_SUPPORT
+    connectionManagerFound = publishingHandler.setROSConnectionManagerByContext(getContext());
+    
+    if (connectionManagerFound)
+    {
+        timePublisher = new TruPhysics::ROSConnector::TruRosConnectorTopicPublisher<std_msgs::Float32>(publishingHandler.getROSNodeHandle(), "sofaSimTime");
+        publishingHandler.registerPublisher(timePublisher);
+
+        rigidPosRotPublisher = new TruPhysics::ROSConnector::TruRosConnectorTopicPublisher<std_msgs::Float32MultiArray>(publishingHandler.getROSNodeHandle(), "sofaRigidPositionRotation");
+        publishingHandler.registerPublisher(rigidPosRotPublisher);
+
+        std::cout << "(TruPhysicsAnimationLoop::bwdInit) Looking for ROS listeners:" << std::endl;
+        std::vector< boost::shared_ptr<TruPhysics::ROSConnector::TruRosListener> >* listeners = publishingHandler.getTopicListeners();
+
+        for (std::vector< boost::shared_ptr<TruPhysics::ROSConnector::TruRosListener> >::iterator it = listeners->begin();
+            it != listeners->end(); it++)
+        {
+            if ((*it))
+            {
+                if ((*it)->getMessageType().compare(ros::message_traits::DataType<std_msgs::Bool>::value()) == 0)
+                {
+                    std::cout << "(TruPhysicsAnimationLoop::bwdInit) Found ROS listener of type "<< (*it)->getMessageType() <<", for topic " << (*it)->getTopic() << std::endl;
+                    boolConnectionVec.push_back
+                    (
+                        (*it)->getSignal().connect(boost::bind(&TruPhysicsAnimationLoop::handleBool, this))
+                    );
+                }
+            }
+        }
+    }
+#endif
+ // ...
+}
+
+void TruPhysicsAnimationLoop::handleBool()
+{
+    std::cout << "TruPhysicsAnimationLoop saw a Bool!" << std::endl;
+}

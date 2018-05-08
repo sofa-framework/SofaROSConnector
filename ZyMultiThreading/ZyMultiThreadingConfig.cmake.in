@@ -1,0 +1,10 @@
+# CMake package configuration file for the TruMultiThreading library
+
+@PACKAGE_INIT@
+find_package(SofaMisc REQUIRED)
+find_package(Boost COMPONENTS system chrono thread REQUIRED)
+if(NOT TARGET TruMultiThreading)
+	include("${CMAKE_CURRENT_LIST_DIR}/TruMultiThreadingTargets.cmake")
+endif()
+
+check_required_components(TruMultiThreading)

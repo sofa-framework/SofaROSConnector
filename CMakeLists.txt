@@ -1,0 +1,17 @@
+project(SofaROSConnector)
+
+set(CMAKE_VERBOSE_MAKEFILE ON)
+
+message(STATUS "Adding SofaROSConnector plugin.")
+add_subdirectory(ZySOFAControllers)
+add_subdirectory(ZyMultiThreading)
+add_subdirectory(ZyGripping)
+add_subdirectory(ZyGrippingHandler)
+add_subdirectory(ZyVelocityApproximation)
+add_subdirectory(ZyVelocityApproximationHandler)
+add_subdirectory(ZyROSConnector)
+add_subdirectory(ZyROSConnectionManager)
+add_subdirectory(ZySimulationAnalyzerHandler)
+add_subdirectory(ZySimulationAnalyzer)
+add_subdirectory(ZyROSSubscriptionHelper)
+add_subdirectory(ZyROSPublishingHandler)

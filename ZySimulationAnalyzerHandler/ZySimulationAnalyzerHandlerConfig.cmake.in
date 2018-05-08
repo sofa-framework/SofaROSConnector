@@ -1,0 +1,11 @@
+# CMake package configuration file for the ZySimulationAnalyzerHandler library
+
+@PACKAGE_INIT@
+
+find_package(ZyROSSimulationAnalyzer REQUIRED)
+
+if(NOT TARGET ZySimulationAnalyzerHandler)
+	include("${CMAKE_CURRENT_LIST_DIR}/ZySimulationAnalyzerHandler.cmake")
+endif()
+
+check_required_components(ZySimulationAnalyzerHandler)

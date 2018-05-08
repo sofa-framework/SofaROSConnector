@@ -1,0 +1,11 @@
+# CMake package configuration file for the ZyROSPublishingHandler library
+
+@PACKAGE_INIT@
+
+find_package(ZyROSPublishingHandler REQUIRED)
+
+if(NOT TARGET ZyROSPublishingHandler)
+	include("${CMAKE_CURRENT_LIST_DIR}/ZyROSPublishingHandler.cmake")
+endif()
+
+check_required_components(ZyROSPublishingHandler)

@@ -1,0 +1,11 @@
+# CMake package configuration file for the TruRosConnector library
+
+@PACKAGE_INIT@
+
+find_package(TruRosConnector REQUIRED)
+
+if(NOT TARGET TruRosConnector)
+	include("${CMAKE_CURRENT_LIST_DIR}/TruRosConnector.cmake")
+endif()
+
+check_required_components(TruRosConnector)

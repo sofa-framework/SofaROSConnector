@@ -1,0 +1,58 @@
+<?xml version="1.0"?>
+<Node 	 name="Root"  dt="0.004"  >
+	<RequiredPlugin name="TruRosConnectionManager" />
+	<RequiredPlugin name="TruPhysics" />
+	<RequiredPlugin name="SofaPython" />
+	
+	<VisualStyle name="visualStyle"  displayFlags="showVisual hideBehavior hideCollision hideMapping hideOptions" />
+	<LightManager name="lightManager"  listening="1"  ambient="0 0 0 0" />
+	<DirectionalLight name="directionalLight_1"  zNear="-50"  zFar="50"  direction="1 1 0" />
+	<DirectionalLight name="directionalLight_2"  zNear="-50"  zFar="50"  direction="-1 1 0" />
+	
+	<ObbTreeGPUCollisionDetection_Threaded name="TruPhysics" numStreamedWorkerUnits="6" streamedWorkerResultMinSize="2048" streamedWorkerResultMaxSize="4096" numWorkerThreads="5"
+	fakeGrippingEventSequence="geo32;dummy;geo20::geo23;AND;;;geo32;dummy;geo11;AND;;;geo32;dummy;geo42;AND"/>
+	<ObbTreeGPULocalMinDistance name="localMinDistance100"  alarmDistance="8"  contactDistance="6"  angleCone="0.25"  coneFactor="0.8"  useLMDFilters="0" />
+	
+	<TruPhysicsAnimationLoop name="AnimationLoop"  solveVelocityConstraintFirst="1" />	
+	<RuleBasedContactManager name="Response" response="FrictionContact" rules="* * FrictionContact?mu=0.05" />
+	<TruPhysicsPipeline name="truPhysicsPipelineTest5"  />
+	<GenericConstraintSolver name="genericConstraintSolver"  tolerance="0.0001" />
+	
+	<TruRosConnectionManager name="truPhysicsRos" rosMasterURI="http://192.168.179.200:11311" rosTopics="/joint_states:::sensor_msgs::JointStates"/>
+	
+	<Node 	 name="falling_1_Rigid"  >
+		<MechanicalObject template="Rigid" name="falling_1_Object"  position="0 0 0 0 0 0 1"  velocity="0 0 0 0 0 0"  force="0 0 0 0 0 0"  externalForce="0 0 0 0 0 0"  derivX="0 0 0 0 0 0"  restScale="1"  translation="0 0 0"  rotation="0 0 0"  quaternion="0 0 0 1"  scale3d="1 1 1"  translation2="0 0 0"  rotation2="0 0 0" />
+		<UniformMass template="Rigid" name="falling_1_UniformMass"  rayleighMass="0"  mass="1 0.1 [1 0 0,0 1 0,0 0 1]" />
+		<CGLinearSolver template="GraphScattered" name="falling_1_CGLinearSolver" />
+		<EulerImplicitSolver name="falling_1_EulerImplicitSolver" />
+		<PrecomputedConstraintCorrection template="Rigid" name="falling_1_PrecomputedConstraintCorrection" />
+		<Node 	 name="falling_1_CollisionNode"  >
+			<MeshTopology name="falling_1_CollisionTopology"  fileTopology="c:/sofa/git/sofa/share/mesh/cube.obj" />
+			<MechanicalObject template="Vec3d" name="falling_1_CollisionObject"  position="0 0 0"  velocity="0 0 0"  force="0 0 0"  externalForce="0 0 0"  derivX="0 0 0"  restScale="1"  translation="0 0 0"  rotation="0 0 0"  scale3d="1 1 1" />
+			<RigidMapping template="Rigid,Vec3d" name="falling_1_CollisionRigidMap"  input="@../falling_1_Object"  output="@falling_1_CollisionObject" />
+			<ObbTreeGPUCollisionModel template="StdVectorTypes&lt;Vec&lt;3,double&gt;,Vec&lt;3,double&gt;,double&gt; &gt;" name="falling_1_GPUCollisionModel"  drawOBBHierarchy="0"  useContactManifolds="1"  maxNumberOfLineLineManifolds="2"  maxNumberOfFaceVertexManifolds="3" />
+		</Node>
+		<Node 	 name="falling_1_VisualNode"  >
+			<OglModel template="ExtVec3f" name="falling_1_Visual"  fileMesh="@../falling_1_CollisionNode/falling_1_CollisionTopology.fileTopology"  translation="@../falling_1_CollisionNode/falling_1_CollisionObject.translation"  rotation="@../falling_1_CollisionNode/falling_1_CollisionObject.rotation"  scale3d="@../falling_1_CollisionNode/falling_1_CollisionObject.scale3d"  material="Default Diffuse 1 0.74902 0 0 1 Ambient 1 0.301961 0 0 1 Specular 0 1 1 1 1 Emissive 0 0 0 0 0 Shininess 0 45 "  primitiveType="DEFAULT"  blendEquation="GL_FUNC_ADD"  sfactor="GL_SRC_ALPHA"  dfactor="GL_ONE_MINUS_SRC_ALPHA" />
+			<RigidMapping template="Rigid,ExtVec3f" name="falling_1_VisialRigidMap"  input="@../falling_1_Object"  output="@falling_1_Visual" />
+		</Node>
+	</Node>
+	<Node 	 name="floor_Rigid"  >
+		<MechanicalObject template="Rigid" name="floor_Object"  position="0 0 0 0 0 0 1"  velocity="0 0 0 0 0 0"  force="0 0 0 0 0 0"  externalForce="0 0 0 0 0 0"  derivX="0 0 0 0 0 0"  restScale="1"  translation="0 -6.4 0"  rotation="0 0 0"  quaternion="0 0 0 1"  scale3d="1 1 1"  translation2="0 0 0"  rotation2="0 0 0" />
+		<UniformMass template="Rigid" name="floor_UniformMass"  totalmass="1000" />
+		<CGLinearSolver template="GraphScattered" name="floor_CGLinearSolver" />
+		<EulerImplicitSolver name="floor_EulerImplicitSolver" />
+		<PrecomputedConstraintCorrection template="Rigid" name="floor_PrecomputedConstraintCorrection" />
+		<FixedConstraint template="Rigid" name="floor_Constraint"  indices="0" />
+		<Node 	 name="floor_CollisionNode"  >
+			<MeshTopology name="floor_CollisionTopology"  fileTopology="c:/sofa/git/sofa/share/mesh/cube.obj" />
+			<MechanicalObject template="Vec3d" name="floor_CollisionObject"  position="0 0 0"  velocity="0 0 0"  force="0 0 0"  externalForce="0 0 0"  derivX="0 0 0"  restScale="1"  translation="0 0 0"  rotation="0 0 0"  scale3d="20 0.1 20" />
+			<RigidMapping template="Rigid,Vec3d" name="floor_CollisionRigidMap"  input="@../floor_Object"  output="@floor_CollisionObject" />
+			<ObbTreeGPUCollisionModel template="StdVectorTypes&lt;Vec&lt;3,double&gt;,Vec&lt;3,double&gt;,double&gt; &gt;" name="floor_GPUCollisionModel"  drawOBBHierarchy="0"  useContactManifolds="1"  maxNumberOfLineLineManifolds="2"  maxNumberOfFaceVertexManifolds="3" />
+		</Node>
+		<Node 	 name="floor_VisualNode"  >
+			<OglModel template="ExtVec3f" name="floor_Visual"  fileMesh="@../floor_CollisionNode/floor_CollisionTopology.fileTopology"  translation="@../floor_CollisionNode/floor_CollisionObject.translation"  rotation="@../floor_CollisionNode/floor_CollisionObject.rotation"  scale3d="@../floor_CollisionNode/floor_CollisionObject.scale3d"  material="Default Diffuse 1 0.647059 0.647059 0 1 Ambient 1 0.239216 0.239216 0 1 Specular 0 1 1 1 1 Emissive 0 0 0 0 0 Shininess 0 45 "  primitiveType="DEFAULT"  blendEquation="GL_FUNC_ADD"  sfactor="GL_SRC_ALPHA"  dfactor="GL_ONE_MINUS_SRC_ALPHA" />
+			<RigidMapping template="Rigid,ExtVec3f" name="floor_VisialRigidMap"  input="@../floor_Object"  output="@floor_Visual" />
+		</Node>
+	</Node>
+</Node>
