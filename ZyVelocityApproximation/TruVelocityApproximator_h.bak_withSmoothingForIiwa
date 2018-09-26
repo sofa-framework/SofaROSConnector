@@ -23,12 +23,17 @@
 * Contact information: contact@sofa-framework.org                             *
 ******************************************************************************/
 <<<<<<< HEAD
+<<<<<<< HEAD
 #ifndef ZYKLIO_TRUVELOCITYAPPROXIMATION_H
 #define ZYKLIO_TRUVELOCITYAPPROXIMATION_H
 =======
 #ifndef TRUPHYSICS_TRUVELOCITYAPPROXIMATION_H
 #define TRUPHYSICS_TRUVELOCITYAPPROXIMATION_H
 >>>>>>> SofaROSConnector plugin plus dependencies added.
+=======
+#ifndef ZYKLIO_TRUVELOCITYAPPROXIMATION_H
+#define ZYKLIO_TRUVELOCITYAPPROXIMATION_H
+>>>>>>> Working version of the ROS connector plugin for SOFA 18.0x
 
 #include "initTruVelocityApproximation.h"
 
@@ -82,19 +87,27 @@ namespace Zyklio
         using namespace sofa::component::controller;
 
 <<<<<<< HEAD
+<<<<<<< HEAD
         class SOFA_ZYVELOCITYAPPROXIMATION_API ZyVelocityApproximator : public /*virtual*/ core::objectmodel::BaseObject
 =======
         class SOFA_TRUVELOCITYAPPROXIMATION_API TruVelocityApproximator : public /*virtual*/ core::objectmodel::BaseObject
 >>>>>>> SofaROSConnector plugin plus dependencies added.
+=======
+        class SOFA_ZYVELOCITYAPPROXIMATION_API ZyVelocityApproximator : public /*virtual*/ core::objectmodel::BaseObject
+>>>>>>> Working version of the ROS connector plugin for SOFA 18.0x
         {
         public:
             typedef core::objectmodel::BaseObject Inherit;
 
 <<<<<<< HEAD
+<<<<<<< HEAD
             SOFA_CLASS(ZyVelocityApproximator, core::objectmodel::BaseObject);
 =======
             SOFA_CLASS(TruVelocityApproximator, core::objectmodel::BaseObject);
 >>>>>>> SofaROSConnector plugin plus dependencies added.
+=======
+            SOFA_CLASS(ZyVelocityApproximator, core::objectmodel::BaseObject);
+>>>>>>> Working version of the ROS connector plugin for SOFA 18.0x
 
             typedef sofa::core::objectmodel::BaseContext BaseContext;
             typedef sofa::core::objectmodel::BaseObjectDescription BaseObjectDescription;
@@ -102,12 +115,17 @@ namespace Zyklio
         public:
 
 <<<<<<< HEAD
+<<<<<<< HEAD
             ZyVelocityApproximator();
             ~ZyVelocityApproximator() {};
 =======
             TruVelocityApproximator();
             ~TruVelocityApproximator() {};
 >>>>>>> SofaROSConnector plugin plus dependencies added.
+=======
+            ZyVelocityApproximator();
+            ~ZyVelocityApproximator() {};
+>>>>>>> Working version of the ROS connector plugin for SOFA 18.0x
 
             void moveObjectToPosition(simulation::common::MechanicalOperations& mop, sofa::core::behavior::MultiVecCoord& pos/*, sofa::core::behavior::MultiVecCoord& freePos*/);
             void setObjectPosition(defaulttype::RigidTypes::VecCoord newPosition) { currentPosition = newPosition; positionChange = true; };
@@ -164,7 +182,7 @@ namespace Zyklio
             typedef sofa::helper::fixed_array<std::string, 13> currentVelocityApproximationDataType;
             Data < sofa::helper::vector< currentVelocityApproximationDataType > > currentVelocityApproximationData; // Unfortunately, using the type "velocityApproximationData" is not possible with Data 
                     
-#ifdef TRUPHYSICS_DEMO
+#ifdef ZYKLIO_DEMO
             template<class T>
             static bool canCreate(T*& obj, core::objectmodel::BaseContext* context, core::objectmodel::BaseObjectDescription* arg)
             {
@@ -293,7 +311,11 @@ namespace Zyklio
 } // namespace Zyklio
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 #endif //ZYKLIO_TRUVELOCITYAPPROXIMATION_H
 =======
 #endif //TRUPHYSICS_TRUVELOCITYAPPROXIMATION_H
 >>>>>>> SofaROSConnector plugin plus dependencies added.
+=======
+#endif //ZYKLIO_TRUVELOCITYAPPROXIMATION_H
+>>>>>>> Working version of the ROS connector plugin for SOFA 18.0x

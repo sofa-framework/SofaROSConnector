@@ -1,10 +1,5 @@
-<<<<<<< HEAD
 #ifndef ZYKLIO_ROSCONNECTOR_H
 #define ZYKLIO_ROSCONNECTOR_H
-=======
-#ifndef TRUPHYSICS_ROSCONNECTOR_H
-#define TRUPHYSICS_ROSCONNECTOR_H
->>>>>>> SofaROSConnector plugin plus dependencies added.
 
 #ifdef _WIN32
 // Ensure that Winsock2.h is included before Windows.h, which can get

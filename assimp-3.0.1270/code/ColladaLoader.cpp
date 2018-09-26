@@ -1375,7 +1375,7 @@ void ColladaArschFotze::StorePhysicsModel(aiScene* pScene, const ColladaParser& 
     std::cout << "Physics Model stored" << std::endl;
 }
 
- void ColladaArschFotze::StoreKinematics(aiScene* pScene, const ColladaParser&  parser) {
+void ColladaArschFotze::StoreKinematics(aiScene* pScene, const ColladaParser&  parser) {
     pScene->mNumJoints = parser.mInstanceKinematicsScene.size();
     pScene->mJoints = new aiJoint*[pScene->mNumJoints];
 

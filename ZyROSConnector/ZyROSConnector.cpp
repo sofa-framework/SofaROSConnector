@@ -84,7 +84,6 @@ size_t ZyROSConnector::getNumTopicPublishers() const
     return m_d->m_connectorThread->getNumTopicPublishers();
 }
 
-<<<<<<< HEAD
 bool ZyROSConnector::addServiceClient(boost::shared_ptr<ZyROSServiceClient>& serviceClient)
 {
     return m_d->m_connectorThread->addServiceClient(serviceClient);
@@ -100,8 +99,6 @@ size_t ZyROSConnector::getNumServiceClients() const
     return m_d->m_connectorThread->getNumServiceClients();
 }
 
-=======
->>>>>>> SofaROSConnector plugin plus dependencies added.
 bool ZyROSConnector::setRosMasterURI(const std::string& masterUri)
 {
 	if (!ros::isStarted())
@@ -138,11 +135,8 @@ void ZyROSConnector::rosLoop()
 	m_connectorThreadActive = true;
 	m_runCondition.notify_all();
 	while (ros::ok())
-    {
-<<<<<<< HEAD
+        {
         // Clean up ROS subscribers that are no longer active
-=======
->>>>>>> SofaROSConnector plugin plus dependencies added.
         for (size_t k = 0; k < m_d->m_connectorThread->m_activeSubscribers.size(); ++k)
         {
             if (m_d->m_connectorThread->m_activeSubscribers[k] == false)
@@ -151,15 +145,11 @@ void ZyROSConnector::rosLoop()
             }
         }
 
-<<<<<<< HEAD
         // Publish messages from ROS publishers that are active, if any
-=======
->>>>>>> SofaROSConnector plugin plus dependencies added.
         for (size_t k = 0; k < m_d->m_connectorThread->m_activePublishers.size(); ++k)
         {
             if (m_d->m_connectorThread->m_activePublishers[k] == true)
             {
-<<<<<<< HEAD
                 if (m_d->m_connectorThread->m_topicPublishers[k].get())
                     m_d->m_connectorThread->m_topicPublishers[k]->publishMessageQueue();
             }
@@ -174,37 +164,6 @@ void ZyROSConnector::rosLoop()
                     m_d->m_connectorThread->m_serviceClients[k]->dispatchRequests();
             }
         }
-=======
-                m_d->m_connectorThread->m_topicPublishers[k]->publishMessageQueue();
-            }
-        }
-
-        /*std::vector<boost::shared_ptr<ZyROSListener> >::iterator iter = m_topicSubscribers.begin();
-		while (iter != m_topicSubscribers.end())
-		{
-			if (std::find(tl_subscribers.begin(), tl_subscribers.end(), *iter) == tl_subscribers.end())
-			{
-				tl_subscribers.push_back(boost::move(*iter));
-				iter = m_topicSubscribers.erase(iter);
-			}
-			else
-			{
-				++iter;
-			}
-		}
-
-        std::vector<boost::shared_ptr<ZyROSListener> >::iterator rm_iter = m_removedTopicSubscribers.begin();
-		while (rm_iter != m_removedTopicSubscribers.end())
-		{
-            std::vector<boost::shared_ptr<ZyROSListener> >::iterator ls_it = std::find(tl_subscribers.begin(), tl_subscribers.end(), *rm_iter);
-			if (ls_it != tl_subscribers.end())
-			{
-				tl_subscribers.erase(ls_it);
-			}
-			++rm_iter;
-		}*/
->>>>>>> SofaROSConnector plugin plus dependencies added.
-
 		ros::getGlobalCallbackQueue()->callAvailable(ros::WallDuration(0.01));
 	}
 

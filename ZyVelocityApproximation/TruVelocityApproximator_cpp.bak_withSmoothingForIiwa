@@ -23,6 +23,7 @@
 * Contact information: contact@sofa-framework.org                             *
 ******************************************************************************/
 <<<<<<< HEAD
+<<<<<<< HEAD
 #ifndef SOFA_COMPONENT_INTERACTIONFORCEFIELD_ZYKLIOOBJECTMANAGER_INL
 #define SOFA_COMPONENT_INTERACTIONFORCEFIELD_ZYKLIOOBJECTMANAGER_INL
 
@@ -33,6 +34,12 @@
 
 #include "TruVelocityApproximator.h"
 >>>>>>> SofaROSConnector plugin plus dependencies added.
+=======
+#ifndef SOFA_COMPONENT_INTERACTIONFORCEFIELD_ZYKLIOOBJECTMANAGER_INL
+#define SOFA_COMPONENT_INTERACTIONFORCEFIELD_ZYKLIOOBJECTMANAGER_INL
+
+#include "ZyVelocityApproximator.h"
+>>>>>>> Working version of the ROS connector plugin for SOFA 18.0x
 
 #include <sofa/simulation/Node.h>
 #include <sofa/core/objectmodel/BaseContext.h>
@@ -45,12 +52,16 @@
 
 #include <SofaConstraint/FrictionContact.h>
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 #include <boost/date_time/posix_time/posix_time.hpp> 
 =======
 #ifdef TRUPHYSICS_DEMO
+=======
+#ifdef ZYKLIO_DEMO
+>>>>>>> Working version of the ROS connector plugin for SOFA 18.0x
 #include <sofa/simulation/common/Simulation.h>
-#endif //TRUPHYSICS_DEMO
+#endif //ZYKLIO_DEMO
 
 // asd
 #include <boost/date_time/posix_time/posix_time.hpp> 
@@ -72,6 +83,7 @@ namespace Zyklio
         using namespace sofa;
 
 <<<<<<< HEAD
+<<<<<<< HEAD
         SOFA_DECL_CLASS(ZyVelocityApproximator);
 
         int ZyVelocityApproximatorClass = core::RegisterObject("Description Test test.")
@@ -82,14 +94,21 @@ namespace Zyklio
         ZyVelocityApproximator::ZyVelocityApproximator()
 =======
         SOFA_DECL_CLASS(TruVelocityApproximator);
+=======
+        SOFA_DECL_CLASS(ZyVelocityApproximator);
+>>>>>>> Working version of the ROS connector plugin for SOFA 18.0x
 
-        int TruVelocityApproximatorClass = core::RegisterObject("Description Test test.")
-        .add< TruVelocityApproximator >()
-        //.addAlias("TruVelocityApproximator")
+        int ZyVelocityApproximatorClass = core::RegisterObject("Description Test test.")
+        .add< ZyVelocityApproximator >()
+        //.addAlias("ZyVelocityApproximator")
         ;
 
+<<<<<<< HEAD
         TruVelocityApproximator::TruVelocityApproximator()
 >>>>>>> SofaROSConnector plugin plus dependencies added.
+=======
+        ZyVelocityApproximator::ZyVelocityApproximator()
+>>>>>>> Working version of the ROS connector plugin for SOFA 18.0x
             : objectState(NULL)
             , collisionStateVec(NULL)
             , objectNodePath(initData(&objectNodePath, "objectNodePath", "Zyklio: Path to the object.")) // TODO: replace this with the proper SOFA way to do this
@@ -146,13 +165,13 @@ namespace Zyklio
         void ZyVelocityApproximator::bwdInit()
 =======
 #ifdef TP_VELOCITY_APPROXIMATION_DEBUG
-            std::cout << std::setprecision(30) << "TruVelocityApproximator epoch time: " << epochTime << std::endl;
+            std::cout << std::setprecision(30) << "ZyVelocityApproximator epoch time: " << epochTime << std::endl;
 #endif
         }
 
-        void TruVelocityApproximator::init()
+        void ZyVelocityApproximator::init()
         {
-#ifdef TRUPHYSICS_DEMO
+#ifdef ZYKLIO_DEMO
             std::string sceneHash = sofa::simulation::getSimulation()->getSceneHash();
 
             sofa::helper::hashCheckHelper hch;
@@ -161,12 +180,16 @@ namespace Zyklio
                 std::cout << "This plugin can only be used with the Zyklio demo and the correct demo scene." << std::endl;
                 exit(1);
             }
-#endif //TRUPHYSICS_DEMO
+#endif //ZYKLIO_DEMO
             Inherit::init();
         }
 
+<<<<<<< HEAD
         void TruVelocityApproximator::bwdInit()
 >>>>>>> SofaROSConnector plugin plus dependencies added.
+=======
+        void ZyVelocityApproximator::bwdInit()
+>>>>>>> Working version of the ROS connector plugin for SOFA 18.0x
         {                
             // connection to the start via Tornado
             char* tornadoEnv = getenv("TRUSIMRUN_TORNADO");
@@ -187,19 +210,27 @@ namespace Zyklio
                 // the velocity approximation is not run.
 
 <<<<<<< HEAD
+<<<<<<< HEAD
                 std::cout << "(ZyVelocityApproximator::bwdInit) Getting parameters from Tornado." << std::endl;
 =======
                 std::cout << "(TruVelocityApproximator::bwdInit) Getting parameters from Tornado." << std::endl;
 >>>>>>> SofaROSConnector plugin plus dependencies added.
+=======
+                std::cout << "(ZyVelocityApproximator::bwdInit) Getting parameters from Tornado." << std::endl;
+>>>>>>> Working version of the ROS connector plugin for SOFA 18.0x
 
                 if (vertexEnv_x)
                 {
                     vertexTornadoVec_x = generateVertexVector(vertexEnv_x);
 <<<<<<< HEAD
+<<<<<<< HEAD
                     std::cout << "(ZyVelocityApproximator::bwdInit) vertex_x: ";
 =======
                     std::cout << "(TruVelocityApproximator::bwdInit) vertex_x: ";
 >>>>>>> SofaROSConnector plugin plus dependencies added.
+=======
+                    std::cout << "(ZyVelocityApproximator::bwdInit) vertex_x: ";
+>>>>>>> Working version of the ROS connector plugin for SOFA 18.0x
                     for (unsigned int tmp = 0; tmp < vertexTornadoVec_x.size(); tmp++)
                     {
                         std::cout << vertexTornadoVec_x.at(tmp) << " ";
@@ -209,10 +240,14 @@ namespace Zyklio
                 else
                 {
 <<<<<<< HEAD
+<<<<<<< HEAD
                     std::cout << "(ZyVelocityApproximator::bwdInit) ERROR: There was a remote call, but no value for the vertex x-coordinate was given. Can't run velocity approximation." << std::endl;
 =======
                     std::cout << "(TruVelocityApproximator::bwdInit) ERROR: There was a remote call, but no value for the vertex x-coordinate was given. Can't run velocity approximation." << std::endl;
 >>>>>>> SofaROSConnector plugin plus dependencies added.
+=======
+                    std::cout << "(ZyVelocityApproximator::bwdInit) ERROR: There was a remote call, but no value for the vertex x-coordinate was given. Can't run velocity approximation." << std::endl;
+>>>>>>> Working version of the ROS connector plugin for SOFA 18.0x
                     runVelocityApproximation = false;
                 }
 
@@ -220,10 +255,14 @@ namespace Zyklio
                 {
                     vertexTornadoVec_y = generateVertexVector(vertexEnv_y);
 <<<<<<< HEAD
+<<<<<<< HEAD
                     std::cout << "(ZyVelocityApproximator::bwdInit) vertex_y: ";
 =======
                     std::cout << "(TruVelocityApproximator::bwdInit) vertex_y: ";
 >>>>>>> SofaROSConnector plugin plus dependencies added.
+=======
+                    std::cout << "(ZyVelocityApproximator::bwdInit) vertex_y: ";
+>>>>>>> Working version of the ROS connector plugin for SOFA 18.0x
                     for (unsigned int tmp = 0; tmp < vertexTornadoVec_y.size(); tmp++)
                     {
                         std::cout << vertexTornadoVec_y.at(tmp) << " ";
@@ -233,10 +272,14 @@ namespace Zyklio
                 else
                 {
 <<<<<<< HEAD
+<<<<<<< HEAD
                     std::cout << "(ZyVelocityApproximator::bwdInit) ERROR: There was a remote call, but no value for the vertex y-coordinate was given. Can't run velocity approximation." << std::endl;
 =======
                     std::cout << "(TruVelocityApproximator::bwdInit) ERROR: There was a remote call, but no value for the vertex y-coordinate was given. Can't run velocity approximation." << std::endl;
 >>>>>>> SofaROSConnector plugin plus dependencies added.
+=======
+                    std::cout << "(ZyVelocityApproximator::bwdInit) ERROR: There was a remote call, but no value for the vertex y-coordinate was given. Can't run velocity approximation." << std::endl;
+>>>>>>> Working version of the ROS connector plugin for SOFA 18.0x
                     runVelocityApproximation = false;
                 }
 
@@ -244,10 +287,14 @@ namespace Zyklio
                 {
                     vertexTornadoVec_z = generateVertexVector(vertexEnv_z);
 <<<<<<< HEAD
+<<<<<<< HEAD
                     std::cout << "(ZyVelocityApproximator::bwdInit) vertex_z: ";
 =======
                     std::cout << "(TruVelocityApproximator::bwdInit) vertex_z: ";
 >>>>>>> SofaROSConnector plugin plus dependencies added.
+=======
+                    std::cout << "(ZyVelocityApproximator::bwdInit) vertex_z: ";
+>>>>>>> Working version of the ROS connector plugin for SOFA 18.0x
                     for (unsigned int tmp = 0; tmp < vertexTornadoVec_z.size(); tmp++)
                     {
                         std::cout << vertexTornadoVec_z.at(tmp) << " ";
@@ -257,10 +304,14 @@ namespace Zyklio
                 else
                 {
 <<<<<<< HEAD
+<<<<<<< HEAD
                     std::cout << "(ZyVelocityApproximator::bwdInit) ERROR: There was a remote call, but no value for the vertex z-coordinate was given. Can't run velocity approximation." << std::endl;
 =======
                     std::cout << "(TruVelocityApproximator::bwdInit) ERROR: There was a remote call, but no value for the vertex z-coordinate was given. Can't run velocity approximation." << std::endl;
 >>>>>>> SofaROSConnector plugin plus dependencies added.
+=======
+                    std::cout << "(ZyVelocityApproximator::bwdInit) ERROR: There was a remote call, but no value for the vertex z-coordinate was given. Can't run velocity approximation." << std::endl;
+>>>>>>> Working version of the ROS connector plugin for SOFA 18.0x
                     runVelocityApproximation = false;
                 }
                         
@@ -268,10 +319,14 @@ namespace Zyklio
                 {
                     tornadoObjectNameVec = generateObjectNameVector(objectEnv);
 <<<<<<< HEAD
+<<<<<<< HEAD
                     std::cout << "(ZyVelocityApproximator::bwdInit) object: ";
 =======
                     std::cout << "(TruVelocityApproximator::bwdInit) object: ";
 >>>>>>> SofaROSConnector plugin plus dependencies added.
+=======
+                    std::cout << "(ZyVelocityApproximator::bwdInit) object: ";
+>>>>>>> Working version of the ROS connector plugin for SOFA 18.0x
                     for (unsigned int tmp = 0; tmp < tornadoObjectNameVec.size(); tmp++)
                     {
                         std::cout << tornadoObjectNameVec.at(tmp) << " ";
@@ -281,10 +336,14 @@ namespace Zyklio
                 else
                 {
 <<<<<<< HEAD
+<<<<<<< HEAD
                     std::cout << "(ZyVelocityApproximator::bwdInit) ERROR: There was a remote call, but no object name was given. Can't run velocity approximation." << std::endl;
 =======
                     std::cout << "(TruVelocityApproximator::bwdInit) ERROR: There was a remote call, but no object name was given. Can't run velocity approximation." << std::endl;
 >>>>>>> SofaROSConnector plugin plus dependencies added.
+=======
+                    std::cout << "(ZyVelocityApproximator::bwdInit) ERROR: There was a remote call, but no object name was given. Can't run velocity approximation." << std::endl;
+>>>>>>> Working version of the ROS connector plugin for SOFA 18.0x
                     runVelocityApproximation = false;
                 }
 
@@ -297,14 +356,19 @@ namespace Zyklio
                     catch (std::invalid_argument)
                     {
 <<<<<<< HEAD
+<<<<<<< HEAD
                         std::cout << "(ZyVelocityApproximator::bwdInit) ERROR: Could not convert input " << indexEnv << " to an integer. Can't run velocity approximation." << std::endl;
 =======
                         std::cout << "(TruVelocityApproximator::bwdInit) ERROR: Could not convert input " << indexEnv << " to an integer. Can't run velocity approximation." << std::endl;
 >>>>>>> SofaROSConnector plugin plus dependencies added.
+=======
+                        std::cout << "(ZyVelocityApproximator::bwdInit) ERROR: Could not convert input " << indexEnv << " to an integer. Can't run velocity approximation." << std::endl;
+>>>>>>> Working version of the ROS connector plugin for SOFA 18.0x
                         runVelocityApproximation = false;
                     }
                     catch (std::out_of_range)
                     {
+<<<<<<< HEAD
 <<<<<<< HEAD
                         std::cout << "(ZyVelocityApproximator::bwdInit) ERROR: Input " << indexEnv << " too large. Can't run velocity approximation." << std::endl;
                         runVelocityApproximation = false;
@@ -316,14 +380,21 @@ namespace Zyklio
                     std::cout << "(ZyVelocityApproximator::bwdInit) ERROR: There was a remote call, but no point index was given. Can't run velocity approximation." << std::endl;
 =======
                         std::cout << "(TruVelocityApproximator::bwdInit) ERROR: Input " << indexEnv << " too large. Can't run velocity approximation." << std::endl;
+=======
+                        std::cout << "(ZyVelocityApproximator::bwdInit) ERROR: Input " << indexEnv << " too large. Can't run velocity approximation." << std::endl;
+>>>>>>> Working version of the ROS connector plugin for SOFA 18.0x
                         runVelocityApproximation = false;
                     }
-                    std::cout << "(TruVelocityApproximator::bwdInit) index: " << indexTornado << std::endl;
+                    std::cout << "(ZyVelocityApproximator::bwdInit) index: " << indexTornado << std::endl;
                 }
                 else
                 {
+<<<<<<< HEAD
                     std::cout << "(TruVelocityApproximator::bwdInit) ERROR: There was a remote call, but no point index was given. Can't run velocity approximation." << std::endl;
 >>>>>>> SofaROSConnector plugin plus dependencies added.
+=======
+                    std::cout << "(ZyVelocityApproximator::bwdInit) ERROR: There was a remote call, but no point index was given. Can't run velocity approximation." << std::endl;
+>>>>>>> Working version of the ROS connector plugin for SOFA 18.0x
                     runVelocityApproximation = false;
                 }
 
@@ -336,14 +407,19 @@ namespace Zyklio
                     catch (std::invalid_argument)
                     {
 <<<<<<< HEAD
+<<<<<<< HEAD
                         std::cout << "(ZyVelocityApproximator::bwdInit) ERROR: Could not convert input " << testRunIndexEnv << " to an integer. Can't run velocity approximation." << std::endl;
 =======
                         std::cout << "(TruVelocityApproximator::bwdInit) ERROR: Could not convert input " << testRunIndexEnv << " to an integer. Can't run velocity approximation." << std::endl;
 >>>>>>> SofaROSConnector plugin plus dependencies added.
+=======
+                        std::cout << "(ZyVelocityApproximator::bwdInit) ERROR: Could not convert input " << testRunIndexEnv << " to an integer. Can't run velocity approximation." << std::endl;
+>>>>>>> Working version of the ROS connector plugin for SOFA 18.0x
                         runVelocityApproximation = false;
                     }
                     catch (std::out_of_range)
                     {
+<<<<<<< HEAD
 <<<<<<< HEAD
                         std::cout << "(ZyVelocityApproximator::bwdInit) ERROR: Input " << testRunIndexEnv << " too large. Can't run velocity approximation." << std::endl;
                         runVelocityApproximation = false;
@@ -355,24 +431,35 @@ namespace Zyklio
                     std::cout << "(ZyVelocityApproximator::bwdInit) ERROR: There was a remote call, but no testrun index was given. Can't run velocity approximation." << std::endl;
 =======
                         std::cout << "(TruVelocityApproximator::bwdInit) ERROR: Input " << testRunIndexEnv << " too large. Can't run velocity approximation." << std::endl;
+=======
+                        std::cout << "(ZyVelocityApproximator::bwdInit) ERROR: Input " << testRunIndexEnv << " too large. Can't run velocity approximation." << std::endl;
+>>>>>>> Working version of the ROS connector plugin for SOFA 18.0x
                         runVelocityApproximation = false;
                     }
-                    std::cout << "(TruVelocityApproximator::bwdInit) testRunIndex: " << testRunIndexTornado << std::endl;
+                    std::cout << "(ZyVelocityApproximator::bwdInit) testRunIndex: " << testRunIndexTornado << std::endl;
                 }
                 else
                 {
+<<<<<<< HEAD
                     std::cout << "(TruVelocityApproximator::bwdInit) ERROR: There was a remote call, but no testrun index was given. Can't run velocity approximation." << std::endl;
 >>>>>>> SofaROSConnector plugin plus dependencies added.
+=======
+                    std::cout << "(ZyVelocityApproximator::bwdInit) ERROR: There was a remote call, but no testrun index was given. Can't run velocity approximation." << std::endl;
+>>>>>>> Working version of the ROS connector plugin for SOFA 18.0x
                     runVelocityApproximation = false;
                 }
 
                 if ( !( (vertexTornadoVec_x.size() == vertexTornadoVec_y.size()) && (vertexTornadoVec_z.size() == tornadoObjectNameVec.size()) && (vertexTornadoVec_x.size() == tornadoObjectNameVec.size()) ) )
                 {
 <<<<<<< HEAD
+<<<<<<< HEAD
                     std::cout << "(ZyVelocityApproximator::bwdInit) ERROR: The vectors for the vertex coordinates and the object names had not all the same size (";
 =======
                     std::cout << "(TruVelocityApproximator::bwdInit) ERROR: The vectors for the vertex coordinates and the object names had not all the same size (";
 >>>>>>> SofaROSConnector plugin plus dependencies added.
+=======
+                    std::cout << "(ZyVelocityApproximator::bwdInit) ERROR: The vectors for the vertex coordinates and the object names had not all the same size (";
+>>>>>>> Working version of the ROS connector plugin for SOFA 18.0x
                     std::cout << "vertexTornadoVec_x.size(): " << vertexTornadoVec_x.size();
                     std::cout << ", vertexTornadoVec_y.size(): " << vertexTornadoVec_y.size();
                     std::cout << ", vertexTornadoVec_z.size(): " << vertexTornadoVec_z.size();
@@ -384,12 +471,17 @@ namespace Zyklio
 
             // <!-- TODO: replace this with the proper SOFA way to do this 
 <<<<<<< HEAD
+<<<<<<< HEAD
             std::cout << "(ZyVelocityApproximator::bwdInit) objectNodePath: " << objectNodePath.getValue() << std::endl;
             std::cout << "(ZyVelocityApproximator::bwdInit) (if it crashes now, this is probably wrong)" << std::endl;
 =======
             std::cout << "(TruVelocityApproximator::bwdInit) objectNodePath: " << objectNodePath.getValue() << std::endl;
             std::cout << "(TruVelocityApproximator::bwdInit) (if it crashes now, this is probably wrong)" << std::endl;
 >>>>>>> SofaROSConnector plugin plus dependencies added.
+=======
+            std::cout << "(ZyVelocityApproximator::bwdInit) objectNodePath: " << objectNodePath.getValue() << std::endl;
+            std::cout << "(ZyVelocityApproximator::bwdInit) (if it crashes now, this is probably wrong)" << std::endl;
+>>>>>>> Working version of the ROS connector plugin for SOFA 18.0x
             {
                 std::istringstream readPathStream(objectNodePath.getValue());
 
@@ -422,10 +514,14 @@ namespace Zyklio
                 for (unsigned int gna = 0; gna < tornadoObjectNameVec.size(); gna++)
                 {
 <<<<<<< HEAD
+<<<<<<< HEAD
                     std::cout << "(ZyVelocityApproximator::bwdInit) Trying to find the mechanical state that corresponds to the object name " << tornadoObjectNameVec.at(gna) << std::endl;
 =======
                     std::cout << "(TruVelocityApproximator::bwdInit) Trying to find the mechanical state that corresponds to the object name " << tornadoObjectNameVec.at(gna) << std::endl;
 >>>>>>> SofaROSConnector plugin plus dependencies added.
+=======
+                    std::cout << "(ZyVelocityApproximator::bwdInit) Trying to find the mechanical state that corresponds to the object name " << tornadoObjectNameVec.at(gna) << std::endl;
+>>>>>>> Working version of the ROS connector plugin for SOFA 18.0x
 
                     simulation::Node* objNode = dynamic_cast<simulation::Node*>(getContext()->getRootContext())->getTreeNode(tornadoObjectNameVec.at(gna));
                     
@@ -439,19 +535,27 @@ namespace Zyklio
                         if (mechanicalStates.size() == 0) 
                         {
 <<<<<<< HEAD
+<<<<<<< HEAD
                             std::cout << "(ZyVelocityApproximator::bwdInit) ERROR: No MechanicalState<Vec3Types> instances found! Can't run velocity approximation." << std::endl;
 =======
                             std::cout << "(TruVelocityApproximator::bwdInit) ERROR: No MechanicalState<Vec3Types> instances found! Can't run velocity approximation." << std::endl;
 >>>>>>> SofaROSConnector plugin plus dependencies added.
+=======
+                            std::cout << "(ZyVelocityApproximator::bwdInit) ERROR: No MechanicalState<Vec3Types> instances found! Can't run velocity approximation." << std::endl;
+>>>>>>> Working version of the ROS connector plugin for SOFA 18.0x
                             runVelocityApproximation = false;
                         }
                         else
                         {
 <<<<<<< HEAD
+<<<<<<< HEAD
                             std::cout << "(ZyVelocityApproximator::bwdInit) MechanicalState<Vec3Types> instances found: " << mechanicalStates.size() << std::endl;
 =======
                             std::cout << "(TruVelocityApproximator::bwdInit) MechanicalState<Vec3Types> instances found: " << mechanicalStates.size() << std::endl;
 >>>>>>> SofaROSConnector plugin plus dependencies added.
+=======
+                            std::cout << "(ZyVelocityApproximator::bwdInit) MechanicalState<Vec3Types> instances found: " << mechanicalStates.size() << std::endl;
+>>>>>>> Working version of the ROS connector plugin for SOFA 18.0x
 
                             // The MechanicalState we need should be the only one with Vec3 types, but to make sure, check if there are any collision models there
                             core::behavior::MechanicalState<Vec3Types>* tmpState = mechanicalStates.at(0);
@@ -469,20 +573,28 @@ namespace Zyklio
                                 else
                                 {
 <<<<<<< HEAD
+<<<<<<< HEAD
                                     std::cout << "(ZyVelocityApproximator::bwdInit) ERROR: Could not find the a Vec3 mechanical state! Can't run velocity approximation." << std::endl;
 =======
                                     std::cout << "(TruVelocityApproximator::bwdInit) ERROR: Could not find the a Vec3 mechanical state! Can't run velocity approximation." << std::endl;
 >>>>>>> SofaROSConnector plugin plus dependencies added.
+=======
+                                    std::cout << "(ZyVelocityApproximator::bwdInit) ERROR: Could not find the a Vec3 mechanical state! Can't run velocity approximation." << std::endl;
+>>>>>>> Working version of the ROS connector plugin for SOFA 18.0x
                                     runVelocityApproximation = false;
                                 }
                             }
                             else
                             {
 <<<<<<< HEAD
+<<<<<<< HEAD
                                 std::cout << "(ZyVelocityApproximator::bwdInit) ERROR: Could not find the right mechanical state! Can't run velocity approximation." << std::endl;
 =======
                                 std::cout << "(TruVelocityApproximator::bwdInit) ERROR: Could not find the right mechanical state! Can't run velocity approximation." << std::endl;
 >>>>>>> SofaROSConnector plugin plus dependencies added.
+=======
+                                std::cout << "(ZyVelocityApproximator::bwdInit) ERROR: Could not find the right mechanical state! Can't run velocity approximation." << std::endl;
+>>>>>>> Working version of the ROS connector plugin for SOFA 18.0x
                                 runVelocityApproximation = false;
                             }
                         }
@@ -490,10 +602,14 @@ namespace Zyklio
                     else
                     {
 <<<<<<< HEAD
+<<<<<<< HEAD
                         std::cout << "(ZyVelocityApproximator::bwdInit) ERROR: Could not find a mechanical state that corresponds to " << tornadoObjectNameVec.at(gna) << ". Can't run velocity approximation." << std::endl;
 =======
                         std::cout << "(TruVelocityApproximator::bwdInit) ERROR: Could not find a mechanical state that corresponds to " << tornadoObjectNameVec.at(gna) << ". Can't run velocity approximation." << std::endl;
 >>>>>>> SofaROSConnector plugin plus dependencies added.
+=======
+                        std::cout << "(ZyVelocityApproximator::bwdInit) ERROR: Could not find a mechanical state that corresponds to " << tornadoObjectNameVec.at(gna) << ". Can't run velocity approximation." << std::endl;
+>>>>>>> Working version of the ROS connector plugin for SOFA 18.0x
                         runVelocityApproximation = false;
                     }
                 }
@@ -503,12 +619,17 @@ namespace Zyklio
                 collisionStateVec.resize(1);
 
 <<<<<<< HEAD
+<<<<<<< HEAD
                 std::cout << "(ZyVelocityApproximator::bwdInit) collisionNodePath: " << collisionNodePath.getValue() << std::endl;
                 std::cout << "(ZyVelocityApproximator::bwdInit) (if it crashes now, this is probably wrong)" << std::endl;
 =======
                 std::cout << "(TruVelocityApproximator::bwdInit) collisionNodePath: " << collisionNodePath.getValue() << std::endl;
                 std::cout << "(TruVelocityApproximator::bwdInit) (if it crashes now, this is probably wrong)" << std::endl;
 >>>>>>> SofaROSConnector plugin plus dependencies added.
+=======
+                std::cout << "(ZyVelocityApproximator::bwdInit) collisionNodePath: " << collisionNodePath.getValue() << std::endl;
+                std::cout << "(ZyVelocityApproximator::bwdInit) (if it crashes now, this is probably wrong)" << std::endl;
+>>>>>>> Working version of the ROS connector plugin for SOFA 18.0x
 
                 std::istringstream readPathStream(collisionNodePath.getValue());
                 simulation::Node* objectNode = NULL;
@@ -546,6 +667,7 @@ namespace Zyklio
             if (objectState)
             {
 <<<<<<< HEAD
+<<<<<<< HEAD
                 std::cout << "(ZyVelocityApproximator::bwdInit) Found mechanical object: " << objectState->getName() << std::endl;
             }
             else
@@ -558,6 +680,13 @@ namespace Zyklio
             {
                 std::cout << "(TruVelocityApproximator::bwdInit) Mechanical object with path \"" << objectNodePath.getValue() << "\" not found. (Probably not alarming)" << std::endl;
 >>>>>>> SofaROSConnector plugin plus dependencies added.
+=======
+                std::cout << "(ZyVelocityApproximator::bwdInit) Found mechanical object: " << objectState->getName() << std::endl;
+            }
+            else
+            {
+                std::cout << "(ZyVelocityApproximator::bwdInit) Mechanical object with path \"" << objectNodePath.getValue() << "\" not found. (Probably not alarming)" << std::endl;
+>>>>>>> Working version of the ROS connector plugin for SOFA 18.0x
             }
 
             identificationString = boost::posix_time::to_simple_string(boost::posix_time::microsec_clock::local_time()); // is not set anywhere else
@@ -575,10 +704,14 @@ namespace Zyklio
                     if (calledByTornado)
                     {
 <<<<<<< HEAD
+<<<<<<< HEAD
                         std::cout << "(ZyVelocityApproximator::bwdInit) Found mechanical collision object corresponding to the name " << tornadoObjectNameVec.at(mah) << ": " << collisionStateVec.at(mah)->getName() << std::endl;
 =======
                         std::cout << "(TruVelocityApproximator::bwdInit) Found mechanical collision object corresponding to the name " << tornadoObjectNameVec.at(mah) << ": " << collisionStateVec.at(mah)->getName() << std::endl;
 >>>>>>> SofaROSConnector plugin plus dependencies added.
+=======
+                        std::cout << "(ZyVelocityApproximator::bwdInit) Found mechanical collision object corresponding to the name " << tornadoObjectNameVec.at(mah) << ": " << collisionStateVec.at(mah)->getName() << std::endl;
+>>>>>>> Working version of the ROS connector plugin for SOFA 18.0x
                         std::stringstream tmpStr;
                         tmpStr << collisionStateVec.at(mah)->getName() << " (" << tornadoObjectNameVec.at(mah) << ")";
                         meshNameVec.push_back(tmpStr.str());
@@ -586,10 +719,14 @@ namespace Zyklio
                     else
                     {
 <<<<<<< HEAD
+<<<<<<< HEAD
                         std::cout << "(ZyVelocityApproximator::bwdInit) Found mechanical collision object corresponding to the path " << collisionNodePath.getValue() << ": " << collisionStateVec.at(mah)->getName() << std::endl;
 =======
                         std::cout << "(TruVelocityApproximator::bwdInit) Found mechanical collision object corresponding to the path " << collisionNodePath.getValue() << ": " << collisionStateVec.at(mah)->getName() << std::endl;
 >>>>>>> SofaROSConnector plugin plus dependencies added.
+=======
+                        std::cout << "(ZyVelocityApproximator::bwdInit) Found mechanical collision object corresponding to the path " << collisionNodePath.getValue() << ": " << collisionStateVec.at(mah)->getName() << std::endl;
+>>>>>>> Working version of the ROS connector plugin for SOFA 18.0x
                         std::stringstream tmpStr;
                         tmpStr << collisionStateVec.at(mah)->getName();
                         meshNameVec.push_back(tmpStr.str());
@@ -625,10 +762,14 @@ namespace Zyklio
                             std::stringstream tmpStr;
                             tmpStr << collisionStateVec.at(mah)->getPosition().at(minDist_index) << " (index " << minDist_index << ")";
 <<<<<<< HEAD
+<<<<<<< HEAD
                             std::cout << "(ZyVelocityApproximator::bwdInit) Due to the given position (" << selectedVertex << "), the following vertex on the sofa-mesh was selected: " << tmpStr.str() << std::endl;
 =======
                             std::cout << "(TruVelocityApproximator::bwdInit) Due to the given position (" << selectedVertex << "), the following vertex on the sofa-mesh was selected: " << tmpStr.str() << std::endl;
 >>>>>>> SofaROSConnector plugin plus dependencies added.
+=======
+                            std::cout << "(ZyVelocityApproximator::bwdInit) Due to the given position (" << selectedVertex << "), the following vertex on the sofa-mesh was selected: " << tmpStr.str() << std::endl;
+>>>>>>> Working version of the ROS connector plugin for SOFA 18.0x
                             sofa::helper::vector < std::string >* shvssPnt = selectedVertexInfo.beginEdit();
                             shvssPnt->push_back(tmpStr.str());
                             selectedVertexInfo.endEdit();
@@ -645,10 +786,14 @@ namespace Zyklio
                             if (currentSelectedVertex >= collisionStateVec.at(mah)->getPosition().size())
                             {
 <<<<<<< HEAD
+<<<<<<< HEAD
                                 serr << "(ZyVelocityApproximator::bwdInit) WARNING: Selected vertex " << currentSelectedVertex << " is bigger than the number of vertices in the mesh (" << collisionStateVec.at(mah)->getPosition().size() << "). Setting this selected vertex to 0." << std::endl;
 =======
                                 serr << "(TruVelocityApproximator::bwdInit) WARNING: Selected vertex " << currentSelectedVertex << " is bigger than the number of vertices in the mesh (" << collisionStateVec.at(mah)->getPosition().size() << "). Setting this selected vertex to 0." << std::endl;
 >>>>>>> SofaROSConnector plugin plus dependencies added.
+=======
+                                serr << "(ZyVelocityApproximator::bwdInit) WARNING: Selected vertex " << currentSelectedVertex << " is bigger than the number of vertices in the mesh (" << collisionStateVec.at(mah)->getPosition().size() << "). Setting this selected vertex to 0." << std::endl;
+>>>>>>> Working version of the ROS connector plugin for SOFA 18.0x
                                 if (selectedVertices.getValue().size() > 1)
                                 {
                                     currentSelectedVertex = 0;
@@ -704,6 +849,7 @@ namespace Zyklio
                     if (calledByTornado)
                     {
 <<<<<<< HEAD
+<<<<<<< HEAD
                         std::cout << "(ZyVelocityApproximator::bwdInit) Mechanical object with name \"" << tornadoObjectNameVec.at(mah) << "\" not found." << std::endl;
                     }
                     else
@@ -716,6 +862,13 @@ namespace Zyklio
                     {
                         std::cout << "(TruVelocityApproximator::bwdInit) Mechanical object with path \"" << collisionNodePath.getValue() << "\" not found." << std::endl;
 >>>>>>> SofaROSConnector plugin plus dependencies added.
+=======
+                        std::cout << "(ZyVelocityApproximator::bwdInit) Mechanical object with name \"" << tornadoObjectNameVec.at(mah) << "\" not found." << std::endl;
+                    }
+                    else
+                    {
+                        std::cout << "(ZyVelocityApproximator::bwdInit) Mechanical object with path \"" << collisionNodePath.getValue() << "\" not found." << std::endl;
+>>>>>>> Working version of the ROS connector plugin for SOFA 18.0x
                     }
                 }
             }
@@ -724,6 +877,7 @@ namespace Zyklio
             sofa::core::objectmodel::BaseContext::GetObjectsCallBackT<ArbitraryController, std::vector<ArbitraryController* > > arbitraryControllers_vec(&arbitraryControllers);
             getContext()->getObjects(TClassInfo<ArbitraryController>::get(), arbitraryControllers_vec, TagSet(), sofa::core::objectmodel::BaseContext::SearchRoot);
 
+<<<<<<< HEAD
 <<<<<<< HEAD
             std::cout << "(ZyVelocityApproximator::bwdInit) ArbitraryController instances found: " << arbitraryControllers.size() << std::endl;
 
@@ -735,6 +889,12 @@ namespace Zyklio
             if (arbitraryControllers.size() == 0) {
                 serr << "(TruVelocityApproximator::bwdInit) No Arbitrary Contoller found!" << std::endl;
 >>>>>>> SofaROSConnector plugin plus dependencies added.
+=======
+            std::cout << "(ZyVelocityApproximator::bwdInit) ArbitraryController instances found: " << arbitraryControllers.size() << std::endl;
+
+            if (arbitraryControllers.size() == 0) {
+                serr << "(ZyVelocityApproximator::bwdInit) No Arbitrary Contoller found!" << std::endl;
+>>>>>>> Working version of the ROS connector plugin for SOFA 18.0x
                 runVelocityApproximation = false;
             }
             else
@@ -744,6 +904,7 @@ namespace Zyklio
 
             if (runVelocityApproximation)
             {
+<<<<<<< HEAD
 <<<<<<< HEAD
                 std::cout << "(ZyVelocityApproximator::bwdInit) All paramaters for velocity approximation are ok." << std::endl;
             }
@@ -757,16 +918,27 @@ namespace Zyklio
             {
                 std::cout << "(TruVelocityApproximator::bwdInit) Not all paramaters for velocity approximation are ok. Can't run velocity approximation." << std::endl;
 >>>>>>> SofaROSConnector plugin plus dependencies added.
+=======
+                std::cout << "(ZyVelocityApproximator::bwdInit) All paramaters for velocity approximation are ok." << std::endl;
+            }
+            else
+            {
+                std::cout << "(ZyVelocityApproximator::bwdInit) Not all paramaters for velocity approximation are ok. Can't run velocity approximation." << std::endl;
+>>>>>>> Working version of the ROS connector plugin for SOFA 18.0x
             }
 
             rosTimeSteps.clear();
         }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
         void ZyVelocityApproximator::reinit()
 =======
         void TruVelocityApproximator::reinit()
 >>>>>>> SofaROSConnector plugin plus dependencies added.
+=======
+        void ZyVelocityApproximator::reinit()
+>>>>>>> Working version of the ROS connector plugin for SOFA 18.0x
         {
             // TODO: This is probably incomplete
             currentPosition.clear();
@@ -786,10 +958,14 @@ namespace Zyklio
         }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
         void ZyVelocityApproximator::moveObjectToPosition(simulation::common::MechanicalOperations& mop, sofa::core::behavior::MultiVecCoord& pos/*, sofa::core::behavior::MultiVecCoord& freePos*/)
 =======
         void TruVelocityApproximator::moveObjectToPosition(simulation::common::MechanicalOperations& mop, sofa::core::behavior::MultiVecCoord& pos/*, sofa::core::behavior::MultiVecCoord& freePos*/)
 >>>>>>> SofaROSConnector plugin plus dependencies added.
+=======
+        void ZyVelocityApproximator::moveObjectToPosition(simulation::common::MechanicalOperations& mop, sofa::core::behavior::MultiVecCoord& pos/*, sofa::core::behavior::MultiVecCoord& freePos*/)
+>>>>>>> Working version of the ROS connector plugin for SOFA 18.0x
         {
             if (doWhat.getValue().compare("movement") == 0)
             {
@@ -809,10 +985,14 @@ namespace Zyklio
         }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
         void ZyVelocityApproximator::approximateVelocity(simulation::common::MechanicalOperations& mop, sofa::core::behavior::MultiVecCoord& pos)
 =======
         void TruVelocityApproximator::approximateVelocity(simulation::common::MechanicalOperations& mop, sofa::core::behavior::MultiVecCoord& pos)
 >>>>>>> SofaROSConnector plugin plus dependencies added.
+=======
+        void ZyVelocityApproximator::approximateVelocity(simulation::common::MechanicalOperations& mop, sofa::core::behavior::MultiVecCoord& pos)
+>>>>>>> Working version of the ROS connector plugin for SOFA 18.0x
         {
             if (doWhat.getValue().compare("velocity") == 0)
             {
@@ -885,10 +1065,14 @@ namespace Zyklio
                             if (!seqFound)
                             {
 <<<<<<< HEAD
+<<<<<<< HEAD
                                 std::cout << "WARNING (ZyVelocityApproximator::approximateVelocity): Last known joint_states message time stamp not found in known joint_states messages. Using all known messages." << std::endl;
 =======
                                 std::cout << "WARNING (TruVelocityApproximator::approximateVelocity): Last known joint_states message time stamp not found in known joint_states messages. Using all known messages." << std::endl;
 >>>>>>> SofaROSConnector plugin plus dependencies added.
+=======
+                                std::cout << "WARNING (ZyVelocityApproximator::approximateVelocity): Last known joint_states message time stamp not found in known joint_states messages. Using all known messages." << std::endl;
+>>>>>>> Working version of the ROS connector plugin for SOFA 18.0x
                             }
                             else
                             {
@@ -1130,10 +1314,14 @@ namespace Zyklio
 
 
 <<<<<<< HEAD
+<<<<<<< HEAD
         void ZyVelocityApproximator::pushJointMsg(jointMsg theMsg)
 =======
         void TruVelocityApproximator::pushJointMsg(jointMsg theMsg)
 >>>>>>> SofaROSConnector plugin plus dependencies added.
+=======
+        void ZyVelocityApproximator::pushJointMsg(jointMsg theMsg)
+>>>>>>> Working version of the ROS connector plugin for SOFA 18.0x
         {
             receivedJointStateMessages++;
 
@@ -1165,10 +1353,14 @@ namespace Zyklio
         };
 
 <<<<<<< HEAD
+<<<<<<< HEAD
         ZyVelocityApproximator::currentVelocityApproximationDataType ZyVelocityApproximator::createOutputArray(const std::pair< identificationData, velocityData>& velocityDataPair)
 =======
         TruVelocityApproximator::currentVelocityApproximationDataType TruVelocityApproximator::createOutputArray(const std::pair< identificationData, velocityData>& velocityDataPair)
 >>>>>>> SofaROSConnector plugin plus dependencies added.
+=======
+        ZyVelocityApproximator::currentVelocityApproximationDataType ZyVelocityApproximator::createOutputArray(const std::pair< identificationData, velocityData>& velocityDataPair)
+>>>>>>> Working version of the ROS connector plugin for SOFA 18.0x
         {
             currentVelocityApproximationDataType outputArray;
 
@@ -1196,10 +1388,14 @@ namespace Zyklio
         // Object names arrive as a comma separated list of unknown length.
         // What we need is an actual vector of strings.
 <<<<<<< HEAD
+<<<<<<< HEAD
         std::vector<std::string> ZyVelocityApproximator::generateObjectNameVector(char* vertexInput)
 =======
         std::vector<std::string> TruVelocityApproximator::generateObjectNameVector(char* vertexInput)
 >>>>>>> SofaROSConnector plugin plus dependencies added.
+=======
+        std::vector<std::string> ZyVelocityApproximator::generateObjectNameVector(char* vertexInput)
+>>>>>>> Working version of the ROS connector plugin for SOFA 18.0x
         {
             std::vector<std::string> vertexStrVec;
             std::string vertexStr(vertexInput);
@@ -1228,10 +1424,14 @@ namespace Zyklio
         // Vertex values arrive as a comma separated list of unknown length.
         // What we need is an actual vector of doubles.
 <<<<<<< HEAD
+<<<<<<< HEAD
         std::vector<double> ZyVelocityApproximator::generateVertexVector(char* vertexInput)
 =======
         std::vector<double> TruVelocityApproximator::generateVertexVector(char* vertexInput)
 >>>>>>> SofaROSConnector plugin plus dependencies added.
+=======
+        std::vector<double> ZyVelocityApproximator::generateVertexVector(char* vertexInput)
+>>>>>>> Working version of the ROS connector plugin for SOFA 18.0x
         {
             try
             {
@@ -1261,28 +1461,40 @@ namespace Zyklio
             catch (std::invalid_argument)
             {
 <<<<<<< HEAD
+<<<<<<< HEAD
                 std::cout << "(ZyVelocityApproximator::bwdInit) ERROR: Could not convert input " << vertexInput << " to integers. Can't run velocity approximation." << std::endl;
 =======
                 std::cout << "(TruVelocityApproximator::bwdInit) ERROR: Could not convert input " << vertexInput << " to integers. Can't run velocity approximation." << std::endl;
 >>>>>>> SofaROSConnector plugin plus dependencies added.
+=======
+                std::cout << "(ZyVelocityApproximator::bwdInit) ERROR: Could not convert input " << vertexInput << " to integers. Can't run velocity approximation." << std::endl;
+>>>>>>> Working version of the ROS connector plugin for SOFA 18.0x
                 runVelocityApproximation = false;
             }
             catch (std::out_of_range)
             {
 <<<<<<< HEAD
+<<<<<<< HEAD
                 std::cout << "(ZyVelocityApproximator::bwdInit) ERROR: Input " << vertexInput << " contains an element that is too large. Can't run velocity approximation." << std::endl;
 =======
                 std::cout << "(TruVelocityApproximator::bwdInit) ERROR: Input " << vertexInput << " contains an element that is too large. Can't run velocity approximation." << std::endl;
 >>>>>>> SofaROSConnector plugin plus dependencies added.
+=======
+                std::cout << "(ZyVelocityApproximator::bwdInit) ERROR: Input " << vertexInput << " contains an element that is too large. Can't run velocity approximation." << std::endl;
+>>>>>>> Working version of the ROS connector plugin for SOFA 18.0x
                 runVelocityApproximation = false;
             }
         }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
         double ZyVelocityApproximator::adjustTime(double time)
 =======
         double TruVelocityApproximator::adjustTime(double time)
 >>>>>>> SofaROSConnector plugin plus dependencies added.
+=======
+        double ZyVelocityApproximator::adjustTime(double time)
+>>>>>>> Working version of the ROS connector plugin for SOFA 18.0x
         {
             if (time > epochTime)
             {

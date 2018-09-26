@@ -3253,15 +3253,6 @@ bool ZyColladaLoader::readDAE(std::ifstream &file, const char* filename)
                                 {
                                     std::cout << "Visual model: " << visualMesh->mName.C_Str() << std::endl;
                                 }
-                                /*else
-                                {
-                                    std::cout << "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" << std::endl;
-                                }*/
-                            }
-                            /*else
-                            {
-                                std::cout << "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" << std::endl;
-                            }*/
                         }
 
                         aiMesh* currentMeshTmp = currentAiMesh;

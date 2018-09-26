@@ -82,7 +82,6 @@ public:
     ColladaArschFotze() {}
     ~ColladaArschFotze() {}
 
-
 public:
 	/** Returns whether the class can handle the format of the given file. 
 	 * See BaseImporter::CanRead() for details.	*/
