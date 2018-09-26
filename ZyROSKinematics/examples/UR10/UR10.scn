@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<Node 	 name="Root"  dt="0.04" gravity="0 0 -9.81" >
+	<!--<RequiredPlugin name="TruRosConnectionManager" />
+	<RequiredPlugin name="TruRosKinematics" />
+	<RequiredPlugin name="TruPhysics" />
+        <RequiredPlugin name="ObbTreeGPU" />
+	<RequiredPlugin name="SofaPython" />-->
+	
+	<InteractiveCamera name="interactiveCamera0" />
+	
+	<VisualStyle name="displayFlags"  displayFlags="showVisual showBehaviorModels showForceFields hideInteractionForceFields hideCollisionModels hideMapping hideRendering hideNormals" />
+	<BackgroundSetting name="backgroundSetting" color='0.0 0.4 0.8'/>
+    <OglSceneFrame name="oglSceneFrame" style="Arrows" alignment="TopRight"/>
+	
+	<TruPhysicsAnimationLoop name="AnimationLoop"  solveVelocityConstraintFirst="1" />	
+	<RuleBasedContactManager name="Response" response="FrictionContact" rules="* * FrictionContact?mu=0.05" />
+	<TruPhysicsPipeline name="truPhysicsPipelineTest5"  />
+	<TruColladaLoader name="DAE_blendfix"  filename="ur10.dae"  generateCollisionModels="1"  explicitWhitelist="1" useContactManifolds="0" maxNumberOfLineLineManifolds="2" maxNumberOfFaceVertexManifolds="2"/>
+	
+	
+	<TruRosConnectionManager name="truPhysicsRos" rosMasterURI="http://127.0.0.1:11311" rosTopics="/joint_states:::sensor_msgs::JointStates"/>
+	<TruRosKinematics name="truROSKinematics"  topicName="/joint_states"  arbitraryControllerPath="DAE_blendfix_scene/KinematicsModels/ur10_kinematics_model.ur10_kinematics_model."  />
+
+        <GenericConstraintSolver name="genericConstraintSolver"  maxIterations="1000"  tolerance="0.000001" />	
+</Node>

@@ -22,15 +22,15 @@
 *                                                                             *
 * Contact information: contact@sofa-framework.org                             *
 ******************************************************************************/
-#ifndef INIT_TRUVELOCITYAPPROXIMATION_H
-#define INIT_TRUVELOCITYAPPROXIMATION_H
+#ifndef INIT_ZYVELOCITYAPPROXIMATION_H
+#define INIT_ZYVELOCITYAPPROXIMATION_H
 
 #include <sofa/helper/system/config.h>
 
 # ifdef SOFA_BUILD_TRUVELOCITYAPPROXIMATION
-#   define SOFA_TRUVELOCITYAPPROXIMATION_API SOFA_EXPORT_DYNAMIC_LIBRARY
+#   define SOFA_ZYVELOCITYAPPROXIMATION_API SOFA_EXPORT_DYNAMIC_LIBRARY
 # else
-#   define SOFA_TRUVELOCITYAPPROXIMATION_API SOFA_IMPORT_DYNAMIC_LIBRARY
+#   define SOFA_ZYVELOCITYAPPROXIMATION_API SOFA_IMPORT_DYNAMIC_LIBRARY
 # endif
 
 namespace Zyklio
@@ -38,14 +38,14 @@ namespace Zyklio
     namespace VelocityApproximation
 	{
 		extern "C" {
-            SOFA_TRUVELOCITYAPPROXIMATION_API void initExternalModule();
-            SOFA_TRUVELOCITYAPPROXIMATION_API const char* getModuleName();
-            SOFA_TRUVELOCITYAPPROXIMATION_API const char* getModuleVersion();
-            SOFA_TRUVELOCITYAPPROXIMATION_API const char* getModuleLicense();
-            SOFA_TRUVELOCITYAPPROXIMATION_API const char* getModuleDescription();
-            SOFA_TRUVELOCITYAPPROXIMATION_API const char* getModuleComponentList();
+            SOFA_ZYVELOCITYAPPROXIMATION_API void initExternalModule();
+            SOFA_ZYVELOCITYAPPROXIMATION_API const char* getModuleName();
+            SOFA_ZYVELOCITYAPPROXIMATION_API const char* getModuleVersion();
+            SOFA_ZYVELOCITYAPPROXIMATION_API const char* getModuleLicense();
+            SOFA_ZYVELOCITYAPPROXIMATION_API const char* getModuleDescription();
+            SOFA_ZYVELOCITYAPPROXIMATION_API const char* getModuleComponentList();
 		}
 	}
 }
 
-#endif // INIT_TRUVELOCITYAPPROXIMATION_H
+#endif // INIT_ZYVELOCITYAPPROXIMATION_H

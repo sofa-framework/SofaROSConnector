@@ -22,8 +22,8 @@
 *                                                                             *
 * Contact information: contact@sofa-framework.org                             *
 ******************************************************************************/
-#ifndef TRUPHYSICS_ZyGripping_H
-#define TRUPHYSICS_ZyGripping_H
+#ifndef ZYKLIO_ZyGripping_H
+#define ZYKLIO_ZyGripping_H
 
 #include "initZyGripping.h"
 
@@ -89,7 +89,7 @@ namespace Zyklio
             Data<double> gripperMoveStep;
             Data<char> movementAxis;
                     
-#ifdef TRUPHYSICS_DEMO
+#ifdef ZYKLIO_DEMO
             template<class T>
             static bool canCreate(T*& obj, core::objectmodel::BaseContext* context, core::objectmodel::BaseObjectDescription* arg)
             {
@@ -121,4 +121,4 @@ namespace Zyklio
 
 } // namespace Zyklio
 
-#endif //TRUPHYSICS_ZyGripping_H
+#endif //ZYKLIO_ZyGripping_H

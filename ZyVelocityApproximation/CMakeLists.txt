@@ -38,6 +38,7 @@ add_definitions(-DROS_BUILD_SHARED_LIBS)
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
 
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER "Plugins")
+set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "_d")
 
 target_link_libraries(${PROJECT_NAME} SofaCore SofaHelper SofaDefaultType SofaBaseCollision SofaConstraint SofaSimulationCommon)
 target_link_libraries(${PROJECT_NAME} ZySOFAControllers)

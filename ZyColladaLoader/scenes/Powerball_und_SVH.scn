@@ -1,0 +1,131 @@
+<?xml version="1.0"?>
+<Node 	 name="Root"  dt="0.01" gravity="0 0 -9.81" >
+	<RequiredPlugin name="RobotConnector" />
+	<RequiredPlugin name="ColladaSceneLoader" />	
+	<RequiredPlugin name="ObbTreeGPU" />
+	<RequiredPlugin name="MultiThreading" />
+	<RequiredPlugin name="TruPhysics" />
+	
+	<VisualStyle name="displayFlags"  displayFlags="showVisual showBehavior hideCollision hideMapping hideRendering hideNormals" />
+	<BackgroundSetting name="backgroundSetting" color='0.0 0.4 0.8'/>
+    <OglSceneFrame name="oglSceneFrame" style="Arrows" alignment="TopRight"/>
+	
+	<ObbTreeGPUCollisionDetection_Threaded name="TruPhysics" numStreamedWorkerUnits="6" streamedWorkerResultMinSize="2048" streamedWorkerResultMaxSize="4096" numWorkerThreads="5"
+	fakeGrippingEventSequence="geo32;dummy;geo20::geo23;AND;;;geo32;dummy;geo11;AND;;;geo32;dummy;geo42;AND"/>
+	<ObbTreeGPULocalMinDistance name="localMinDistance100"  alarmDistance="15"  contactDistance="10"  angleCone="0.25"  coneFactor="0.8"  useLMDFilters="0" />
+
+	<TruPhysicsAnimationLoop name="AnimationLoop"   />	
+	<!-- <TruPhysicsContactManager name="truPhysicsContactManager0"  response="ObbTreeGPUFrictionContact" /> -->
+	<RuleBasedContactManager name="Response" response="ObbTreeGPUFrictionContact" rules="0 * ObbTreeGPUFrictionContact?mu=1.5" />
+	<TruPhysicsPipeline name="truPhysicsPipelineTest5" />
+	<!--BruteForceDetection name="bruteForceDetection" /-->
+	<!-- <RobotConnector name="KUKA" /> -->
+	
+	<SceneColladaLoader name="DAE_blendfix"  filename="Powerball_und_SVH_grobeFassung_mitFingerkuppen.dae"  generateCollisionModels="1"  explicitWhitelist="1" useContactManifolds="1" maxNumberOfLineLineManifolds="2" maxNumberOfFaceVertexManifolds="2"/>
+	
+	<!-- <TruPhysicsColladaToolHandler template="Rigid3d"  armatureEndNodePath="DAE_blendfix_scene/HoLLiE/hollie_real_base_x_joint/hollie_real_left_arm_0_joint/hollie_real_left_arm_1_joint/hollie_real_left_arm_2_joint/hollie_real_left_arm_3_joint/hollie_real_left_arm_4_joint/hollie_real_left_arm_5_joint/hollie_real_left_arm_6_joint/hollie_real_left_hand_base_joint/hollie_real_left_hand_f4/hollie_real_left_hand_f1/hollie_real_left_hand_f2/hollie_real_left_hand_f3/hollie_real_left_hand_index_spread/hollie_real_left_hand_Index_Finger_Proximal/hollie_real_left_hand_Index_Finger_Distal/hollie_real_left_hand_j14/VIS_VIS_VIS_hollie_real_left_hand_t_0_0_0/rigid_16"  toolNodePath="hand_Fingerkuppe_ZeigeFinger_rigid"  /> -->
+	
+	<!-- <TruPhysicsColladaToolHandler template="Rigid3d"  armatureEndNodePath="DAE_blendfix_scene/HoLLiE/hollie_real_base_x_joint/hollie_real_left_arm_0_joint/hollie_real_left_arm_1_joint/hollie_real_left_arm_2_joint/hollie_real_left_arm_3_joint/hollie_real_left_arm_4_joint/hollie_real_left_arm_5_joint/hollie_real_left_arm_6_joint/hollie_real_left_hand_base_joint/hollie_real_left_hand_f4/hollie_real_left_hand_Thumb_Opposition/hollie_real_left_hand_Thumb_Helper/hollie_real_left_hand_Thumb_Flexion/hollie_real_left_hand_j3/hollie_real_left_hand_j4/VIS_VIS_VIS_hollie_real_left_hand_c_0_0_0/rigid_12"  toolNodePath="hand_Fingerkuppe_Daumen_rigid"  /> -->
+	
+    <GenericConstraintSolver name="genericConstraintSolver"  maxIterations="250"  tolerance="0.001" />
+	
+	<!-- <PythonScriptController filename="controller_manuell.py" classname="robotJointController" /> -->
+	
+	<!-- <Node 	 name="cube_Rigid"  >
+		<MechanicalObject template="Rigid" name="cube_Object"  position="0 0 0 0 0 0 1"  velocity="0 0 0 0 0 0"  force="0 0 0 0 0 0"  externalForce="0 0 0 0 0 0"  derivX="0 0 0 0 0 0"  restScale="1"  scale="20" rotation='0 0 0' translation="50 500 -82"  quaternion="0 0 0 1"  translation2="0 0 0"  rotation2="0 0 0" />
+		<UniformMass template="Rigid" name="cube_UniformMass"  totalmass="10" />
+		<CGLinearSolver template="GraphScattered" name="cube_CGLinearSolver" />
+		<EulerImplicitSolver name="cube_EulerImplicitSolver" />
+		<PrecomputedConstraintCorrection template="Rigid" name="cube_PrecomputedConstraintCorrection" />
+		<FixedConstraint template="Rigid" name="cube_Constraint"  indices="0" />
+		<Node 	 name="cube_CollisionNode"  >
+			<MeshTopology name="cube_CollisionTopology"  fileTopology="cube_2x2_quads.obj" />
+			<MechanicalObject template="Vec3d" name="cube_CollisionObject"  position="0 0 0"  velocity="0 0 0"  force="0 0 0"  externalForce="0 0 0"  derivX="0 0 0"  restScale="1"  translation="0 0 0"  rotation="0 0 0"  scale="20" />
+			<RigidMapping template="Rigid,Vec3d" name="cube_CollisionRigidMap"  input="@../cube_Object"  output="@cube_CollisionObject" />
+			<ObbTreeGPUCollisionModel template="StdVectorTypes&lt;Vec&lt;3,double&gt;,Vec&lt;3,double&gt;,double&gt; &gt;" name="cube_GPUCollisionModel"  drawOBBHierarchy="0"  useContactManifolds="1"  maxNumberOfLineLineManifolds="2"  maxNumberOfFaceVertexManifolds="3" />
+			<TPointModel template="Vec3d" name="cube_tPointModel1"  useContactManifolds="1"/>
+			<TLineModel template="Vec3d" name="cube_tLineModel2"  useContactManifolds="1"/>
+			<TTriangleModel template="Vec3d" name="cube_tTriangleModel3"  useContactManifolds="1"/>
+		</Node>
+		<Node 	 name="cube_VisualNode"  >
+			<OglModel template="ExtVec3f" name="cube_Visual"  fileMesh="@../cube_CollisionNode/cube_CollisionTopology.fileTopology"  translation="@../cube_CollisionNode/cube_CollisionObject.translation"  rotation="@../cube_CollisionNode/cube_CollisionObject.rotation"  scale3d="@../cube_CollisionNode/cube_CollisionObject.scale3d"  material="Default Diffuse 1 0.647059 0.647059 0 1 Ambient 1 0.239216 0.239216 0 1 Specular 0 1 1 1 1 Emissive 0 0 0 0 0 Shininess 0 45 "  primitiveType="DEFAULT"  blendEquation="GL_FUNC_ADD"  sfactor="GL_SRC_ALPHA"  dfactor="GL_ONE_MINUS_SRC_ALPHA" />
+			<RigidMapping template="Rigid,ExtVec3f" name="cube_VisialRigidMap"  input="@../cube_Object"  output="@cube_Visual" />
+		</Node>
+	</Node> -->
+	
+	<!-- <Node name='falling_cube_soft'>
+		<EulerImplicit name='odesolver' firstOrder='2' />
+		<SparseLDLSolver name='preconditioner' />
+		<MeshVTKLoader name='loader' filename='mesh/cube0.vtu' />
+		<TetrahedronSetTopologyContainer src='@loader' name='container' />
+		<TetrahedronSetTopologyModifier />
+		<TetrahedronSetTopologyAlgorithms template='Vec3d' />
+		<TetrahedronSetGeometryAlgorithms template='Vec3d' />
+		<MechanicalObject name='tetras' template='Vec3d' scale="20" rotation='0 0 0' translation="50 500 -82" />
+		<UniformMass totalmass='20' />
+		<TetrahedronFEMForceField template='Vec3d' name='FEM' method='large' poissonRatio='0.3' youngModulus='400' />
+		<LinearSolverConstraintCorrection/>
+		<Node name='collis'>
+			<MeshObjLoader name='loader' filename='cube_2x2_quads.obj' flipNormals='0' />
+			<TriangleSetTopologyContainer src='@loader' name='container' />
+			<MechanicalObject name='collisMO' template='Vec3d' scale3d="@../tetras.scale3d" rotation='@../tetras.rotation' translation="@../tetras.translation" />
+			<Triangle group='1'  useContactManifolds="1"  maxNumberOfManifolds="2" contactFriction="0.8"  whitelistForCollisionModels="Cylinder_006-mesh Cylinder_008-mesh Circle_006-mesh Circle_004-mesh table_tPointModel1 table_tLineModel2 table_tTriangleModel3" />
+			<Line group='1' useContactManifolds="1"  maxNumberOfManifolds="2"  contactFriction="0.8" whitelistForCollisionModels="Cylinder_006-mesh Cylinder_008-mesh Circle_006-mesh Circle_004-mesh table_tPointModel1 table_tLineModel2 table_tTriangleModel3"/>
+			<Point group='1'  useContactManifolds="1"  maxNumberOfManifolds="2" contactFriction="0.8" whitelistForCollisionModels="Cylinder_006-mesh Cylinder_008-mesh Circle_006-mesh Circle_004-mesh table_tPointModel1 table_tLineModel2 table_tTriangleModel3"/>
+			<BarycentricMapping/>
+		</Node>
+		<Node name='visu'>
+			<OglModel filename="cube_2x2_quads.obj" template='ExtVec3f' color="0.2 0.2 0.2" scale3d="@../tetras.scale3d" rotation='@../tetras.rotation' translation="@../tetras.translation" />
+			<BarycentricMapping/>
+		</Node>
+	</Node> -->
+	
+	<!-- <Node 	 name="falling_Soft"  >
+		<SparseGrid name="falling_MeshTopology" n="3 3 3" fileTopology="cube_2x2_quads.obj"/>
+		<MechanicalObject template="Vec3d" name="falling_Object"  position="0 0 0"  velocity="0 0 0"  force="0 0 0"  externalForce="0 0 0"  derivX="0 0 0"  restScale="1" translation="50 500 -77" rotation="0 0 0" scale3d="20 20 20" />
+		<UncoupledConstraintCorrection template="Vec3d" name="falling_UncoupledConstraintCorrection" />
+		<UniformMass template="Vec3d" name="uniformMass18" mass="0.02" />
+		<EulerImplicitSolver name="eulerImplicitSolver14" />
+		<CGLinearSolver template="GraphScattered" name="cGLinearSolver1"  iterations="100"  tolerance="1e-008"  threshold="1e-008"  warmStart="1" />
+		<Node 	 name="falling_CollisionNode"  >
+			<MeshTopology name="falling_CollisionTopology"  fileTopology="@../falling_MeshTopology.fileTopology" />
+			<MechanicalObject template="Vec3d" name="falling_CollisionObject"  position="0 0 0"  velocity="0 0 0"  force="0 0 0"  externalForce="0 0 0"  derivX="0 0 0"  restScale="1" />
+			<BarycentricMapping template="Vec3d,Vec3d" name="falling_CollisionIdentityMap"  input="@../falling_Object"  output="@./falling_CollisionObject" />
+			<TPointModel template="Vec3d" name="tPointModel2"  selfCollision="0"  bothSide="0"  computeNormals="0"  useContactManifolds="1"  maxNumberOfManifolds="2" contactFriction="0.8"  whitelistForCollisionModels="Cylinder_006-mesh Cylinder_008-mesh Circle_006-mesh Circle_004-mesh table_tPointModel1 table_tLineModel2 table_tTriangleModel3" />
+			<TLineModel template="Vec3d" name="tLineModel1"  selfCollision="0"  bothSide="0"  useContactManifolds="1"  maxNumberOfManifolds="2" contactFriction="0.8"  whitelistForCollisionModels="Cylinder_006-mesh Cylinder_008-mesh Circle_006-mesh Circle_004-mesh table_tPointModel1 table_tLineModel2 table_tTriangleModel3" />
+			<TTriangleModel template="Vec3d" name="tTriangleModel3"  selfCollision="0"  bothSide="0"  useContactManifolds="1"  maxNumberOfManifolds="2" contactFriction="0.8"  whitelistForCollisionModels="Cylinder_006-mesh Cylinder_008-mesh Circle_006-mesh Circle_004-mesh table_tPointModel1 table_tLineModel2 table_tTriangleModel3" />
+		</Node>
+		<Node 	 name="falling_VisualNode"  >
+			<OglModel template="ExtVec3f" name="falling_Visual"  fileMesh="@../falling_CollisionNode/falling_CollisionTopology.fileTopology"  translation="@../falling_CollisionNode/falling_CollisionObject.translation"  rotation="@../falling_CollisionNode/falling_CollisionObject.rotation"  scale3d="@../falling_CollisionNode/falling_CollisionObject.scale3d"  material="Default Diffuse 1 0.647059 0.647059 0 1 Ambient 1 0.239216 0.239216 0 1 Specular 0 1 1 1 1 Emissive 0 0 0 0 0 Shininess 0 45 "  primitiveType="DEFAULT"  blendEquation="GL_FUNC_ADD"  sfactor="GL_SRC_ALPHA"  dfactor="GL_ONE_MINUS_SRC_ALPHA" />
+			<BarycentricMapping template="Vec3d,ExtVec3f" name="falling_VisualIdentityMapping"  input="@../falling_Object"  output="@falling_Visual" />
+		</Node>
+		<Node 	 name="FF_node"  >
+			<SparseGrid name="FF_CollisionTopology" n="3 3 3" fileTopology="cube_2x2_quads.obj"/>
+			<MechanicalObject template="Vec3d" name="FF_Object"  position="0 0 0"  velocity="0 0 0"  force="0 0 0"  externalForce="0 0 0"  derivX="0 0 0" scale3d="20 20 20"  restScale="1" />
+			<HexahedronFEMForceField name="FEM" method='large' poissonRatio='0.3' youngModulus='1800000' />
+			<IdentityMapping template="Vec3d,Vec3d" name="falling_CollisionIdentityMap"  input="@../falling_Object"  output="@./FF_Object" />
+		</Node>
+	</Node> -->
+	
+	<!-- <Node 	 name="table_Rigid"  >
+		<MechanicalObject template="Rigid" name="table_Object"  position="0 0 0 0 0 0 1"  velocity="0 0 0 0 0 0"  force="0 0 0 0 0 0"  externalForce="0 0 0 0 0 0"  derivX="0 0 0 0 0 0"  restScale="1"  translation="0 100 30.46"  rotation="90 0 0"  quaternion="0 0 0 1"  scale3d="1000 1000 1000"  translation2="0 0 0"  rotation2="0 0 0" />
+		<UniformMass template="Rigid" name="table_UniformMass"  totalmass="1000" />
+		<CGLinearSolver template="GraphScattered" name="table_CGLinearSolver" />
+		<EulerImplicitSolver name="table_EulerImplicitSolver" />
+		<PrecomputedConstraintCorrection template="Rigid" name="table_PrecomputedConstraintCorrection" />
+		<FixedConstraint template="Rigid" name="table_Constraint"  indices="0" />
+		<Node 	 name="table_CollisionNode"  >
+			<MeshTopology name="table_CollisionTopology"  fileTopology="robotSceneTable.obj" />
+			<MechanicalObject template="Vec3d" name="table_CollisionObject"  position="0 0 0"  velocity="0 0 0"  force="0 0 0"  externalForce="0 0 0"  derivX="0 0 0"  restScale="1"  translation="0 0 0"  rotation="0 0 0"  scale3d="1000 1000 1000" />
+			<RigidMapping template="Rigid,Vec3d" name="table_CollisionRigidMap"  input="@../table_Object"  output="@table_CollisionObject" />
+			<ObbTreeGPUCollisionModel template="StdVectorTypes&lt;Vec&lt;3,double&gt;,Vec&lt;3,double&gt;,double&gt; &gt;" name="table_GPUCollisionModel"  drawOBBHierarchy="0"  useContactManifolds="1"  maxNumberOfLineLineManifolds="2"  maxNumberOfFaceVertexManifolds="3" />
+			<TPointModel template="Vec3d" name="table_tPointModel1"  useContactManifolds="1"/>
+			<TLineModel template="Vec3d" name="table_tLineModel2"  useContactManifolds="1"/>
+			<TTriangleModel template="Vec3d" name="table_tTriangleModel3"  useContactManifolds="1"/>
+		</Node>
+		<Node 	 name="table_VisualNode"  >
+			<OglModel template="ExtVec3f" name="table_Visual"  fileMesh="@../table_CollisionNode/table_CollisionTopology.fileTopology"  translation="@../table_CollisionNode/table_CollisionObject.translation"  rotation="@../table_CollisionNode/table_CollisionObject.rotation"  scale3d="@../table_CollisionNode/table_CollisionObject.scale3d"  material="Default Diffuse 1 0.647059 0.647059 0 1 Ambient 1 0.239216 0.239216 0 1 Specular 0 1 1 1 1 Emissive 0 0 0 0 0 Shininess 0 45 "  primitiveType="DEFAULT"  blendEquation="GL_FUNC_ADD"  sfactor="GL_SRC_ALPHA"  dfactor="GL_ONE_MINUS_SRC_ALPHA" />
+			<RigidMapping template="Rigid,ExtVec3f" name="table_VisialRigidMap"  input="@../table_Object"  output="@table_Visual" />
+		</Node>
+	</Node> -->
+</Node>

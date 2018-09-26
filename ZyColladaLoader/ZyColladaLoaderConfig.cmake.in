@@ -1,0 +1,12 @@
+# CMake package configuration file for the ColladaSceneLoader library
+
+@PACKAGE_INIT@
+
+if(NOT TARGET ColladaSceneLoader)
+	include("${CMAKE_CURRENT_LIST_DIR}/ColladaSceneLoader.cmake")
+endif()
+
+check_required_components(ColladaSceneLoader)
+
+set(COLLADASCENELOADER_LIBRARIES ColladaSceneLoader)
+set(COLLADASCENELOADER_INCLUDE_DIRS @PACKAGE_COLLADASCENELOADER_INCLUDE_DIR@)

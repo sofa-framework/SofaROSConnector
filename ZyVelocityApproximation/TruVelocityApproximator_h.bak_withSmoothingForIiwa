@@ -22,8 +22,8 @@
 *                                                                             *
 * Contact information: contact@sofa-framework.org                             *
 ******************************************************************************/
-#ifndef TRUPHYSICS_TRUVELOCITYAPPROXIMATION_H
-#define TRUPHYSICS_TRUVELOCITYAPPROXIMATION_H
+#ifndef ZYKLIO_TRUVELOCITYAPPROXIMATION_H
+#define ZYKLIO_TRUVELOCITYAPPROXIMATION_H
 
 #include "initTruVelocityApproximation.h"
 
@@ -76,20 +76,20 @@ namespace Zyklio
         using namespace sofa::component;
         using namespace sofa::component::controller;
 
-        class SOFA_TRUVELOCITYAPPROXIMATION_API TruVelocityApproximator : public /*virtual*/ core::objectmodel::BaseObject
+        class SOFA_ZYVELOCITYAPPROXIMATION_API ZyVelocityApproximator : public /*virtual*/ core::objectmodel::BaseObject
         {
         public:
             typedef core::objectmodel::BaseObject Inherit;
 
-            SOFA_CLASS(TruVelocityApproximator, core::objectmodel::BaseObject);
+            SOFA_CLASS(ZyVelocityApproximator, core::objectmodel::BaseObject);
 
             typedef sofa::core::objectmodel::BaseContext BaseContext;
             typedef sofa::core::objectmodel::BaseObjectDescription BaseObjectDescription;
 
         public:
 
-            TruVelocityApproximator();
-            ~TruVelocityApproximator() {};
+            ZyVelocityApproximator();
+            ~ZyVelocityApproximator() {};
 
             void moveObjectToPosition(simulation::common::MechanicalOperations& mop, sofa::core::behavior::MultiVecCoord& pos/*, sofa::core::behavior::MultiVecCoord& freePos*/);
             void setObjectPosition(defaulttype::RigidTypes::VecCoord newPosition) { currentPosition = newPosition; positionChange = true; };
@@ -133,7 +133,7 @@ namespace Zyklio
             typedef sofa::helper::fixed_array<std::string, 13> currentVelocityApproximationDataType;
             Data < sofa::helper::vector< currentVelocityApproximationDataType > > currentVelocityApproximationData; // Unfortunately, using the type "velocityApproximationData" is not possible with Data 
                     
-#ifdef TRUPHYSICS_DEMO
+#ifdef ZYKLIO_DEMO
             template<class T>
             static bool canCreate(T*& obj, core::objectmodel::BaseContext* context, core::objectmodel::BaseObjectDescription* arg)
             {
@@ -237,4 +237,4 @@ namespace Zyklio
 
 } // namespace Zyklio
 
-#endif //TRUPHYSICS_TRUVELOCITYAPPROXIMATION_H
+#endif //ZYKLIO_TRUVELOCITYAPPROXIMATION_H

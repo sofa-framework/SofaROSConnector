@@ -27,7 +27,7 @@
 namespace Zyklio
 {
 
-    namespace  ROSConnectionManager
+    namespace ROSConnectionManager
     {
 
         void initExternalModule()
@@ -41,7 +41,7 @@ namespace Zyklio
 
         const char* getModuleName()
         {
-            return "Truphysics ROS Connection Manager";
+            return "Zykl.io ROS Connection Manager";
         }
 
         const char* getModuleVersion()
@@ -72,6 +72,6 @@ namespace Zyklio
 /// Use the SOFA_LINK_CLASS macro for each class, to enable linking on all platforms
 SOFA_LINK_CLASS(ZyROSConnectionManager)
 //SOFA_LINK_CLASS(ZyROSConnector)
-//SOFA_LINK_CLASS(TruRosConnectorTopicSubscriberIface)
+//SOFA_LINK_CLASS(ZyROSConnectorTopicSubscriberIface)
 //SOFA_LINK_CLASS(ZyROSJointStateListener)
 //SOFA_LINK_CLASS(ZyROSLogListener)

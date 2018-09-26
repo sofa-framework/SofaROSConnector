@@ -1,0 +1,12 @@
+# CMake package configuration file for the Assimp library
+
+@PACKAGE_INIT@
+
+if(NOT TARGET assimp)
+	include("${CMAKE_CURRENT_LIST_DIR}/assimp.cmake")
+endif()
+
+check_required_components(assimp)
+
+set(ASSIMP_LIBRARIES assimp)
+set(ASSIMP_INCLUDE_DIRS @PACKAGE_ASSIMP_INCLUDE_DIR@)

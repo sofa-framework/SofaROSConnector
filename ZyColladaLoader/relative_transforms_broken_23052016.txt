@@ -1,0 +1,244 @@
+#if 0
+			Assimp::ColladaParser::NodeLibrary& nodeLibrary = parser->getNodeLibrary();
+			if (transformHelper != NULL)
+			{
+				//transformHelper->addObjectTransform(k_ms.modelName, ,);
+				std::cout << "=== Instance kinematics scenes: Search for link between KinematicsModelInstance and Node ===" << std::endl;
+				//std::cout << "=== InstanceKinematicsModel given: " << kin_model_instance_id << " ===" << std::endl;
+				Assimp::ColladaParser::InstanceKinematicsSceneLibrary& iks = parser->getInstanceKinematicsScenesLibrary();
+				
+				for (Assimp::ColladaParser::InstanceKinematicsSceneLibrary::const_iterator iks_it = iks.begin(); iks_it != iks.end(); ++iks_it)
+				{
+					std::cout << " * " << iks_it->param << ": node = " << iks_it->node << std::endl;
+					if (!iks_it->bind_kinematics_model.empty())
+					{
+						for (std::map<std::string, std::string>::const_iterator kmi_it = kinematicModelInstances.begin(); kmi_it != kinematicModelInstances.end(); ++kmi_it)
+						{
+							if (kmi_it->second.compare(iks_it->param) == 0)
+							{
+								std::cout << "   string match in param found; search target node: " << iks_it->node << std::endl;
+
+								Assimp::Collada::Node* target_node = NULL;
+								for (Assimp::ColladaParser::NodeLibrary::iterator node_it = nodeLibrary.begin(); node_it != nodeLibrary.end(); ++node_it)
+								{
+									std::cout << "    NODE: " << node_it->second->mName << " compared with " << iks_it->node << ": " << node_it->second->mName.compare(iks_it->node) << std::endl;
+									if (node_it->second->mName.compare(iks_it->node) == 0)
+									{
+										target_node = node_it->second;
+										break;
+									}
+									
+									const Assimp::Collada::Node* nodeCandidate = colladaLoader->FindNode(node_it->second, iks_it->node);
+									if (nodeCandidate != NULL)
+									{
+										target_node = const_cast<Assimp::Collada::Node*>(nodeCandidate);
+										break;
+									}
+								}
+
+								// FA: It should be noted, and this is important: Currently, this only evaluates the transforms for ONE NODE without taking the ancestor hierarchy into account!!!
+								// FA: So yes, this is-a @todo
+								if (target_node != NULL)
+								{
+									std::cout << "    Target node identified: " << target_node->mName << std::endl;
+									std::cout << "    Transform stack: " << target_node->mTransforms.size() << std::endl;
+									Vector3 obj_world_translation;
+									Quat obj_world_rotation;
+									for (int m = 0; m < target_node->mTransforms.size(); ++m)
+									{
+										if (target_node->mTransforms[m].mType == Assimp::Collada::TF_TRANSLATE ||
+											target_node->mTransforms[m].mType == Assimp::Collada::TF_ROTATE ||
+											target_node->mTransforms[m].mType == Assimp::Collada::TF_MATRIX)
+										{
+											std::cout << "      - " << m << ": " << std::endl;
+											for (int r = 0; r < 16; ++r)
+											{
+												std::cout << target_node->mTransforms[m].f[r];
+												if (r % 4 == 0)
+													std::cout << std::endl;
+												else
+													std::cout << " ";
+											}
+											std::cout << std::endl;
+
+											Vector3 obj_translation;
+											Quaternion obj_orientation;
+											aiMatrix4x4 obj_matrix(target_node->mTransforms[m].f[0], target_node->mTransforms[m].f[1], target_node->mTransforms[m].f[2], target_node->mTransforms[m].f[3],
+												target_node->mTransforms[m].f[4], target_node->mTransforms[m].f[5], target_node->mTransforms[m].f[6], target_node->mTransforms[m].f[7],
+												target_node->mTransforms[m].f[8], target_node->mTransforms[m].f[9], target_node->mTransforms[m].f[10], target_node->mTransforms[m].f[11],
+												target_node->mTransforms[m].f[12], target_node->mTransforms[m].f[13], target_node->mTransforms[m].f[14], target_node->mTransforms[m].f[15]);
+
+											DecomposeAiMatrix(obj_matrix, obj_translation, obj_orientation);
+											obj_world_translation += obj_translation;
+											// Assuming rotation around center of mass/object origin; or whatever is not "off-center"
+											obj_world_rotation = obj_world_rotation * obj_orientation;
+										}
+									}
+
+									//transformHelper->addObjectTransform(k_ms.modelName, obj_world_translation, obj_world_rotation);
+									//std::cout << " --> add ROOT JOINT: " << k_ms.modelName << std::endl;
+
+									// SAME transform for root joint as for object node; does not necessarily make sense, does it?
+									// transformHelper->createJointParentTransform(k_ms.modelName, Vector3(0, 0, 0), Quaternion(0, 0, 0, 1));
+									transformHelper->createJointParentTransform(k_ms.modelName, obj_world_translation, obj_world_rotation);
+								}
+							}
+						}
+					}
+				}
+			}
+
+			Assimp::ColladaParser::LinkLibrary linkLibrary = parser->getLinkLibrary();
+
+			for (std::map<unsigned int, std::vector<std::string> >::const_iterator it = k_ms.kinematicJointsByLevel.begin(); it != k_ms.kinematicJointsByLevel.end(); ++it)
+			{
+				std::cout << "Level " << it->first << " child joints: " << it->second.size() << std::endl;
+				
+				/*if (it->first == 0)
+				{
+					std::cout << " LEVEL 0: Create joint parent transform!" << std::endl;
+					// SAME transform for root joint as for object node; does not necessarily make sense, does it?
+					transformHelper->createJointParentTransform(it->second.at(0), Vector3(0, 0, 0), Quaternion(0, 0, 0, 1));
+				}*/
+
+				const std::vector<std::string>& child_joints = it->second;
+				for (int k = 0; k < child_joints.size(); ++k)
+				{
+					std::cout << "  - " << child_joints[k] << std::endl;
+					if (transformHelper != NULL)
+					{
+						std::string parent_transform = kinModel.preLinks.find(child_joints[k])->second;
+						Assimp::ColladaParser::LinkLibrary::const_iterator link_it = linkLibrary.find(child_joints[k]);
+
+						const Assimp::Collada::Link& current_link = link_it->second;
+
+						Vector3 link_translation_global(link_it->second.trans_x, link_it->second.trans_x, link_it->second.trans_z);
+						Quat link_orientation_global(link_it->second.quat_x, link_it->second.quat_y, link_it->second.quat_z, link_it->second.quat_w);
+
+						/*Vector3 rel_trans;
+						Quaternion rel_quat;
+						if (current_link.relativeAncestorTransforms.size() > 0)
+						{
+							std::cout << "    Relative transforms to root joint: " << current_link.relativeAncestorTransforms.size() << std::endl;
+							
+							int t_idx = 0;
+
+							aiMatrix4x4 res;
+
+							for (std::vector<Assimp::Collada::Transform>::const_iterator it = current_link.relativeAncestorTransforms.begin(); it != current_link.relativeAncestorTransforms.end(); ++it)
+							{
+								const Assimp::Collada::Transform& tf = *it;
+								std::cout << "  * " << t_idx << " of type";
+								t_idx++;
+
+								switch (tf.mType)
+								{
+								case Assimp::Collada::TF_LOOKAT:
+								{
+									std::cout << " TF_LOOKAT: ";
+									aiVector3D pos(tf.f[0], tf.f[1], tf.f[2]);
+									aiVector3D dstPos(tf.f[3], tf.f[4], tf.f[5]);
+									aiVector3D up = aiVector3D(tf.f[6], tf.f[7], tf.f[8]).Normalize();
+									aiVector3D dir = aiVector3D(dstPos - pos).Normalize();
+									aiVector3D right = (dir ^ up).Normalize();
+
+									std::cout << " up = " << up.x << "," << up.y << "," << up.z << "; dir = " << dir.x << "," << dir.y << "," << dir.z << "; right = " << right.x << "," << right.y << "," << right.z;
+
+									res *= aiMatrix4x4(
+										right.x, up.x, -dir.x, pos.x,
+										right.y, up.y, -dir.y, pos.y,
+										right.z, up.z, -dir.z, pos.z,
+										0, 0, 0, 1);
+
+									break;
+								}
+								case Assimp::Collada::TF_ROTATE:
+								{
+									std::cout << " TF_ROTATE: ";
+									aiMatrix4x4 rot;
+									float angle = tf.f[3] * float(AI_MATH_PI) / 180.0f;
+									aiVector3D axis(tf.f[0], tf.f[1], tf.f[2]);
+									aiMatrix4x4::Rotation(angle, axis, rot);
+									res *= rot;
+
+									std::cout << " axis = " << axis.x << "," << axis.y << "," << axis.z << "; angle in radians = " << angle << "; angle in degrees = " << tf.f[3];
+
+									break;
+								}
+								case Assimp::Collada::TF_TRANSLATE:
+								{
+									std::cout << " TF_TRANSLATE: ";
+									aiMatrix4x4 trans;
+									aiMatrix4x4::Translation(aiVector3D(tf.f[0], tf.f[1], tf.f[2]), trans);
+									res *= trans;
+
+									std::cout << " translate by " << tf.f[0] << "," << tf.f[1] << "," << tf.f[2] << " to " << res.a4 << "," << res.b4 << "," << res.c4;
+
+									break;
+								}
+								case Assimp::Collada::TF_SCALE:
+								{
+									std::cout << " TF_SCALE: ";
+									aiMatrix4x4 scale(tf.f[0], 0.0f, 0.0f, 0.0f, 0.0f, tf.f[1], 0.0f, 0.0f, 0.0f, 0.0f, tf.f[2], 0.0f,
+										0.0f, 0.0f, 0.0f, 1.0f);
+									res *= scale;
+
+									std::cout << " scale by " << tf.f[0] << "," << tf.f[1] << "," << tf.f[2];
+
+									break;
+								}
+								case Assimp::Collada::TF_SKEW:
+									// TODO: (thom)
+									std::cout << " TF_SKEW: NOT IMPLEMENTED";
+									break;
+								case Assimp::Collada::TF_MATRIX:
+								{
+									std::cout << " TF_MATRIX: " << std::endl;
+									aiMatrix4x4 mat(tf.f[0], tf.f[1], tf.f[2], tf.f[3], tf.f[4], tf.f[5], tf.f[6], tf.f[7],
+										tf.f[8], tf.f[9], tf.f[10], tf.f[11], tf.f[12], tf.f[13], tf.f[14], tf.f[15]);
+
+									res *= mat;
+
+									std::cout << "      " << tf.f[0] << "," << tf.f[1] << "," << tf.f[2] << "," << tf.f[3] << std::endl;
+									std::cout << "      " << tf.f[4] << "," << tf.f[5] << "," << tf.f[6] << "," << tf.f[7] << std::endl;
+									std::cout << "      " << tf.f[8] << "," << tf.f[9] << "," << tf.f[10] << "," << tf.f[11] << std::endl;
+									std::cout << "      " << tf.f[12] << "," << tf.f[13] << "," << tf.f[14] << "," << tf.f[15] << std::endl;
+
+									break;
+								}
+								default:
+									break;
+								}
+								std::cout << std::endl;
+								std::cout << "    --> total translation = " << res.a4 << "," << res.b4 << "," << res.c4 << std::endl;
+								aiQuaternion quat(aiMatrix3x3(res.a1, res.b1, res.c1,
+									res.a2, res.b2, res.c2,
+									res.a3, res.b3, res.c3));
+								std::cout << "    --> total rotation    = " << quat.x << "," << quat.y << "," << quat.z << "," << quat.w << std::endl;
+							}
+							
+							const Assimp::Collada::Transform& tf = current_link.relativeAncestorTransforms.at(current_link.relativeAncestorTransforms.size() - 1);
+							
+							aiMatrix4x4 mat(tf.f[0], tf.f[1], tf.f[2], tf.f[3], tf.f[4], tf.f[5], tf.f[6], tf.f[7],
+								tf.f[8], tf.f[9], tf.f[10], tf.f[11], tf.f[12], tf.f[13], tf.f[14], tf.f[15]);
+
+							
+							DecomposeAiMatrix(mat, rel_trans, rel_quat);
+							std::cout << "     relative translation to parent: " << rel_trans << std::endl;
+							std::cout << "     relative orientation to parent: " << rel_quat << std::endl;
+						}
+						else
+						{
+							std::cout << "    No relative predecessor transforms registered: Root link named " << current_link.name << " with preLink " << current_link.preLink << std::endl;
+						}*/
+
+						Vector3 rel_trans;
+						Quaternion rel_quat;
+
+
+						transformHelper->addJointTransform(k_ms.modelName, parent_transform, child_joints[k], rel_trans, rel_quat);
+					}
+				}
+				std::cout << std::endl;
+			}
+#endif

@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<Node 	 name="Root"  gravity="0 0 -9.81" >
+	<RequiredPlugin name="RobotConnector" />
+	<RequiredPlugin name="ColladaSceneLoader" />	
+	<RequiredPlugin name="ObbTreeGPU" />
+	<RequiredPlugin name="MultiThreading" />
+	<RequiredPlugin name="TruPhysics" />
+	
+	<VisualStyle name="displayFlags"  displayFlags="showVisual showBehavior hideCollision hideMapping hideRendering hideNormals" />
+	
+	<ObbTreeGPUCollisionDetection_Threaded name="TruPhysics" numStreamedWorkerUnits="6" streamedWorkerResultMinSize="2048" streamedWorkerResultMaxSize="4096" numWorkerThreads="5"
+	fakeGrippingEventSequence="geo32;dummy;geo20::geo23;AND;;;geo32;dummy;geo11;AND;;;geo32;dummy;geo42;AND"/>
+	<ObbTreeGPULocalMinDistance name="localMinDistance100"  alarmDistance="1.5"  contactDistance="0.3"  angleCone="0.25"  coneFactor="0.8"  useLMDFilters="0" />
+
+	<TruPhysicsAnimationLoop name="AnimationLoop"   />	
+	<TruPhysicsContactManager name="truPhysicsContactManager0"  response="ObbTreeGPUFrictionContact" />
+	<TruPhysicsPipeline name="truPhysicsPipelineTest5" />
+	<!--BruteForceDetection name="bruteForceDetection" /-->
+	<RobotConnector name="KUKA" />
+	
+	<SceneColladaLoader name="DAE"  filename="KR16_mit_Werkzeug_und_Werkstueck_2_bodenghost.dae"  generateCollisionModels="0"  explicitWhitelist="1" useContactManifolds="1" maxNumberOfLineLineManifolds="2" maxNumberOfFaceVertexManifolds="2"/>
+	
+    <GenericConstraintSolver name="genericConstraintSolver"  maxIterations="250"  tolerance="0.001" />	 
+	
+</Node>

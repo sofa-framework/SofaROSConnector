@@ -7,7 +7,7 @@ using namespace Zyklio::ROSConnector;
 //class Zyklio::ROSConnector::TruRosBoolListenerPrivate
 //{
 //    public:
-//        Zyklio::VelocityApproximation::TruVelocityApproximator* velocityApproximator;
+//        Zyklio::VelocityApproximation::ZyVelocityApproximator* velocityApproximator;
 //};
 
 SOFA_DECL_CLASS(ZyROSBoolListener)

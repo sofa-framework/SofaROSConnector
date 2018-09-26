@@ -29,9 +29,9 @@
 #include <sofa/core/objectmodel/BaseContext.h>
 #include <sofa/core/ObjectFactory.h>
 
-#ifdef TRUPHYSICS_DEMO
+#ifdef ZYKLIO_DEMO
 #include <sofa/simulation/common/Simulation.h>
-#endif //TRUPHYSICS_DEMO
+#endif //ZYKLIO_DEMO
 
 //#define TP_VELOCITY_APPROXIMATION_DEBUG
 
@@ -70,7 +70,7 @@ namespace Zyklio
 
         void ZyGripping::init()
         {
-#ifdef TRUPHYSICS_DEMO
+#ifdef ZYKLIO_DEMO
             std::string sceneHash = sofa::simulation::getSimulation()->getSceneHash();
 
             sofa::helper::hashCheckHelper hch;
@@ -79,7 +79,7 @@ namespace Zyklio
                 std::cout << "This plugin can only be used with the Zyklio demo and the correct demo scene." << std::endl;
                 exit(1);
             }
-#endif //TRUPHYSICS_DEMO
+#endif //ZYKLIO_DEMO
             Inherit::init();
 
             gripperMap = getContext()->get< mapping::RigidMapping<defaulttype::Rigid3dTypes, defaulttype::Vec3dTypes> >();

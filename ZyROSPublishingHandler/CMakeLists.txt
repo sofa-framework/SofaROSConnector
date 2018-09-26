@@ -30,6 +30,7 @@ target_link_libraries(${PROJECT_NAME} ZyROSConnector)
 target_link_libraries(${PROJECT_NAME} ZyROSConnectionManager)
 target_link_libraries(${PROJECT_NAME} ${ROS_LIBRARY} ${ROS_CPP_LIBRARY} ${ROS_CPPCOMMON_LIBRARY} ${ROS_TIME_LIBRARY} ${ROS_CONSOLE_LIBRARY} ${ROS_CPP_SERIALIZATION_LIBRARY})
 
-set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER "TruLibs")
+set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER "Plugins")
+set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "_d")
 
 sofa_create_package(${PROJECT_NAME} "0.0.1" ${PROJECT_NAME} ${PROJECT_NAME})

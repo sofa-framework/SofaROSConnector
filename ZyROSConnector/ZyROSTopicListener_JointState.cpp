@@ -7,7 +7,7 @@ using namespace Zyklio::ROSConnector;
 class Zyklio::ROSConnector::TruRosJointStateListenerPrivate
 {
     public:
-        Zyklio::VelocityApproximation::TruVelocityApproximator* velocityApproximator;
+        Zyklio::VelocityApproximation::ZyVelocityApproximator* velocityApproximator;
 };
 
 SOFA_DECL_CLASS(ZyROSJointStateListener)
@@ -74,15 +74,15 @@ void ZyROSJointStateListener::setContext(BaseContext* bscon, bool searchForObjec
 
     if (searchForObjectHandler)
     {
-        privateData->velocityApproximator = sceneGraphContext->getRootContext()->get< Zyklio::VelocityApproximation::TruVelocityApproximator >();
+        privateData->velocityApproximator = sceneGraphContext->getRootContext()->get< Zyklio::VelocityApproximation::ZyVelocityApproximator >();
         
         if (privateData->velocityApproximator)
         {
-            std::cout << "(ZyROSJointStateListener::setContext) Found TruVelocityApproximator " << privateData->velocityApproximator->getName() << std::endl;
+            std::cout << "(ZyROSJointStateListener::setContext) Found ZyVelocityApproximator " << privateData->velocityApproximator->getName() << std::endl;
         }
         else
         {
-            std::cout << "(ZyROSJointStateListener::setContext) Could not find TruVelocityApproximator!" << std::endl;
+            std::cout << "(ZyROSJointStateListener::setContext) Could not find ZyVelocityApproximator!" << std::endl;
         }
     }
 };
@@ -90,18 +90,18 @@ void ZyROSJointStateListener::setContext(BaseContext* bscon, bool searchForObjec
 void ZyROSJointStateListener::handleJointUpdateMessage()
 {
 	const sensor_msgs::JointState& msg = m_topicSubscriber->getLatestMessage();
-    //msg_info("ZyROSJointStateListener") << "Joint update message received: " << msg;
+    msg_info("ZyROSJointStateListener") << "Joint update message received: " << msg;
 
     if (privateData->velocityApproximator)
     {
-        sofa::helper::vector<Zyklio::VelocityApproximation::TruVelocityApproximator::jointData> jntDtVec;
+        sofa::helper::vector<Zyklio::VelocityApproximation::ZyVelocityApproximator::jointData> jntDtVec;
         for (int k = 0; k < msg.name.size(); k++)
         {
-            Zyklio::VelocityApproximation::TruVelocityApproximator::jointData jntDt(msg.position[k], msg.name[k]);
+            Zyklio::VelocityApproximation::ZyVelocityApproximator::jointData jntDt(msg.position[k], msg.name[k]);
             jntDtVec.push_back(jntDt);
         }
 
-        privateData->velocityApproximator->pushJointMsg(Zyklio::VelocityApproximation::TruVelocityApproximator::jointMsg(std::pair<unsigned int, double>(msg.header.seq, msg.header.stamp.toSec()), jntDtVec));
+        privateData->velocityApproximator->pushJointMsg(Zyklio::VelocityApproximation::ZyVelocityApproximator::jointMsg(std::pair<unsigned int, double>(msg.header.seq, msg.header.stamp.toSec()), jntDtVec));
     }
     else
     {
@@ -109,7 +109,6 @@ void ZyROSJointStateListener::handleJointUpdateMessage()
     }
 }
 
-//void ZyROSJointStateListener::updateJointState(const sensor_msgs::JointState::ConstPtr& joint_state)
 void ZyROSJointStateListener::updateJointState(const sensor_msgs::JointState& joint_state)
 {
 	boost::posix_time::ptime curTime = boost::posix_time::microsec_clock::local_time(); // Cebit 2016 code: the time stuff is tested and works (apparently)
@@ -118,7 +117,7 @@ void ZyROSJointStateListener::updateJointState(const sensor_msgs::JointState& jo
 	{
 		for (size_t k = 0; k < joint_state.name.size(); k++)
 		{
-			std::cout << joint_state.name[k] << ";";
+            //std::cout << joint_state.name[k] << ";";
 			if (m_arbitraryController != NULL)
 				m_arbitraryController->setRotValueRadByName(joint_state.position[k], joint_state.name[k]);
 

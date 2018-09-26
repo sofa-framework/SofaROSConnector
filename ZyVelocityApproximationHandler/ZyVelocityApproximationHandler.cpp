@@ -7,7 +7,7 @@ using namespace Zyklio::VelocityApproximation;
 class Zyklio::VelocityApproximation::ZyROSVelocityApproximatorPrivate
 {
     public:
-        TruVelocityApproximator* velocityApproximator;
+        ZyVelocityApproximator* velocityApproximator;
 };
 
 ZyROSVelocityApproximationHandler::ZyROSVelocityApproximationHandler()
@@ -23,16 +23,16 @@ ZyROSVelocityApproximationHandler::~ZyROSVelocityApproximationHandler()
 
 bool ZyROSVelocityApproximationHandler::setVelocityApproximatorByContext(sofa::core::objectmodel::BaseContext* cntxt)
 {
-    velocityApproximatorPrivate->velocityApproximator = cntxt->getRootContext()->get< TruVelocityApproximator>();
+    velocityApproximatorPrivate->velocityApproximator = cntxt->getRootContext()->get< ZyVelocityApproximator>();
 
     if (velocityApproximatorPrivate->velocityApproximator)
     {
-        std::cout << "(ZyROSVelocityApproximationHandler::setROSConnectionManagerByContext) Found the TruVelocityApproximator " << velocityApproximatorPrivate->velocityApproximator->getName() << std::endl;
+        std::cout << "(ZyROSVelocityApproximationHandler::setROSConnectionManagerByContext) Found the ZyVelocityApproximator " << velocityApproximatorPrivate->velocityApproximator->getName() << std::endl;
         return true;
     }
     else
     {
-        std::cout << "(ZyROSVelocityApproximationHandler::setROSConnectionManagerByContext) WARNING: Could not find a TruVelocityApproximator, cannot approximate velocity." << std::endl;
+        std::cout << "(ZyROSVelocityApproximationHandler::setROSConnectionManagerByContext) WARNING: Could not find a ZyVelocityApproximator, cannot approximate velocity." << std::endl;
         return false;
     }    
 }

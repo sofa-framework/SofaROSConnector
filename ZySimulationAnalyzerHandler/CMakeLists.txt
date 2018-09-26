@@ -12,7 +12,7 @@ set(ZY_VELOCITYAPPROXIMATIONHANDLER_SOURCE_FILES
 find_package(ROS REQUIRED)
 message(STATUS "ROS found: ${ROS_FOUND}")
 
-# ROS (hydro)
+# ROS
 include_directories(${ROS_INCLUDE_DIR})
 include_directories(${LOG4CXX_INCLUDE_DIRS})
 
@@ -26,5 +26,6 @@ target_link_libraries(${PROJECT_NAME} SofaCore SofaHelper)
 target_link_libraries(${PROJECT_NAME} ZySimulationAnalyzer)
 
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER "Plugins")
+set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "_d")
 
 sofa_create_package(${PROJECT_NAME} "0.0.1" ${PROJECT_NAME} ${PROJECT_NAME})

@@ -12,7 +12,7 @@ void ZyROSConnectorTopicSubscriber<MessageType>::processMessage(const boost::sha
     //msg_info("ZyROSConnectorTopicSubscriber") << "processMessage " << msg;
     lock.unlock();
 
-    TruRosConnectorTopicSubscriberIface::onMessageReceived();
+    ZyROSConnectorTopicSubscriberIface::onMessageReceived();
 }
 
 template <class MessageType>
@@ -136,6 +136,6 @@ template <class MessageType>
 void ZyROSConnectorTopicSubscriber<MessageType>::handleGenericMessage()
 {
     const MessageType& msg = getLatestMessage();
-    msg_info("ZyROSConnectorTopicSubscriber<" + messageType + ">") << "Message received: " << msg;
+    // msg_info("ZyROSConnectorTopicSubscriber<" + messageType + ">") << "Message received: " << msg;
 }
 

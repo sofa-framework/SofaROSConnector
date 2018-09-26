@@ -17,7 +17,7 @@ namespace Zyklio
 {
 	namespace ROSConnector
 	{
-		class TruPhysicsRosConnectorPrivate
+		class ZyklioRosConnectorPrivate
 		{
 			public:
                 boost::shared_ptr<ZyROSConnectorWorkerThread> m_connectorThread;
@@ -35,7 +35,7 @@ ZyROSConnector::ZyROSConnector()
     m_connectorThreadActive(false),
     m_rosMasterURI(std::string("http://localhost:11311"))
 {
-    m_d = new TruPhysicsRosConnectorPrivate;
+    m_d = new ZyklioRosConnectorPrivate;
     std::cout << "ZyROSConnector constructor" << std::endl;
 }
 
@@ -227,20 +227,22 @@ void ZyROSConnector::startConnector()
 #ifdef _MSC_VER
 	_putenv_s("ROS_MASTER_URI", rosMasterUri.c_str());
 #else
-        if (setRosMasterURIValue == true)
+    if (setRosMasterURIValue == true)
+    {
+        std::stringstream envVarStream;
+        envVarStream << "ROS_MASTER_URI=" << rosMasterUri;
+        std::cout << "Setting ROS_MASTER_URI: " << envVarStream.str() << std::endl;
+        int putenvRet = putenv((char*) (envVarStream.str().c_str()));
+        std::cout << "putenv return value: " << putenvRet << std::endl;
+        if (putenvRet != 0)
         {
-          std::stringstream envVarStream;
-          envVarStream << "ROS_MASTER_URI=" << rosMasterUri;
-          int putenvRet = putenv((char*) (envVarStream.str().c_str()));
-          if (putenvRet != 0)
-          {
             std::cout << "Error on putenv call: (" << putenvRet << "): " << strerror(errno) << std::endl;
-          }
         }
-        else
-        {
-          std::cout << "ROS_MASTER_URI already set in existing environment variable; no resetting necessary." << std::endl;
-        }
+    }
+    else
+    {
+        std::cout << "ROS_MASTER_URI already set in existing environment variable; no resetting necessary." << std::endl;
+    }
 #endif
 
 #ifdef _MSC_VER

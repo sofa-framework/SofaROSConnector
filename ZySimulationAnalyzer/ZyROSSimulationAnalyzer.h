@@ -74,7 +74,7 @@ namespace Zyklio
             void setLinInput(float lin) { linInput = lin; }
             void setRotInput(float rot) { rotInput = rot; }
                     
-#ifdef TRUPHYSICS_DEMO
+#ifdef ZYKLIO_DEMO
             template<class T>
             static bool canCreate(T*& obj, core::objectmodel::BaseContext* context, core::objectmodel::BaseObjectDescription* arg)
             {

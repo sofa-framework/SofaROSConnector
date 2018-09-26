@@ -19,7 +19,7 @@ using namespace sofa::defaulttype;
 
 SOFA_DECL_CLASS(ZyROSConnectionManager)
 
-int TruRosConnectionManagerClass = sofa::core::RegisterObject("Zyklio ROS connection manager.")
+int ZyRosConnectionManagerClass = sofa::core::RegisterObject("Zyklio ROS connection manager.")
 .add< ZyROSConnectionManager >()
 ;
 
@@ -179,16 +179,6 @@ void ZyROSConnectionManager::bwdInit()
 
                         bool supported = false;
 
-                        /* if (messageType.compare("std_msgs::Bool") == 0)
-                        {
-                          supported = true;
-
-                          const boost::shared_ptr<ZyROSConnectorTopicSubscriber<std_msgs::Bool>> tmp(new ZyROSConnectorTopicSubscriber<std_msgs::Bool>(m_ros_connector->getROSNode(), rosTopic, 50, true));
-                          //boost::shared_ptr<ZyROSConnectorTopicSubscriber<std_msgs::Bool>> tmp(new ZyROSConnectorTopicSubscriber<std_msgs::Bool>(m_ros_connector->getROSNode(), rosTopic, 50 , true));
-
-                          m_ros_connector->addTopicListener(boost::dynamic_pointer_cast<ZyROSListener>(tmp));
-                          topicListeners.push_back(boost::dynamic_pointer_cast<ZyROSListener>(tmp));
-                        } */
                         if (messageType.compare("std_msgs::Bool") == 0)
                         {
                             supported = true;
@@ -215,7 +205,6 @@ void ZyROSConnectionManager::bwdInit()
                             supported = true;
 
                             const boost::shared_ptr<ZyROSConnectorTopicSubscriber<std_msgs::Float32>> tmp(new ZyROSConnectorTopicSubscriber<std_msgs::Float32>(m_ros_connector->getROSNode(), rosTopic, 50, true));
-                            //boost::shared_ptr<ZyROSConnectorTopicSubscriber<std_msgs::Bool>> tmp(new ZyROSConnectorTopicSubscriber<std_msgs::Bool>(m_ros_connector->getROSNode(), rosTopic, 50 , true));
 
                             m_ros_connector->addTopicListener(boost::dynamic_pointer_cast<ZyROSListener>(tmp));
                             topicListeners.push_back(boost::dynamic_pointer_cast<ZyROSListener>(tmp));
@@ -225,7 +214,6 @@ void ZyROSConnectionManager::bwdInit()
                             supported = true;
 
                             const boost::shared_ptr<ZyROSConnectorTopicSubscriber<std_msgs::Float64MultiArray>> tmp(new ZyROSConnectorTopicSubscriber<std_msgs::Float64MultiArray>(m_ros_connector->getROSNode(), rosTopic, 50, true));
-                            //boost::shared_ptr<ZyROSConnectorTopicSubscriber<std_msgs::Bool>> tmp(new ZyROSConnectorTopicSubscriber<std_msgs::Bool>(m_ros_connector->getROSNode(), rosTopic, 50 , true));
 
                             m_ros_connector->addTopicListener(boost::dynamic_pointer_cast<ZyROSListener>(tmp));
                             topicListeners.push_back(boost::dynamic_pointer_cast<ZyROSListener>(tmp));
@@ -235,8 +223,15 @@ void ZyROSConnectionManager::bwdInit()
                             supported = true;
 
                             const boost::shared_ptr<ZyROSConnectorTopicSubscriber<std_msgs::String>> tmp(new ZyROSConnectorTopicSubscriber<std_msgs::String>(m_ros_connector->getROSNode(), rosTopic, 50, true));
-                            //boost::shared_ptr<ZyROSConnectorTopicSubscriber<std_msgs::Bool>> tmp(new ZyROSConnectorTopicSubscriber<std_msgs::Bool>(m_ros_connector->getROSNode(), rosTopic, 50 , true));
 
+                            m_ros_connector->addTopicListener(boost::dynamic_pointer_cast<ZyROSListener>(tmp));
+                            topicListeners.push_back(boost::dynamic_pointer_cast<ZyROSListener>(tmp));
+                        }
+                        else if (messageType.compare("sensor_msgs::JointState") == 0)
+                        {
+                            supported = true;
+
+                            const boost::shared_ptr<ZyROSConnectorTopicSubscriber<sensor_msgs::JointState>> tmp(new ZyROSConnectorTopicSubscriber<sensor_msgs::JointState>(m_ros_connector->getROSNode(), rosTopic, 50, true));
                             m_ros_connector->addTopicListener(boost::dynamic_pointer_cast<ZyROSListener>(tmp));
                             topicListeners.push_back(boost::dynamic_pointer_cast<ZyROSListener>(tmp));
                         }

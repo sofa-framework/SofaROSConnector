@@ -146,8 +146,8 @@ void ArbitraryController::applyController(void)
                     std::vector< core::behavior::MechanicalState<sofa::defaulttype::Vec1Types>* >::iterator articulatedObjIt = articulatedObjects.begin();
 
                     int index = (*it)->articulationIndex.getValue();
-					if ((getMinIndex() != -1 && getMaxIndex() != -1)
-						&& (index >= getMinIndex() && index <= getMaxIndex())) {
+                    if ((getMinIndex() != -1 && getMaxIndex() != -1)
+                        && (index >= getMinIndex() && index <= getMaxIndex())) {
 
                         if (index < (int) kinValues.getValue().size()) {
                             double newValue = kinValues.getValue()[index];
@@ -167,7 +167,7 @@ void ArbitraryController::applyController(void)
                             doubleVector *d = kinValues.beginEdit();
                             (*d)[index] = newValue;
                             kinValues.endEdit();
-  
+
                             if ((*it)->rotation.getValue())  // Rotation: use degrees (convert deg 2 rad)
                             {
                                 //std::cout << "Rotation by " << newValue << " deg" << " (" << newValue * M_PI / 180.0 << " rad)" << std::endl;
@@ -183,13 +183,13 @@ void ArbitraryController::applyController(void)
                             // Finally write new Value
                             helper::WriteAccessor<Data<sofa::defaulttype::Vec1Types::VecCoord> > x = *(*articulatedObjIt)->write(sofa::core::VecCoordId::position());
                             helper::WriteAccessor<Data<sofa::defaulttype::Vec1Types::VecCoord> > xfree = *(*articulatedObjIt)->write(sofa::core::VecCoordId::freePosition());
-                            
+
                             if (x.size() <= index) x.resize(array_size);
                             if (xfree.size() <= index) xfree.resize(array_size);
 
-    						x[index] = newValue;											
-							xfree[index] = newValue;
-						
+                            x[index] = newValue;
+                            xfree[index] = newValue;
+
                         }
                         else {
                             serr << "Index out of range" << sendl;
@@ -270,14 +270,14 @@ void ArbitraryController::setRotValueRad(double value, int index)
 }
 
 void ArbitraryController::setRotValueRadByName(double value, std::string name) {
-    //std::cout << "\nSetting joint with name: " << name << std::endl;
+    std::cout << "Try setting joint with name: " << name << std::endl;
     stringVector names = this->jointNames.getValue();
     for (unsigned int i = 0; i < names.size(); i++) {
         std::size_t found = names.at(i).find(name);
         if (found != std::string::npos) {
             if (jointControlledByROS.getValue().at(i))
             {
-                //std::cout << "\nSetting joint with name: " << name << " (index " << i << ")" << std::endl;
+                std::cout << "Setting joint with name: " << name << " (index " << i << ")" << std::endl;
                 setRotValueRad(value, i);
             }
             return;

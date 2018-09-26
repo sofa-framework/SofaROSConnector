@@ -1,5 +1,5 @@
-#ifndef TRUPHYSICS_ROSCONNECTOR_H
-#define TRUPHYSICS_ROSCONNECTOR_H
+#ifndef ZYKLIO_ROSCONNECTOR_H
+#define ZYKLIO_ROSCONNECTOR_H
 
 #ifdef _WIN32
 // Ensure that Winsock2.h is included before Windows.h, which can get
@@ -40,7 +40,7 @@ namespace Zyklio
 namespace ROSConnector
 {
 // Data members in private implementation; keep ROS headers out of the header
-class TruPhysicsRosConnectorPrivate;
+class ZyklioRosConnectorPrivate;
 class SOFA_ZY_ROS_CONNECTOR_API ZyROSConnector : public sofa::core::objectmodel::BaseObject /*: public sofa::simulation::SimulationConcurrentComponent*/
 {
 public:
@@ -85,7 +85,7 @@ protected:
 
   void rosLoop();
 
-  TruPhysicsRosConnectorPrivate* m_d;
+  ZyklioRosConnectorPrivate* m_d;
 
   ros::NodeHandlePtr m_rosNode;
   ros::CallbackQueue cb_queue;
@@ -101,4 +101,4 @@ protected:
 }
 }
 
-#endif //TRUPHYSICS_ROSCONNECTOR_H
+#endif //ZYKLIO_ROSCONNECTOR_H

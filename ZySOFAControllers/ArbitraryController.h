@@ -25,13 +25,6 @@
 //
 // C++ Implementation: ArbitraryController
 //
-// Description:
-//
-//
-// Author: Bernd Eckstein (Zyklio) 2014
-//
-// Copyright: Zyklio 2014
-//
 //
 #ifndef SOFA_COMPONENT_CONTROLLER_ArbitraryController_H
 #define SOFA_COMPONENT_CONTROLLER_ArbitraryController_H
@@ -62,7 +55,7 @@ using namespace sofa::defaulttype;
  */
 class SOFA_USER_INTERACTION_API ArbitraryController : public ArticulatedHierarchyController
 {
-#define TRU_PHYSICS "Zyklio"
+#define ZYKLIO "Zyklio"
 
 public:
     SOFA_CLASS(ArbitraryController,ArticulatedHierarchyController);
@@ -83,17 +76,11 @@ protected:
     {
         initialized = false;
         // Setup groups
-        kinValues.setGroup(TRU_PHYSICS);
-        minValues.setGroup(TRU_PHYSICS);
-        maxValues.setGroup(TRU_PHYSICS);
-        invertAxis.setGroup(TRU_PHYSICS);
-        jointNames.setGroup(TRU_PHYSICS);
-        /*
-        rotValues.setGroup(TRU_PHYSICS);
-        posValues.setGroup(TRU_PHYSICS);
-        rotOffsetValues.setGroup(TRU_PHYSICS);
-        rotDirection.setGroup(TRU_PHYSICS);
-        */
+        kinValues.setGroup(ZYKLIO);
+        minValues.setGroup(ZYKLIO);
+        maxValues.setGroup(ZYKLIO);
+        invertAxis.setGroup(ZYKLIO);
+        jointNames.setGroup(ZYKLIO);
 
         // Setup Default Values
         this->f_listening.setValue(true);
@@ -162,7 +149,7 @@ public:
 
     int getMinIndex() {return controlIndex.getValue().x();}
     int getMaxIndex() {return controlIndex.getValue().y();}
-    void setControlIndex(int min, int max); 
+    void setControlIndex(int min, int max);
     void setToolValues(std::vector<double> values);
     void setToolValue(double value, int index);
     void setRotValueRad(double value, int index);

@@ -2,7 +2,7 @@
 
 using namespace Zyklio::ROSConnector;
 
-SOFA_DECL_CLASS(TruRosConnectorTopicSubscriberIface)
+SOFA_DECL_CLASS(ZyROSConnectorTopicSubscriberIface)
 
 ZyROSListener::ZyROSListener()
     : m_uuid(boost::uuids::random_generator()())
@@ -30,7 +30,7 @@ ZyROSListener& ZyROSListener::operator=(const ZyROSListener& other)
 	return *this;
 }
 
-void TruRosConnectorTopicSubscriberIface::onMessageReceived()
+void ZyROSConnectorTopicSubscriberIface::onMessageReceived()
 {
 	m_sig();
 }

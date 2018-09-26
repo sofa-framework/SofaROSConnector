@@ -14,7 +14,7 @@ namespace Zyklio
         class ZyROSVelocityApproximatorPrivate;
 
         /**
-         * \brief This is a helper class to help with a TruVelocityApproximator.
+         * \brief This is a helper class to help with a ZyVelocityApproximator.
          */
         class SOFA_ZY_VELOCITY_APPROXIMATION_HANDLER_API ZyROSVelocityApproximationHandler
 		{
@@ -25,7 +25,7 @@ namespace Zyklio
                 /**
                 * \brief 
                 * 
-                * (CAREFUL! When this is called, the TruVelocityApproximator in the scene graph must already
+                * (CAREFUL! When this is called, the ZyVelocityApproximator in the scene graph must already
                 * be instantiated, so a constructor or an init() method are bad places to call setVelocityApproximatorByContext)
                 * 
                 * \param cntxt 

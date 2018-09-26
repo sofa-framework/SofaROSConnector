@@ -23,7 +23,7 @@ namespace Zyklio
 {
     namespace ROSConnector
     {
-        class SOFA_ZY_ROS_CONNECTOR_API TruRosConnectorTopicSubscriberIface
+        class SOFA_ZY_ROS_CONNECTOR_API ZyROSConnectorTopicSubscriberIface
         {
         public:
             void onMessageReceived();
@@ -33,7 +33,7 @@ namespace Zyklio
             boost::signals2::signal<void()> m_sig;
         };
 
-        class SOFA_ZY_ROS_CONNECTOR_API ZyROSListener : public TruRosConnectorTopicSubscriberIface
+        class SOFA_ZY_ROS_CONNECTOR_API ZyROSListener : public ZyROSConnectorTopicSubscriberIface
         {
         public:
             ZyROSListener();

@@ -22,10 +22,10 @@
 *                                                                             *
 * Contact information: contact@sofa-framework.org                             *
 ******************************************************************************/
-#ifndef SOFA_COMPONENT_INTERACTIONFORCEFIELD_TRUPHYSICSOBJECTMANAGER_INL
-#define SOFA_COMPONENT_INTERACTIONFORCEFIELD_TRUPHYSICSOBJECTMANAGER_INL
+#ifndef SOFA_COMPONENT_INTERACTIONFORCEFIELD_ZYKLIOOBJECTMANAGER_INL
+#define SOFA_COMPONENT_INTERACTIONFORCEFIELD_ZYKLIOOBJECTMANAGER_INL
 
-#include "TruVelocityApproximator.h"
+#include "ZyVelocityApproximator.h"
 
 #include <sofa/simulation/Node.h>
 #include <sofa/core/objectmodel/BaseContext.h>
@@ -37,9 +37,9 @@
 #include <SofaMeshCollision/PointModel.h>
 
 #include <SofaConstraint/FrictionContact.h>
-#ifdef TRUPHYSICS_DEMO
+#ifdef ZYKLIO_DEMO
 #include <sofa/simulation/common/Simulation.h>
-#endif //TRUPHYSICS_DEMO
+#endif //ZYKLIO_DEMO
 
 // asd
 #include <boost/date_time/posix_time/posix_time.hpp> 
@@ -59,14 +59,14 @@ namespace Zyklio
         using namespace sofa::core::objectmodel;
         using namespace sofa;
 
-        SOFA_DECL_CLASS(TruVelocityApproximator);
+        SOFA_DECL_CLASS(ZyVelocityApproximator);
 
-        int TruVelocityApproximatorClass = core::RegisterObject("Description Test test.")
-        .add< TruVelocityApproximator >()
-        //.addAlias("TruVelocityApproximator")
+        int ZyVelocityApproximatorClass = core::RegisterObject("Description Test test.")
+        .add< ZyVelocityApproximator >()
+        //.addAlias("ZyVelocityApproximator")
         ;
 
-        TruVelocityApproximator::TruVelocityApproximator()
+        ZyVelocityApproximator::ZyVelocityApproximator()
             : objectState(NULL)
             , collisionStateVec(NULL)
             , objectNodePath(initData(&objectNodePath, "objectNodePath", "Zyklio: Path to the object.")) // TODO: replace this with the proper SOFA way to do this
@@ -110,13 +110,13 @@ namespace Zyklio
             // time in seconds since begin of epoch, using chrono::steady_clock
             epochTime = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
 #ifdef TP_VELOCITY_APPROXIMATION_DEBUG
-            std::cout << std::setprecision(30) << "TruVelocityApproximator epoch time: " << epochTime << std::endl;
+            std::cout << std::setprecision(30) << "ZyVelocityApproximator epoch time: " << epochTime << std::endl;
 #endif
         }
 
-        void TruVelocityApproximator::init()
+        void ZyVelocityApproximator::init()
         {
-#ifdef TRUPHYSICS_DEMO
+#ifdef ZYKLIO_DEMO
             std::string sceneHash = sofa::simulation::getSimulation()->getSceneHash();
 
             sofa::helper::hashCheckHelper hch;
@@ -125,11 +125,11 @@ namespace Zyklio
                 std::cout << "This plugin can only be used with the Zyklio demo and the correct demo scene." << std::endl;
                 exit(1);
             }
-#endif //TRUPHYSICS_DEMO
+#endif //ZYKLIO_DEMO
             Inherit::init();
         }
 
-        void TruVelocityApproximator::bwdInit()
+        void ZyVelocityApproximator::bwdInit()
         {                
             // connection to the start via Tornado
             char* tornadoEnv = getenv("TRUSIMRUN_TORNADO");
@@ -149,12 +149,12 @@ namespace Zyklio
                 // If there is anything wrong, the variable runVelocityApproximation is set to false and
                 // the velocity approximation is not run.
 
-                std::cout << "(TruVelocityApproximator::bwdInit) Getting parameters from Tornado." << std::endl;
+                std::cout << "(ZyVelocityApproximator::bwdInit) Getting parameters from Tornado." << std::endl;
 
                 if (vertexEnv_x)
                 {
                     vertexTornadoVec_x = generateVertexVector(vertexEnv_x);
-                    std::cout << "(TruVelocityApproximator::bwdInit) vertex_x: ";
+                    std::cout << "(ZyVelocityApproximator::bwdInit) vertex_x: ";
                     for (unsigned int tmp = 0; tmp < vertexTornadoVec_x.size(); tmp++)
                     {
                         std::cout << vertexTornadoVec_x.at(tmp) << " ";
@@ -163,14 +163,14 @@ namespace Zyklio
                 }
                 else
                 {
-                    std::cout << "(TruVelocityApproximator::bwdInit) ERROR: There was a remote call, but no value for the vertex x-coordinate was given. Can't run velocity approximation." << std::endl;
+                    std::cout << "(ZyVelocityApproximator::bwdInit) ERROR: There was a remote call, but no value for the vertex x-coordinate was given. Can't run velocity approximation." << std::endl;
                     runVelocityApproximation = false;
                 }
 
                 if (vertexEnv_y)
                 {
                     vertexTornadoVec_y = generateVertexVector(vertexEnv_y);
-                    std::cout << "(TruVelocityApproximator::bwdInit) vertex_y: ";
+                    std::cout << "(ZyVelocityApproximator::bwdInit) vertex_y: ";
                     for (unsigned int tmp = 0; tmp < vertexTornadoVec_y.size(); tmp++)
                     {
                         std::cout << vertexTornadoVec_y.at(tmp) << " ";
@@ -179,14 +179,14 @@ namespace Zyklio
                 }
                 else
                 {
-                    std::cout << "(TruVelocityApproximator::bwdInit) ERROR: There was a remote call, but no value for the vertex y-coordinate was given. Can't run velocity approximation." << std::endl;
+                    std::cout << "(ZyVelocityApproximator::bwdInit) ERROR: There was a remote call, but no value for the vertex y-coordinate was given. Can't run velocity approximation." << std::endl;
                     runVelocityApproximation = false;
                 }
 
                 if (vertexEnv_z)
                 {
                     vertexTornadoVec_z = generateVertexVector(vertexEnv_z);
-                    std::cout << "(TruVelocityApproximator::bwdInit) vertex_z: ";
+                    std::cout << "(ZyVelocityApproximator::bwdInit) vertex_z: ";
                     for (unsigned int tmp = 0; tmp < vertexTornadoVec_z.size(); tmp++)
                     {
                         std::cout << vertexTornadoVec_z.at(tmp) << " ";
@@ -195,14 +195,14 @@ namespace Zyklio
                 }
                 else
                 {
-                    std::cout << "(TruVelocityApproximator::bwdInit) ERROR: There was a remote call, but no value for the vertex z-coordinate was given. Can't run velocity approximation." << std::endl;
+                    std::cout << "(ZyVelocityApproximator::bwdInit) ERROR: There was a remote call, but no value for the vertex z-coordinate was given. Can't run velocity approximation." << std::endl;
                     runVelocityApproximation = false;
                 }
                         
                 if (objectEnv)
                 {
                     tornadoObjectNameVec = generateObjectNameVector(objectEnv);
-                    std::cout << "(TruVelocityApproximator::bwdInit) object: ";
+                    std::cout << "(ZyVelocityApproximator::bwdInit) object: ";
                     for (unsigned int tmp = 0; tmp < tornadoObjectNameVec.size(); tmp++)
                     {
                         std::cout << tornadoObjectNameVec.at(tmp) << " ";
@@ -211,7 +211,7 @@ namespace Zyklio
                 }
                 else
                 {
-                    std::cout << "(TruVelocityApproximator::bwdInit) ERROR: There was a remote call, but no object name was given. Can't run velocity approximation." << std::endl;
+                    std::cout << "(ZyVelocityApproximator::bwdInit) ERROR: There was a remote call, but no object name was given. Can't run velocity approximation." << std::endl;
                     runVelocityApproximation = false;
                 }
 
@@ -223,19 +223,19 @@ namespace Zyklio
                     }
                     catch (std::invalid_argument)
                     {
-                        std::cout << "(TruVelocityApproximator::bwdInit) ERROR: Could not convert input " << indexEnv << " to an integer. Can't run velocity approximation." << std::endl;
+                        std::cout << "(ZyVelocityApproximator::bwdInit) ERROR: Could not convert input " << indexEnv << " to an integer. Can't run velocity approximation." << std::endl;
                         runVelocityApproximation = false;
                     }
                     catch (std::out_of_range)
                     {
-                        std::cout << "(TruVelocityApproximator::bwdInit) ERROR: Input " << indexEnv << " too large. Can't run velocity approximation." << std::endl;
+                        std::cout << "(ZyVelocityApproximator::bwdInit) ERROR: Input " << indexEnv << " too large. Can't run velocity approximation." << std::endl;
                         runVelocityApproximation = false;
                     }
-                    std::cout << "(TruVelocityApproximator::bwdInit) index: " << indexTornado << std::endl;
+                    std::cout << "(ZyVelocityApproximator::bwdInit) index: " << indexTornado << std::endl;
                 }
                 else
                 {
-                    std::cout << "(TruVelocityApproximator::bwdInit) ERROR: There was a remote call, but no point index was given. Can't run velocity approximation." << std::endl;
+                    std::cout << "(ZyVelocityApproximator::bwdInit) ERROR: There was a remote call, but no point index was given. Can't run velocity approximation." << std::endl;
                     runVelocityApproximation = false;
                 }
 
@@ -247,25 +247,25 @@ namespace Zyklio
                     }
                     catch (std::invalid_argument)
                     {
-                        std::cout << "(TruVelocityApproximator::bwdInit) ERROR: Could not convert input " << testRunIndexEnv << " to an integer. Can't run velocity approximation." << std::endl;
+                        std::cout << "(ZyVelocityApproximator::bwdInit) ERROR: Could not convert input " << testRunIndexEnv << " to an integer. Can't run velocity approximation." << std::endl;
                         runVelocityApproximation = false;
                     }
                     catch (std::out_of_range)
                     {
-                        std::cout << "(TruVelocityApproximator::bwdInit) ERROR: Input " << testRunIndexEnv << " too large. Can't run velocity approximation." << std::endl;
+                        std::cout << "(ZyVelocityApproximator::bwdInit) ERROR: Input " << testRunIndexEnv << " too large. Can't run velocity approximation." << std::endl;
                         runVelocityApproximation = false;
                     }
-                    std::cout << "(TruVelocityApproximator::bwdInit) testRunIndex: " << testRunIndexTornado << std::endl;
+                    std::cout << "(ZyVelocityApproximator::bwdInit) testRunIndex: " << testRunIndexTornado << std::endl;
                 }
                 else
                 {
-                    std::cout << "(TruVelocityApproximator::bwdInit) ERROR: There was a remote call, but no testrun index was given. Can't run velocity approximation." << std::endl;
+                    std::cout << "(ZyVelocityApproximator::bwdInit) ERROR: There was a remote call, but no testrun index was given. Can't run velocity approximation." << std::endl;
                     runVelocityApproximation = false;
                 }
 
                 if ( !( (vertexTornadoVec_x.size() == vertexTornadoVec_y.size()) && (vertexTornadoVec_z.size() == tornadoObjectNameVec.size()) && (vertexTornadoVec_x.size() == tornadoObjectNameVec.size()) ) )
                 {
-                    std::cout << "(TruVelocityApproximator::bwdInit) ERROR: The vectors for the vertex coordinates and the object names had not all the same size (";
+                    std::cout << "(ZyVelocityApproximator::bwdInit) ERROR: The vectors for the vertex coordinates and the object names had not all the same size (";
                     std::cout << "vertexTornadoVec_x.size(): " << vertexTornadoVec_x.size();
                     std::cout << ", vertexTornadoVec_y.size(): " << vertexTornadoVec_y.size();
                     std::cout << ", vertexTornadoVec_z.size(): " << vertexTornadoVec_z.size();
@@ -276,8 +276,8 @@ namespace Zyklio
             }
 
             // <!-- TODO: replace this with the proper SOFA way to do this 
-            std::cout << "(TruVelocityApproximator::bwdInit) objectNodePath: " << objectNodePath.getValue() << std::endl;
-            std::cout << "(TruVelocityApproximator::bwdInit) (if it crashes now, this is probably wrong)" << std::endl;
+            std::cout << "(ZyVelocityApproximator::bwdInit) objectNodePath: " << objectNodePath.getValue() << std::endl;
+            std::cout << "(ZyVelocityApproximator::bwdInit) (if it crashes now, this is probably wrong)" << std::endl;
             {
                 std::istringstream readPathStream(objectNodePath.getValue());
 
@@ -309,7 +309,7 @@ namespace Zyklio
                 // What is needed instead is a mechanical state in a sub-node of a sub-node of that node, which has the collision models for this rigid.
                 for (unsigned int gna = 0; gna < tornadoObjectNameVec.size(); gna++)
                 {
-                    std::cout << "(TruVelocityApproximator::bwdInit) Trying to find the mechanical state that corresponds to the object name " << tornadoObjectNameVec.at(gna) << std::endl;
+                    std::cout << "(ZyVelocityApproximator::bwdInit) Trying to find the mechanical state that corresponds to the object name " << tornadoObjectNameVec.at(gna) << std::endl;
 
                     simulation::Node* objNode = dynamic_cast<simulation::Node*>(getContext()->getRootContext())->getTreeNode(tornadoObjectNameVec.at(gna));
                     
@@ -322,12 +322,12 @@ namespace Zyklio
 
                         if (mechanicalStates.size() == 0) 
                         {
-                            std::cout << "(TruVelocityApproximator::bwdInit) ERROR: No MechanicalState<Vec3Types> instances found! Can't run velocity approximation." << std::endl;
+                            std::cout << "(ZyVelocityApproximator::bwdInit) ERROR: No MechanicalState<Vec3Types> instances found! Can't run velocity approximation." << std::endl;
                             runVelocityApproximation = false;
                         }
                         else
                         {
-                            std::cout << "(TruVelocityApproximator::bwdInit) MechanicalState<Vec3Types> instances found: " << mechanicalStates.size() << std::endl;
+                            std::cout << "(ZyVelocityApproximator::bwdInit) MechanicalState<Vec3Types> instances found: " << mechanicalStates.size() << std::endl;
 
                             // The MechanicalState we need should be the only one with Vec3 types, but to make sure, check if there are any collision models there
                             core::behavior::MechanicalState<Vec3Types>* tmpState = mechanicalStates.at(0);
@@ -344,20 +344,20 @@ namespace Zyklio
                                 }
                                 else
                                 {
-                                    std::cout << "(TruVelocityApproximator::bwdInit) ERROR: Could not find the a Vec3 mechanical state! Can't run velocity approximation." << std::endl;
+                                    std::cout << "(ZyVelocityApproximator::bwdInit) ERROR: Could not find the a Vec3 mechanical state! Can't run velocity approximation." << std::endl;
                                     runVelocityApproximation = false;
                                 }
                             }
                             else
                             {
-                                std::cout << "(TruVelocityApproximator::bwdInit) ERROR: Could not find the right mechanical state! Can't run velocity approximation." << std::endl;
+                                std::cout << "(ZyVelocityApproximator::bwdInit) ERROR: Could not find the right mechanical state! Can't run velocity approximation." << std::endl;
                                 runVelocityApproximation = false;
                             }
                         }
                     }
                     else
                     {
-                        std::cout << "(TruVelocityApproximator::bwdInit) ERROR: Could not find a mechanical state that corresponds to " << tornadoObjectNameVec.at(gna) << ". Can't run velocity approximation." << std::endl;
+                        std::cout << "(ZyVelocityApproximator::bwdInit) ERROR: Could not find a mechanical state that corresponds to " << tornadoObjectNameVec.at(gna) << ". Can't run velocity approximation." << std::endl;
                         runVelocityApproximation = false;
                     }
                 }
@@ -366,8 +366,8 @@ namespace Zyklio
             {
                 collisionStateVec.resize(1);
 
-                std::cout << "(TruVelocityApproximator::bwdInit) collisionNodePath: " << collisionNodePath.getValue() << std::endl;
-                std::cout << "(TruVelocityApproximator::bwdInit) (if it crashes now, this is probably wrong)" << std::endl;
+                std::cout << "(ZyVelocityApproximator::bwdInit) collisionNodePath: " << collisionNodePath.getValue() << std::endl;
+                std::cout << "(ZyVelocityApproximator::bwdInit) (if it crashes now, this is probably wrong)" << std::endl;
 
                 std::istringstream readPathStream(collisionNodePath.getValue());
                 simulation::Node* objectNode = NULL;
@@ -404,11 +404,11 @@ namespace Zyklio
 
             if (objectState)
             {
-                std::cout << "(TruVelocityApproximator::bwdInit) Found mechanical object: " << objectState->getName() << std::endl;
+                std::cout << "(ZyVelocityApproximator::bwdInit) Found mechanical object: " << objectState->getName() << std::endl;
             }
             else
             {
-                std::cout << "(TruVelocityApproximator::bwdInit) Mechanical object with path \"" << objectNodePath.getValue() << "\" not found. (Probably not alarming)" << std::endl;
+                std::cout << "(ZyVelocityApproximator::bwdInit) Mechanical object with path \"" << objectNodePath.getValue() << "\" not found. (Probably not alarming)" << std::endl;
             }
 
             identificationString = boost::posix_time::to_simple_string(boost::posix_time::microsec_clock::local_time()); // is not set anywhere else
@@ -425,14 +425,14 @@ namespace Zyklio
                 {
                     if (calledByTornado)
                     {
-                        std::cout << "(TruVelocityApproximator::bwdInit) Found mechanical collision object corresponding to the name " << tornadoObjectNameVec.at(mah) << ": " << collisionStateVec.at(mah)->getName() << std::endl;
+                        std::cout << "(ZyVelocityApproximator::bwdInit) Found mechanical collision object corresponding to the name " << tornadoObjectNameVec.at(mah) << ": " << collisionStateVec.at(mah)->getName() << std::endl;
                         std::stringstream tmpStr;
                         tmpStr << collisionStateVec.at(mah)->getName() << " (" << tornadoObjectNameVec.at(mah) << ")";
                         meshNameVec.push_back(tmpStr.str());
                     }
                     else
                     {
-                        std::cout << "(TruVelocityApproximator::bwdInit) Found mechanical collision object corresponding to the path " << collisionNodePath.getValue() << ": " << collisionStateVec.at(mah)->getName() << std::endl;
+                        std::cout << "(ZyVelocityApproximator::bwdInit) Found mechanical collision object corresponding to the path " << collisionNodePath.getValue() << ": " << collisionStateVec.at(mah)->getName() << std::endl;
                         std::stringstream tmpStr;
                         tmpStr << collisionStateVec.at(mah)->getName();
                         meshNameVec.push_back(tmpStr.str());
@@ -467,7 +467,7 @@ namespace Zyklio
 
                             std::stringstream tmpStr;
                             tmpStr << collisionStateVec.at(mah)->getPosition().at(minDist_index) << " (index " << minDist_index << ")";
-                            std::cout << "(TruVelocityApproximator::bwdInit) Due to the given position (" << selectedVertex << "), the following vertex on the sofa-mesh was selected: " << tmpStr.str() << std::endl;
+                            std::cout << "(ZyVelocityApproximator::bwdInit) Due to the given position (" << selectedVertex << "), the following vertex on the sofa-mesh was selected: " << tmpStr.str() << std::endl;
                             sofa::helper::vector < std::string >* shvssPnt = selectedVertexInfo.beginEdit();
                             shvssPnt->push_back(tmpStr.str());
                             selectedVertexInfo.endEdit();
@@ -483,7 +483,7 @@ namespace Zyklio
 
                             if (currentSelectedVertex >= collisionStateVec.at(mah)->getPosition().size())
                             {
-                                serr << "(TruVelocityApproximator::bwdInit) WARNING: Selected vertex " << currentSelectedVertex << " is bigger than the number of vertices in the mesh (" << collisionStateVec.at(mah)->getPosition().size() << "). Setting this selected vertex to 0." << std::endl;
+                                serr << "(ZyVelocityApproximator::bwdInit) WARNING: Selected vertex " << currentSelectedVertex << " is bigger than the number of vertices in the mesh (" << collisionStateVec.at(mah)->getPosition().size() << "). Setting this selected vertex to 0." << std::endl;
                                 if (selectedVertices.getValue().size() > 1)
                                 {
                                     currentSelectedVertex = 0;
@@ -538,11 +538,11 @@ namespace Zyklio
                 {
                     if (calledByTornado)
                     {
-                        std::cout << "(TruVelocityApproximator::bwdInit) Mechanical object with name \"" << tornadoObjectNameVec.at(mah) << "\" not found." << std::endl;
+                        std::cout << "(ZyVelocityApproximator::bwdInit) Mechanical object with name \"" << tornadoObjectNameVec.at(mah) << "\" not found." << std::endl;
                     }
                     else
                     {
-                        std::cout << "(TruVelocityApproximator::bwdInit) Mechanical object with path \"" << collisionNodePath.getValue() << "\" not found." << std::endl;
+                        std::cout << "(ZyVelocityApproximator::bwdInit) Mechanical object with path \"" << collisionNodePath.getValue() << "\" not found." << std::endl;
                     }
                 }
             }
@@ -551,10 +551,10 @@ namespace Zyklio
             sofa::core::objectmodel::BaseContext::GetObjectsCallBackT<ArbitraryController, std::vector<ArbitraryController* > > arbitraryControllers_vec(&arbitraryControllers);
             getContext()->getObjects(TClassInfo<ArbitraryController>::get(), arbitraryControllers_vec, TagSet(), sofa::core::objectmodel::BaseContext::SearchRoot);
 
-            std::cout << "(TruVelocityApproximator::bwdInit) ArbitraryController instances found: " << arbitraryControllers.size() << std::endl;
+            std::cout << "(ZyVelocityApproximator::bwdInit) ArbitraryController instances found: " << arbitraryControllers.size() << std::endl;
 
             if (arbitraryControllers.size() == 0) {
-                serr << "(TruVelocityApproximator::bwdInit) No Arbitrary Contoller found!" << std::endl;
+                serr << "(ZyVelocityApproximator::bwdInit) No Arbitrary Contoller found!" << std::endl;
                 runVelocityApproximation = false;
             }
             else
@@ -564,17 +564,17 @@ namespace Zyklio
 
             if (runVelocityApproximation)
             {
-                std::cout << "(TruVelocityApproximator::bwdInit) All paramaters for velocity approximation are ok." << std::endl;
+                std::cout << "(ZyVelocityApproximator::bwdInit) All paramaters for velocity approximation are ok." << std::endl;
             }
             else
             {
-                std::cout << "(TruVelocityApproximator::bwdInit) Not all paramaters for velocity approximation are ok. Can't run velocity approximation." << std::endl;
+                std::cout << "(ZyVelocityApproximator::bwdInit) Not all paramaters for velocity approximation are ok. Can't run velocity approximation." << std::endl;
             }
 
             rosTimeSteps.clear();
         }
 
-        void TruVelocityApproximator::reinit()
+        void ZyVelocityApproximator::reinit()
         {
             // TODO: This is probably incomplete
             currentPosition.clear();
@@ -593,7 +593,7 @@ namespace Zyklio
             bwdInit();
         }
 
-        void TruVelocityApproximator::moveObjectToPosition(simulation::common::MechanicalOperations& mop, sofa::core::behavior::MultiVecCoord& pos/*, sofa::core::behavior::MultiVecCoord& freePos*/)
+        void ZyVelocityApproximator::moveObjectToPosition(simulation::common::MechanicalOperations& mop, sofa::core::behavior::MultiVecCoord& pos/*, sofa::core::behavior::MultiVecCoord& freePos*/)
         {
             if (doWhat.getValue().compare("movement") == 0)
             {
@@ -612,7 +612,7 @@ namespace Zyklio
             return;
         }
 
-        void TruVelocityApproximator::approximateVelocity(simulation::common::MechanicalOperations& mop, sofa::core::behavior::MultiVecCoord& pos)
+        void ZyVelocityApproximator::approximateVelocity(simulation::common::MechanicalOperations& mop, sofa::core::behavior::MultiVecCoord& pos)
         {
             if (doWhat.getValue().compare("velocity") == 0)
             {
@@ -684,7 +684,7 @@ namespace Zyklio
 
                             if (!seqFound)
                             {
-                                std::cout << "WARNING (TruVelocityApproximator::approximateVelocity): Last known joint_states message time stamp not found in known joint_states messages. Using all known messages." << std::endl;
+                                std::cout << "WARNING (ZyVelocityApproximator::approximateVelocity): Last known joint_states message time stamp not found in known joint_states messages. Using all known messages." << std::endl;
                             }
                             else
                             {
@@ -925,7 +925,7 @@ namespace Zyklio
         }
 
 
-        void TruVelocityApproximator::pushJointMsg(jointMsg theMsg)
+        void ZyVelocityApproximator::pushJointMsg(jointMsg theMsg)
         {
             receivedJointStateMessages++;
 
@@ -956,7 +956,7 @@ namespace Zyklio
             lastPushedStamp = theMsg.first.first;
         };
 
-        TruVelocityApproximator::currentVelocityApproximationDataType TruVelocityApproximator::createOutputArray(const std::pair< identificationData, velocityData>& velocityDataPair)
+        ZyVelocityApproximator::currentVelocityApproximationDataType ZyVelocityApproximator::createOutputArray(const std::pair< identificationData, velocityData>& velocityDataPair)
         {
             currentVelocityApproximationDataType outputArray;
 
@@ -983,7 +983,7 @@ namespace Zyklio
 
         // Object names arrive as a comma separated list of unknown length.
         // What we need is an actual vector of strings.
-        std::vector<std::string> TruVelocityApproximator::generateObjectNameVector(char* vertexInput)
+        std::vector<std::string> ZyVelocityApproximator::generateObjectNameVector(char* vertexInput)
         {
             std::vector<std::string> vertexStrVec;
             std::string vertexStr(vertexInput);
@@ -1011,7 +1011,7 @@ namespace Zyklio
 
         // Vertex values arrive as a comma separated list of unknown length.
         // What we need is an actual vector of doubles.
-        std::vector<double> TruVelocityApproximator::generateVertexVector(char* vertexInput)
+        std::vector<double> ZyVelocityApproximator::generateVertexVector(char* vertexInput)
         {
             try
             {
@@ -1040,17 +1040,17 @@ namespace Zyklio
             }
             catch (std::invalid_argument)
             {
-                std::cout << "(TruVelocityApproximator::bwdInit) ERROR: Could not convert input " << vertexInput << " to integers. Can't run velocity approximation." << std::endl;
+                std::cout << "(ZyVelocityApproximator::bwdInit) ERROR: Could not convert input " << vertexInput << " to integers. Can't run velocity approximation." << std::endl;
                 runVelocityApproximation = false;
             }
             catch (std::out_of_range)
             {
-                std::cout << "(TruVelocityApproximator::bwdInit) ERROR: Input " << vertexInput << " contains an element that is too large. Can't run velocity approximation." << std::endl;
+                std::cout << "(ZyVelocityApproximator::bwdInit) ERROR: Input " << vertexInput << " contains an element that is too large. Can't run velocity approximation." << std::endl;
                 runVelocityApproximation = false;
             }
         }
 
-        double TruVelocityApproximator::adjustTime(double time)
+        double ZyVelocityApproximator::adjustTime(double time)
         {
             if (time > epochTime)
             {

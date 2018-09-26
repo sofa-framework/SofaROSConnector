@@ -31,9 +31,9 @@
 #include <SofaBaseMechanics/MechanicalObject.h>
 #include "sofa/helper/vector_algebra.h"
 
-#ifdef TRUPHYSICS_DEMO
+#ifdef ZYKLIO_DEMO
 #include <sofa/simulation/common/Simulation.h>
-#endif //TRUPHYSICS_DEMO
+#endif //ZYKLIO_DEMO
 
 namespace Zyklio
 {
@@ -77,7 +77,7 @@ namespace Zyklio
 
         void ZyROSSimulationAnalyzer::init()
         {
-#ifdef TRUPHYSICS_DEMO
+#ifdef ZYKLIO_DEMO
             std::string sceneHash = sofa::simulation::getSimulation()->getSceneHash();
 
             sofa::helper::hashCheckHelper hch;
@@ -86,7 +86,7 @@ namespace Zyklio
                 std::cout << "This plugin can only be used with the Zyklio demo and the correct demo scene." << std::endl;
                 exit(1);
             }
-#endif //TRUPHYSICS_DEMO
+#endif //ZYKLIO_DEMO
             Inherit::init();
         }
 
@@ -94,7 +94,7 @@ namespace Zyklio
         {
             Inherit::bwdInit();
 
-#ifdef TRUPHYSICS_USE_ROS_SUPPORT
+#ifdef ZYKLIO_USE_ROS_SUPPORT
             connectionManagerFound = publishingHandler.setROSConnectionManagerByContext(getContext());
 
             if (connectionManagerFound)
@@ -191,7 +191,7 @@ namespace Zyklio
 
             if (!objectFound)
             {
-                std::cout << "(TruPhysicsAnimationLoop::analyzeSimulationStateAndPublishResult) Rigid object '" << targetName << "' not found in scene. Publishing zeroes." << std::endl;
+                std::cout << "(ZyklioAnimationLoop::analyzeSimulationStateAndPublishResult) Rigid object '" << targetName << "' not found in scene. Publishing zeroes." << std::endl;
                 dataVec.at((rigidCount* dim[dataDim].stride) + 0) = 0.0;
                 dataVec.at((rigidCount* dim[dataDim].stride) + 1) = 0.0;
                 dataVec.at((rigidCount* dim[dataDim].stride) + 2) = 0.0;

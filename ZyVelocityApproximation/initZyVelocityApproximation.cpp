@@ -63,7 +63,7 @@ const char* getModuleDescription()
 const char* getModuleComponentList()
 {
     /// string containing the names of the classes provided by the plugin
-    return "TruVelocityApproximator";
+    return "ZyVelocityApproximator";
 }
 
 
@@ -73,4 +73,4 @@ const char* getModuleComponentList()
 }
 
 /// Use the SOFA_LINK_CLASS macro for each class, to enable linking on all platforms
-SOFA_LINK_CLASS(TruVelocityApproximator)
+SOFA_LINK_CLASS(ZyVelocityApproximator)
