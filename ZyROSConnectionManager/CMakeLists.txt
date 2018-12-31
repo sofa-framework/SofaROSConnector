@@ -32,6 +32,14 @@ include_directories(${CMAKE_SOURCE_DIR}/applications/plugins/SofaROSConnector/Zy
 include_directories(${ROS_INCLUDE_DIR})
 include_directories(${LOG4CXX_INCLUDE_DIRS})
 
+# Build list of available ROS message types
+execute_process(COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/list_ros_message_types.sh OUTPUT_VARIABLE ROS_MSG_TYPES OUTPUT_STRIP_TRAILING_WHITESPACE)
+message(STATUS "List of ROS message types: ${ROS_MSG_TYPES}")
+string(REPLACE "\n" ";" ROS_MSG_TYPES_LIST ${ROS_MSG_TYPES})
+foreach(ROS_MSG_TYPE ${ROS_MSG_TYPES_LIST})
+    message(STATUS "Message type: ${ROS_MSG_TYPE}")
+endforeach()
+
 add_definitions("-DSOFA_BUILD_ZY_ROS_CONNECTION_MANAGER")
 add_definitions(-DROS_BUILD_SHARED_LIBS)
 
