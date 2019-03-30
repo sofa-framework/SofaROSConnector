@@ -94,7 +94,6 @@ namespace Zyklio
         {
             Inherit::bwdInit();
 
-#ifdef ZYKLIO_USE_ROS_SUPPORT
             connectionManagerFound = publishingHandler.setROSConnectionManagerByContext(getContext());
 
             if (connectionManagerFound)
@@ -102,8 +101,6 @@ namespace Zyklio
                 simResultPublisher = new Zyklio::ROSConnector::ZyROSFloat32MultiArrayPublisher(publishingHandler.getROSNodeHandle(), "truSimResult");
                 publishingHandler.registerPublisher(simResultPublisher);
             }
-#endif        
-            
         }
 
         void ZyROSSimulationAnalyzer::reinit()

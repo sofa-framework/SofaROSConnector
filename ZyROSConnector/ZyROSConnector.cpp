@@ -122,6 +122,7 @@ void ZyROSConnector::rosLoop()
 	m_runCondition.notify_all();
 	while (ros::ok())
     {
+        // Clean up ROS subscribers that are no longer active
         for (size_t k = 0; k < m_d->m_connectorThread->m_activeSubscribers.size(); ++k)
         {
             if (m_d->m_connectorThread->m_activeSubscribers[k] == false)
@@ -130,6 +131,7 @@ void ZyROSConnector::rosLoop()
             }
         }
 
+        // Publish messages from ROS publishers that are active, if any
         for (size_t k = 0; k < m_d->m_connectorThread->m_activePublishers.size(); ++k)
         {
             if (m_d->m_connectorThread->m_activePublishers[k] == true)
@@ -137,31 +139,6 @@ void ZyROSConnector::rosLoop()
                 m_d->m_connectorThread->m_topicPublishers[k]->publishMessageQueue();
             }
         }
-
-        /*std::vector<boost::shared_ptr<ZyROSListener> >::iterator iter = m_topicSubscribers.begin();
-		while (iter != m_topicSubscribers.end())
-		{
-			if (std::find(tl_subscribers.begin(), tl_subscribers.end(), *iter) == tl_subscribers.end())
-			{
-				tl_subscribers.push_back(boost::move(*iter));
-				iter = m_topicSubscribers.erase(iter);
-			}
-			else
-			{
-				++iter;
-			}
-		}
-
-        std::vector<boost::shared_ptr<ZyROSListener> >::iterator rm_iter = m_removedTopicSubscribers.begin();
-		while (rm_iter != m_removedTopicSubscribers.end())
-		{
-            std::vector<boost::shared_ptr<ZyROSListener> >::iterator ls_it = std::find(tl_subscribers.begin(), tl_subscribers.end(), *rm_iter);
-			if (ls_it != tl_subscribers.end())
-			{
-				tl_subscribers.erase(ls_it);
-			}
-			++rm_iter;
-		}*/
 
 		ros::getGlobalCallbackQueue()->callAvailable(ros::WallDuration(0.01));
 	}
@@ -199,7 +176,7 @@ void ZyROSConnector::resumeComponent()
 
 void ZyROSConnector::startConnector()
 {
-    std::cout << "ZyROSConnector::startConnector()" << std::endl;
+    msg_info("ZyROSConnector") << "startConnector()";
 
 	char *master_uri_env = NULL;
 	#ifdef _MSC_VER
@@ -212,13 +189,13 @@ void ZyROSConnector::startConnector()
 	std::string rosMasterUri;
 	if (master_uri_env != NULL)
 	{
-		std::cout << "Connecting to ROS master (env. variable): " << master_uri_env << std::endl;
+        msg_info("ZyROSConnector") << "Connecting to ROS master (env. variable): " << master_uri_env;
 		rosMasterUri = master_uri_env;
 		setRosMasterURIValue = false;
 	}
 	if (this->m_rosMasterURI.compare(rosMasterUri) != 0)
 	{
-		std::cout << "Connecting to ROS master (given from config): " << this->m_rosMasterURI << std::endl;
+        msg_info("ZyROSConnector") << "Connecting to ROS master (given from config): " << this->m_rosMasterURI;
 		rosMasterUri = this->m_rosMasterURI;
 	}
 

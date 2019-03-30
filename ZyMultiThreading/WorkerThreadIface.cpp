@@ -212,12 +212,12 @@ bool WorkerThreadIface::launch()
 	// can throw boost::thread_resource_error
 	try
 	{
-		DEBOUT(std::cout << "WorkerThread_Pool<PoolTaskType>::launch(" << m_name << "): Start boost thread" << std::endl;)
+        msg_info("WorkerThreadIface") << "WorkerThread_Pool<PoolTaskType>::launch(" << m_name << "): Start boost thread";
 		m_thread.reset(new boost::thread(attr, boost::bind(&WorkerThreadIface::main, this)));
 	}
 	catch (boost::thread_resource_error& err)
 	{
-		std::cerr << "Thread start exception for " << m_name << ": " << err.what() << std::endl;
+        msg_error("WorkerThreadIface") << "Thread start exception for " << m_name << ": " << err.what();
 		m_error = err.code();
 		return false;
 	}
@@ -227,7 +227,7 @@ bool WorkerThreadIface::launch()
 
 bool WorkerThreadIface::wait_till_launched()
 {
-	DEBOUT(std::cout << "  wait_till_launched(" << m_name << ") -- state = " << m_state << ", request = " << m_request << std::endl;)
+    msg_info("WorkerThreadIface") << "wait_till_launched(" << m_name << ") -- state = " << m_state << ", request = " << m_request;
 	if (m_request == rq_idle)
 	{
 		return true;
@@ -240,12 +240,12 @@ bool WorkerThreadIface::wait_till_launched()
 		{
 			if (m_request == rq_idle)
 			{
-				DEBOUT(std::cout << "    requested idle state, assuming as launched (2)..." << std::endl;)
+                msg_info("WorkerThreadIface") << "Requested idle state, assuming as launched (2)...";
 				return true;
 			}
 
 			m_signal.wait(lock);
-			DEBOUT(std::cout << "  wait_till_launched(" << m_name << ")" << std::endl;)
+            msg_info("WorkerThreadIface") << "wait_till_launched(" << m_name << ")";
 		}
 	}
 
@@ -271,19 +271,19 @@ bool WorkerThreadIface::wait_till_resumed()
 
 		if (m_request == rq_idle)
 		{
-			DEBOUT(std::cout << "  wait_till_resumed(" << m_name << "): idle state requested; this counts as resumed (1)" << std::endl;)
+            msg_info("WorkerThreadIface") << "wait_till_resumed(" << m_name << "): idle state requested; this counts as resumed (1)";
 			return true;
 		}
 
 		while (running != m_state && completed != m_state)
 		{
-			DEBOUT(std::cout << "  wait_till_resumed(" << m_name << ") -- m_request = " << m_request << ", m_state = " << m_state << std::endl;)
+            msg_info("WorkerThreadIface") << "wait_till_resumed(" << m_name << ") -- m_request = " << m_request << ", m_state = " << m_state;
 			m_signal.wait_for(lock, boost::chrono::milliseconds(100));
 			// m_signal.wait_for(lock);
 
 			if (m_request == rq_idle)
 			{
-				DEBOUT(std::cout << "  wait_till_resumed(" << m_name << "): idle state requested; this counts as resumed (2)" << std::endl;)
+                msg_info("WorkerThreadIface") << "wait_till_resumed(" << m_name << "): idle state requested; this counts as resumed (2)";
 				return true;
 			}
 		}
@@ -299,7 +299,7 @@ bool WorkerThreadIface::wait_till_paused()
 		boost::unique_lock<boost::mutex> lock(m_guard);
 		while (paused != m_state && completed != m_state)
 		{
-			DEBOUT(std::cout << "  wait_till_paused(" << m_name << ")" << std::endl;)
+            msg_info("WorkerThreadIface") << "  wait_till_paused(" << m_name << ")";
 			m_signal.wait(lock);
 		}
 	}
@@ -318,7 +318,7 @@ void WorkerThreadIface::idle()
 
 		while (rq_pause == m_request || rq_idle == m_request)
 		{
-			DEBOUT(std::cout << "WorkerThread_Pool<PoolTaskType>::idle(" << m_name << ") -- m_request = " << m_request << std::endl;)
+            msg_info("WorkerThreadIface") << "WorkerThread_Pool<PoolTaskType>::idle(" << m_name << ") -- m_request = " << m_request;
 			m_pause.wait(lock);
 		}
 	}
@@ -329,22 +329,22 @@ void WorkerThreadIface::idle()
 
 void WorkerThreadIface::main()
 {
-	DEBOUT(std::cout << "WorkerThread_Pool::main(" << this->m_name << ")" << std::endl;)
+    msg_info("WorkerThreadIface") << "WorkerThread_Pool::main(" << this->m_name << ")";
 	// read and store current thread id
 	m_id = get_current_thread_id();
-	DEBOUT(std::cout << " Got thread id = " << m_id << std::endl;)
+    msg_info("WorkerThreadIface") << " Got thread id = " << m_id;
 
 	// signal that the thread is running
 	signal_state(running);
 
-	DEBOUT(std::cout << " signalled running/paused state" << std::endl;)
+    msg_info("WorkerThreadIface") << "signalled running/paused state";
 	// perform on-start custom action
 	on_start();
-	DEBOUT(std::cout << " called on_start()" << std::endl;)
+    msg_info("WorkerThreadIface") << "called on_start()";
 
 	if (m_start_paused)
 	{
-		DEBOUT(std::cout << " start paused" << std::endl;)
+        msg_info("WorkerThreadIface") << "start paused";
 		m_request = rq_idle;
 		signal_state(paused);
 	}
@@ -358,22 +358,22 @@ void WorkerThreadIface::main()
 		{
 			while (rq_none == m_request)
 			{
-				DEBOUT(std::cout << " Thread " << m_name << ": no request pending, call action()" << std::endl;)
+                msg_info("WorkerThreadIface") << " Thread " << m_name << ": no request pending, call action()";
 				if (!action())
 				{
-					DEBOUT(std::cout << " Thread " << m_name << ": action() returned false, leave processing loop" << std::endl;)
+                    msg_info("WorkerThreadIface") << " Thread " << m_name << ": action() returned false, leave processing loop";
 					break;
 				}
 			}
 
 			if (rq_idle == m_request)
 			{
-				DEBOUT(std::cout << " Thread " << m_name << ": idle..." << std::endl;)
+                msg_info("WorkerThreadIface") << " Thread " << m_name << ": idle...";
 				idle();
 			}
 			else if (rq_pause != m_request)
 			{
-				DEBOUT(std::cout << " Thread " << m_name << ": received request != rq_pause " << m_request << " vs. " << rq_pause << " ---> leave loop" << std::endl;)
+                msg_info("WorkerThreadIface") << " Thread " << m_name << ": received request != rq_pause " << m_request << " vs. " << rq_pause << " ---> leave loop";
 				break;
 			}
 
@@ -382,7 +382,7 @@ void WorkerThreadIface::main()
 	catch (const boost::thread_interrupted& ex)
 	{
 		SOFA_UNUSED(ex);
-		std::cerr << "WARNING: Thread " << m_name << ": Caught boost::thread_interrupted" << std::endl;
+        msg_warning("WorkerThreadIface") << "Thread " << m_name << ": Caught boost::thread_interrupted";
 	}
 
 	// update state
@@ -403,33 +403,32 @@ void WorkerThreadIface::signal_state(state_type state)
 
 	boost::unique_lock<boost::mutex> lock(m_guard);
 
-	DEBOUT(std::cout << "WorkerThread_Pool::signal_state(" << this->m_name << "): new state = " << state << ", old state = " << m_state << std::endl;
+    msg_info("WorkerThreadIface") << "WorkerThread_Pool::signal_state(" << this->m_name << "): new state = " << state << ", old state = " << m_state;
 
-	std::cout << "Transition from: ";
+    msg_info("WorkerThreadIface") << "Transition from: ";
 
 	if (m_state == init)
-		std::cout << " init ";
+        msg_info("WorkerThreadIface") << " init ";
 	else if (m_state == paused)
-		std::cout << " paused ";
+        msg_info("WorkerThreadIface") << " paused ";
 	else if (m_state == running)
-		std::cout << " running ";
+        msg_info("WorkerThreadIface") << " running ";
 	else if (m_state == completed)
-		std::cout << " completed ";
+        msg_info("WorkerThreadIface") << " completed ";
 
-	std::cout << " to: ";
+    msg_info("WorkerThreadIface") << " to: ";
 
 	if (state == init)
-		std::cout << " init" << std::endl;
+        msg_info("WorkerThreadIface") << " init";
 	else if (state == paused)
-		std::cout << " paused" << std::endl;
+        msg_info("WorkerThreadIface") << " paused";
 	else if (state == running)
-		std::cout << " running" << std::endl;
+        msg_info("WorkerThreadIface") << " running";
 	else if (state == completed)
-		std::cout << " completed" << std::endl;
+        msg_info("WorkerThreadIface") << " completed";
 
 	if (state == completed)
-		std::cout << "ALERT state = completed for THREAD " << m_name << std::endl;
-	)
+        msg_info("WorkerThreadIface") << "ALERT state = completed for THREAD " << m_name;
 
 	m_state = state;
 

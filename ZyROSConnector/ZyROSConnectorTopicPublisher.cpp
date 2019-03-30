@@ -12,7 +12,7 @@ ZyROSPublisher::ZyROSPublisher(const ZyROSPublisher& other)
     if (this != &other)
     {
         m_uuid = other.m_uuid;
-        m_rosTopic = other.m_rosTopic;
+        messageType = other.messageType;
     }
 }
 
@@ -21,7 +21,7 @@ ZyROSPublisher& ZyROSPublisher::operator=(const ZyROSPublisher& other)
     if (this != &other)
     {
         m_uuid = other.m_uuid;
-        m_rosTopic = other.m_rosTopic;
+        messageType = other.messageType;
     }
     return *this;
 }

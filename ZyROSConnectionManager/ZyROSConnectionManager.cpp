@@ -32,17 +32,17 @@ ZyROSConnectionManager::ZyROSConnectionManager()
 
 ZyROSConnectionManager::~ZyROSConnectionManager()
 {
-    std::cout << "ZyROSConnectionManager destructor" << std::endl;
-    std::cout << "..." << std::endl;
+    msg_info("ZyROSConnectionManager") << "ZyROSConnectionManager destructor";
+    msg_info("ZyROSConnectionManager") << "...";
 }
 
 void ZyROSConnectionManager::cleanup()
 {
-    std::cout << "ZyROSConnectionManager cleanup" << std::endl;
+    msg_info("ZyROSConnectionManager") << "cleanup()";
 
     if (m_ros_connector)
     {
-        msg_info("ZyROSConnectionManager") << "Removing topic listeners:";
+        msg_info("ZyROSConnectionManager") << "Removing topic listeners.";
         while (!topicListeners.empty())
         {
             boost::shared_ptr<ZyROSListener>& current = topicListeners.back();
@@ -67,7 +67,7 @@ void ZyROSConnectionManager::cleanup()
         delete m_ros_connector;
     }
 
-    std::cout << "ZyROSConnectionManager cleanup done" << std::endl;
+    msg_info("ZyROSConnectionManager") << "cleanup() done";
 }
 
 void ZyROSConnectionManager::addPublisher(boost::shared_ptr<ZyROSPublisher>& pub)
@@ -76,36 +76,15 @@ void ZyROSConnectionManager::addPublisher(boost::shared_ptr<ZyROSPublisher>& pub
     topicPublishers.push_back(pub);
 }
 
-#ifndef _WIN32
 void ZyROSConnectionManager::addSubscriber(boost::shared_ptr<ZyROSListener>& sub)
-#else
-void ZyROSConnectionManager::addSubscriber(boost::shared_ptr<ZyROSListener>& sub)
-#endif
 {
     m_ros_connector->addTopicListener(sub);
     topicListeners.push_back(sub);
 }
 
-//void ZyROSConnectionManager::addSubscriber(boost::shared_ptr<ZyROSListener>& sub)
-//{
-//    m_ros_connector->addTopicListener(sub);
-//    topicListeners.push_back(sub);
-//}
-
-//bool ZyROSConnectionManager::setRosMasterURI(const std::string& masterUri)
-//{
-//	if (!ros::isStarted())
-//	{
-//		m_rosMasterURI.setValue(masterUri);
-//		return true;
-//	}
-//
-//	return false;
-//}
-
 void ZyROSConnectionManager::init()
 {
-    std::cout << "ZyROSConnectionManager::init()" << std::endl;
+    msg_info("ZyROSConnectionManager") << "ZyROSConnectionManager::init()";
 
     m_ros_connector = new ZyROSConnector();
     m_ros_connector->setRosMasterURI(m_rosMasterURI.getValue());
@@ -132,7 +111,7 @@ void ZyROSConnectionManager::init()
 
 void ZyROSConnectionManager::bwdInit()
 {
-    std::cout << "ZyROSConnectionManager::bwdInit() begin" << std::endl;
+    msg_info("ZyROSConnectionManager") << "ZyROSConnectionManager::bwdInit() begin";
 
     if (m_ros_connector)
     {
@@ -144,11 +123,11 @@ void ZyROSConnectionManager::bwdInit()
 
             boost::sregex_token_iterator i(rosTopics_Sequence.begin(), rosTopics_Sequence.end(), entrySplit, -1);
             boost::sregex_token_iterator j;
-            std::cout << "Detected ROS topics: " << std::endl;
+            msg_info("ZyROSConnectionManager") << "Detected ROS topics: ";
             while (i != j)
             {
                 std::string topicEntryStr = i->str();
-                std::cout << "   - " << *i++ << ": ";
+                msg_info("ZyROSConnectionManager") << "   - " << *i++ << ": ";
                 boost::sregex_token_iterator e_i(topicEntryStr.begin(), topicEntryStr.end(), topicTypeSplit, -1);
                 boost::sregex_token_iterator e_j;
                 unsigned int numTokens = 0;
@@ -159,18 +138,18 @@ void ZyROSConnectionManager::bwdInit()
                 {
                     if (numTokens == 0)
                     {
-                        std::cout << " ROS topic: " << *e_i << " ";
+                        msg_info("ZyROSConnectionManager") << " ROS topic: " << *e_i << " ";
                         rosTopic = *e_i;
                     }
                     else if (numTokens == 1)
                     {
-                        std::cout << " Message type: " << *e_i << " ";
+                        msg_info("ZyROSConnectionManager") << " Message type: " << *e_i << " ";
                         messageType = *e_i;
                     }
                     *e_i++;
                     numTokens++;
 
-                    std::cout << std::endl;
+                    msg_info("ZyROSConnectionManager");
                     if (!rosTopic.empty() && !messageType.empty())
                     {
                         //this->m_subscribedRosTopics.push_back(std::make_pair(rosTopic, messageType));
@@ -242,7 +221,7 @@ void ZyROSConnectionManager::bwdInit()
                         }
                     }
                 }
-                std::cout << std::endl;
+                msg_info("ZyROSConnectionManager");
             }
         }
     }
@@ -281,12 +260,12 @@ void ZyROSConnectionManager::bwdInit()
     }
     msg_info("ZyROSConnectionManager") << "Current ROS master status:\n" << tmpmsg.str();
 
-    std::cout << "ZyROSConnectionManager::bwdInit() done" << std::endl;
+    msg_info("ZyROSConnectionManager") << "ZyROSConnectionManager::bwdInit() done";
 }
 
 void ZyROSConnectionManager::reset()
 {
-    std::cout << "ZyROSConnectionManager::reset()" << std::endl;
+    msg_info("ZyROSConnectionManager") << "ZyROSConnectionManager::reset()";
     /*if (m_ros_connector)
       {
           if (ros::isStarted())

@@ -39,7 +39,7 @@ namespace Zyklio
 {
 namespace ROSConnector
 {
-// Data members in private implementation; keep ROS headers out of the header
+// Data members in private implementation
 class ZyklioRosConnectorPrivate;
 class SOFA_ZY_ROS_CONNECTOR_API ZyROSConnector : public sofa::core::objectmodel::BaseObject /*: public sofa::simulation::SimulationConcurrentComponent*/
 {

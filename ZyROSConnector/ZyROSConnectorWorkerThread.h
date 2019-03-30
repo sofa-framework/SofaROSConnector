@@ -11,6 +11,7 @@
 #include <ZyMultiThreading/WorkerThread_SingleTask.h>
 
 #include "ZyROSConnector.h"
+#include "ZyROSConnectorTopicSubscriber.h"
 #include "ZyROSConnectorTopicPublisher.h"
 
 namespace Zyklio

@@ -13,6 +13,11 @@ set(HEADER_FILES
         ZyROSConnectorTopicSubscriber.inl
         ZyROSConnectorTopicPublisher.h
         ZyROSConnectorTopicPublisher.inl
+        ZyROSConnectorServiceClient.h
+        ZyROSConnectorServiceClient.inl
+        ZyROSConnectorServiceServer.h
+        ZyROSConnectorServiceServer.inl
+
         ZyROSTopicListener_Bool.h
         ZyROSTopicListener_JointState.h
         ZyROSTopicListener_LogMsgs.h
@@ -25,6 +30,9 @@ set(SOURCE_FILES
         ZyROSConnectorWorkerThread.cpp
         ZyROSConnectorTopicSubscriber.cpp
         ZyROSConnectorTopicPublisher.cpp
+        ZyROSConnectorServiceClient.cpp
+        ZyROSConnectorServiceServer.cpp
+
         ZyROSTopicListener_Bool.cpp
         ZyROSTopicListener_JointState.cpp
         ZyROSTopicListener_LogMsgs.cpp

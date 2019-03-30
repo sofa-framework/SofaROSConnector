@@ -1,5 +1,5 @@
-#ifndef TRU_SOFA_LOGGING_CONFIG_H
-#define TRU_SOFA_LOGGING_CONFIG_H
+#ifndef ZY_ROS_CONNECTOR_INIT_H
+#define ZY_ROS_CONNECTOR_INIT_H
 
 #include <sofa/helper/system/config.h>
 
@@ -9,4 +9,4 @@
 #  define SOFA_ZY_ROS_CONNECTOR_API SOFA_IMPORT_DYNAMIC_LIBRARY
 #endif
 
-#endif //TRU_SOFA_LOGGING_CONFIG_H
+#endif // ZY_ROS_CONNECTOR_INIT_H

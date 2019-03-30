@@ -1,13 +1,26 @@
 project(ZyROSConnectionManager)
 
+message(STATUS "Generating ROS message and service type header files.")
+
+# TODO: Specify ROS_INSTALL_PREFIX and ROS_DISTRIBUTION arguments based on environment variables
+execute_process(COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/list_ros_message_types.sh" "${CMAKE_CURRENT_BINARY_DIR}")
+
+if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/ZyROS_MessageType_Instantiations.h" AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/ZyROS_ServiceType_Instantiations.h")
+    message(STATUS "Header files generated successfully.")
+else()
+    message(FATAL "Header file generation failed!")
+endif()
+
 set(HEADER_FILES
     initZyROSConnectionManager.h
     ZyROSConnectionManager.h
+    ${CMAKE_CURRENT_BINARY_DIR}/ZyROS_MessageType_Instantiations.h
+    ${CMAKE_CURRENT_BINARY_DIR}/ZyROS_ServiceType_Instantiations.h
 )
 
 set(SOURCE_FILES
     initZyROSConnectionManager.cpp
-        ZyROSConnectionManager.cpp
+    ZyROSConnectionManager.cpp
 )
 
 find_package(ROS QUIET REQUIRED)
@@ -22,6 +35,7 @@ link_directories(${Boost_LIBRARY_DIRS})
 
 # SOFA include directories
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${CMAKE_SOURCE_DIR})
 include_directories(${CMAKE_SOURCE_DIR}/modules)
 

@@ -119,7 +119,7 @@ namespace Zyklio
             if (velocityApproximationFound)
             {
                 sofa::helper::vector</*Zyklio::VelocityApproximation::TruVelocityApproximator::jointData*/ std::pair <double, std::string>> jntDtVec;
-                for (int k = 0; k < msg.name.size(); k++)
+                for (size_t k = 0; k < msg.name.size(); k++)
                 {
                     /*Zyklio::VelocityApproximation::TruVelocityApproximator::jointData*/ std::pair <double, std::string> jntDt(msg.position[k], msg.name[k]);
                     jntDtVec.push_back(jntDt);

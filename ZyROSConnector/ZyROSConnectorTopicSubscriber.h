@@ -25,76 +25,73 @@ namespace Zyklio
     {
         class SOFA_ZY_ROS_CONNECTOR_API ZyROSConnectorTopicSubscriberIface
         {
-        public:
-            void onMessageReceived();
-            boost::signals2::signal<void()>& getSignal() { return m_sig; }
+            public:
+                void onMessageReceived();
+                boost::signals2::signal<void()>& getSignal() { return m_sig; }
 
-        protected:
-            boost::signals2::signal<void()> m_sig;
+            protected:
+                boost::signals2::signal<void()> m_sig;
         };
 
         class SOFA_ZY_ROS_CONNECTOR_API ZyROSListener : public ZyROSConnectorTopicSubscriberIface
         {
-        public:
-            ZyROSListener();
-            virtual ~ZyROSListener() {}
+            public:
+                ZyROSListener();
+                virtual ~ZyROSListener() {}
 
-            ZyROSListener(const ZyROSListener&);
-            ZyROSListener& operator=(const ZyROSListener&);
+                ZyROSListener(const ZyROSListener&);
+                ZyROSListener& operator=(const ZyROSListener&);
 
-            virtual void cleanup() { std::cout << "WARNING:  cleanup() not implemented for a ZyROSListener." << std::endl; }
+                virtual void cleanup() { msg_info("ZyROSListener") << "cleanup() not implemented for a ZyROSListener."; }
 
-            const boost::uuids::uuid& getUuid() { return m_uuid; }
+                const boost::uuids::uuid& getUuid() { return m_uuid; }
 
-            std::string getMessageType() { return messageType; }
-            //std::string getTopic() const { return m_rosTopic; };
-            virtual std::string getTopic() { std::cout << "WARNING: getTopic() not implemented for a ZyROSListener." << std::endl; return ""; }
+                std::string getMessageType() { return messageType; }
+                virtual std::string getTopic() { msg_warning("ZyRosListener") << "getTopic() not implemented for a ZyROSListener."; return ""; }
 
-        protected:
-            boost::uuids::uuid m_uuid;
-            std::string m_rosTopic;
+            protected:
+                boost::uuids::uuid m_uuid;
+                std::string m_rosTopic;
 
-            boost::signals2::connection m_topicConnection;
-            std::string messageType;
+                boost::signals2::connection m_topicConnection;
+                std::string messageType;
         };
 
         template <class MessageType>
         class SOFA_ZY_ROS_CONNECTOR_API ZyROSConnectorTopicSubscriber : public ZyROSListener
         {
-        public:
+            public:
+                ZyROSConnectorTopicSubscriber();
+                ZyROSConnectorTopicSubscriber(ros::NodeHandlePtr rosNode, const std::string& topic, unsigned int messageQueueLength = 50, bool useGenericMessageHandling = false);
+                ~ZyROSConnectorTopicSubscriber();
 
-            void processMessage(const boost::shared_ptr<MessageType const>& msg);
-            void subscribeToTopic();
-            void unsubscribeFromTopic();
+                ZyROSConnectorTopicSubscriber(const ZyROSConnectorTopicSubscriber& other);
+                ZyROSConnectorTopicSubscriber& operator=(const ZyROSConnectorTopicSubscriber& other);
 
-            const MessageType& getLatestMessage();
-            const MessageType& getMessage(size_t);
-            unsigned int getMessageCount() const;
+                void processMessage(const boost::shared_ptr<MessageType const>& msg);
+                void subscribeToTopic();
+                void unsubscribeFromTopic();
 
-            void clearMessages();
+                const MessageType& getLatestMessage();
+                const MessageType& getMessage(size_t);
+                unsigned int getMessageCount() const;
 
-            ZyROSConnectorTopicSubscriber();
-            ZyROSConnectorTopicSubscriber(ros::NodeHandlePtr rosNode, const std::string& topic, unsigned int messageQueueLength = 50, bool useGenericMessageHandling = false);
-            ~ZyROSConnectorTopicSubscriber();
+                void clearMessages();
 
-            ZyROSConnectorTopicSubscriber(const ZyROSConnectorTopicSubscriber& other);
-            ZyROSConnectorTopicSubscriber& operator=(const ZyROSConnectorTopicSubscriber& other);
+                void cleanup();
+                void handleGenericMessage();
 
-            void cleanup();
-            void handleGenericMessage();
+                std::string getTopic() const { return m_rosTopic; }
 
-            std::string getTopic() const { return m_rosTopic; }
+            protected:
+                ros::NodeHandlePtr m_rosNodeHandle;
 
-        protected:
-            std::string m_rosTopic;
-            ros::NodeHandlePtr m_rosNodeHandle;
+                ros::Subscriber m_subscriber;
 
-            ros::Subscriber m_subscriber;
+                boost::circular_buffer<MessageType> m_messageQueue;
+                unsigned int m_messageQueueLength;
 
-            boost::circular_buffer<MessageType> m_messageQueue;
-            unsigned int m_messageQueueLength;
-
-            boost::mutex m_mutex;
+                boost::mutex m_mutex;
         };
     }
 }

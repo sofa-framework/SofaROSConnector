@@ -30,7 +30,7 @@ namespace Zyklio
                 //boost::signals2::connection* getConnectionSignal() { return &m_topicConnection; }
 
                 boost::signals2::signal<void()>& getSignal();
-                std::string getTopic() { return m_topicSubscriber->getTopic();};
+                std::string getTopic() { return m_topicSubscriber->getTopic();}
 		
 			protected:
 				void handleBoolUpdateMessage();

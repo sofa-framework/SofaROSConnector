@@ -111,7 +111,7 @@ size_t ZyROSConnectorWorkerThread::getNumTopicPublishers() const
 
 void ZyROSConnectorWorkerThread::main()
 {
-  msg_info() << "Entering main function of ZyROSConnectorWorkerThread" << sendl;
+    msg_info("ZyROSConnectorWorkerThread") << "Entering main function of ZyROSConnectorWorkerThread";
 	// read and store current thread id
 	m_id = get_current_thread_id();
 
@@ -137,7 +137,7 @@ void ZyROSConnectorWorkerThread::main()
 	catch (const boost::thread_interrupted& ex)
 	{
 		SOFA_UNUSED(ex);
-		std::cerr << "WARNING: Thread " << m_name << ": Caught boost::thread_interrupted" << std::endl;
+        msg_warning("ZyROSConnectorWorkerThread") << "Thread " << m_name << ": Caught boost::thread_interrupted";
 	}
 
 	// update state

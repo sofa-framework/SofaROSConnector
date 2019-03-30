@@ -115,7 +115,7 @@ ZyROSConnectorTopicSubscriber<MessageType>& ZyROSConnectorTopicSubscriber<Messag
 {
     if (this != &other)
     {
-        //ZyROSListener::operator=(other);
+        ZyROSListener::operator=(other);
     }
     return *this;
 }
@@ -135,7 +135,7 @@ void ZyROSConnectorTopicSubscriber<MessageType>::cleanup()
 template <class MessageType>
 void ZyROSConnectorTopicSubscriber<MessageType>::handleGenericMessage()
 {
-    const MessageType& msg = getLatestMessage();
+    // const MessageType& msg = getLatestMessage();
     // msg_info("ZyROSConnectorTopicSubscriber<" + messageType + ">") << "Message received: " << msg;
 }
 
