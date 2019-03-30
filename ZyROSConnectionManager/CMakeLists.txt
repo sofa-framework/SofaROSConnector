@@ -30,6 +30,8 @@ endforeach()
 set(HEADER_FILES
     initZyROSConnectionManager.h
     ZyROSConnectionManager.h
+    ${CMAKE_CURRENT_BINARY_DIR}/ZyROS_MessageType_Instantiations.h
+    ${CMAKE_CURRENT_BINARY_DIR}/ZyROS_ServiceType_Instantiations.h
 )
 
 set(SOURCE_FILES

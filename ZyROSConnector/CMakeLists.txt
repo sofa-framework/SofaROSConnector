@@ -19,15 +19,6 @@ set(HEADER_FILES
         ZyROSConnectorServiceServer.inl
 )
 
-set(SOURCE_FILES
-        ZyROSConnector.cpp
-        ZyROSConnectorWorkerThread.cpp
-        ZyROSConnectorTopicSubscriber.cpp
-        ZyROSConnectorTopicPublisher.cpp
-        ZyROSConnectorServiceClient.cpp
-        ZyROSConnectorServiceServer.cpp
-)
-
 find_package(ROS QUIET REQUIRED)
 message(STATUS "ROS found: ${ROS_FOUND}")
 find_package(Boost COMPONENTS regex thread signals QUIET REQUIRED)

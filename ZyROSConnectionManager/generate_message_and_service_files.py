@@ -780,7 +780,6 @@ void ZyROSConnectorServiceServerWorkerThread::main()
 
 #            service_cpp_file.write('}\n')
 
-
 if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG)
 
