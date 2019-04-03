@@ -59,6 +59,8 @@ namespace Zyklio
         class SOFA_ZY_ROS_CONNECTOR_API ZyROSConnectorServiceClient : public ZyROSServiceClient
         {
             public:
+                ZyROSConnectorServiceClient(ros::NodeHandlePtr nodeHandle, const std::string& serviceURI, unsigned int queueLength = 10);
+
                 bool enqueueRequest(const RequestType&);
                 void clearRequests();
 
@@ -70,10 +72,13 @@ namespace Zyklio
                 void dispatchRequests();
 
                 ros::NodeHandlePtr m_rosNodeHandle;
+                std::string m_serviceURI;
 
                 ros::ServiceClientPtr m_client;
 
+                boost::circular_buffer<RequestType> m_requestQueue;
                 boost::circular_buffer<ResponseType> m_responseQueue;
+
                 unsigned int m_messageQueueLength;
 
                 boost::mutex m_mutex;

@@ -14,8 +14,6 @@ endif()
 set(HEADER_FILES
     initZyROSConnectionManager.h
     ZyROSConnectionManager.h
-    ${CMAKE_CURRENT_BINARY_DIR}/ZyROS_MessageType_Instantiations.h
-    ${CMAKE_CURRENT_BINARY_DIR}/ZyROS_ServiceType_Instantiations.h
 )
 
 set(SOURCE_FILES
@@ -53,6 +51,12 @@ string(REPLACE "\n" ";" ROS_MSG_TYPES_LIST ${ROS_MSG_TYPES})
 foreach(ROS_MSG_TYPE ${ROS_MSG_TYPES_LIST})
     message(STATUS "Message type: ${ROS_MSG_TYPE}")
 endforeach()
+
+list(APPEND HEADER_FILES     ${CMAKE_CURRENT_BINARY_DIR}/ZyROS_MessageType_Instantiations.h
+                             ${CMAKE_CURRENT_BINARY_DIR}/ZyROS_ServiceType_Instantiations.h)
+
+list(APPEND SOURCE_FILES     ${CMAKE_CURRENT_BINARY_DIR}/ZyROS_MessageTypes_Instantiations.cpp
+                             ${CMAKE_CURRENT_BINARY_DIR}/ZyROS_ServiceTypes_Instantiations.cpp)
 
 add_definitions("-DSOFA_BUILD_ZY_ROS_CONNECTION_MANAGER")
 add_definitions(-DROS_BUILD_SHARED_LIBS)

@@ -18,11 +18,11 @@ set(HEADER_FILES
         ZyROSConnectorServiceServer.h
         ZyROSConnectorServiceServer.inl
 
-        ZyROSTopicListener_Bool.h
-        ZyROSTopicListener_JointState.h
-        ZyROSTopicListener_LogMsgs.h
-        ZyROSTopicPublisher_Float32.h
-        ZyROSTopicPublisher_Float32MultiArray.h
+        # ZyROSTopicListener_Bool.h
+        # ZyROSTopicListener_JointState.h
+        # ZyROSTopicListener_LogMsgs.h
+        # ZyROSTopicPublisher_Float32.h
+        # ZyROSTopicPublisher_Float32MultiArray.h
 )
 
 set(SOURCE_FILES
@@ -33,11 +33,11 @@ set(SOURCE_FILES
         ZyROSConnectorServiceClient.cpp
         ZyROSConnectorServiceServer.cpp
 
-        ZyROSTopicListener_Bool.cpp
-        ZyROSTopicListener_JointState.cpp
-        ZyROSTopicListener_LogMsgs.cpp
-        ZyROSTopicPublisher_Float32.cpp
-        ZyROSTopicPublisher_Float32MultiArray.cpp
+        # ZyROSTopicListener_Bool.cpp
+        # ZyROSTopicListener_JointState.cpp
+        # ZyROSTopicListener_LogMsgs.cpp
+        # ZyROSTopicPublisher_Float32.cpp
+        # ZyROSTopicPublisher_Float32MultiArray.cpp
 )
 
 find_package(ROS QUIET REQUIRED)

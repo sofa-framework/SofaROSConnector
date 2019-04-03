@@ -24,16 +24,17 @@ int ZyRosConnectionManagerClass = sofa::core::RegisterObject("Zyklio ROS connect
 ;
 
 ZyROSConnectionManager::ZyROSConnectionManager()
-    : m_rosTopics(initData(&m_rosTopics, "rosTopics", "", "List of ROS topics to subscribe to (semicolon separated, format per entry: <ros topic>:::<message type>)"))
-    , m_rosMasterURI(initData(&m_rosMasterURI, std::string("http://localhost:11311"), "rosMasterURI", "ROS master URI to connect to", true, false))
-    , m_ros_connector(NULL)
+    : m_ros_connector(NULL),
+      m_rosMasterURI(initData(&m_rosMasterURI, std::string("http://localhost:11311"), "rosMasterURI", "ROS master URI to connect to", true, false)),
+      m_rosTopics(initData(&m_rosTopics, "rosTopics", "", "List of ROS topics to subscribe to (semicolon separated, format per entry: <ros topic>:::<message type>)"))
+
 {
+
 }
 
 ZyROSConnectionManager::~ZyROSConnectionManager()
 {
     msg_info("ZyROSConnectionManager") << "ZyROSConnectionManager destructor";
-    msg_info("ZyROSConnectionManager") << "...";
 }
 
 void ZyROSConnectionManager::cleanup()
@@ -105,7 +106,7 @@ void ZyROSConnectionManager::init()
     }
     else
     {
-        msg_info("ZyROSConnectionManager") << "Failed to connect to roscore.";
+        msg_error("ZyROSConnectionManager") << "Failed to connect to roscore.";
     }
 }
 
@@ -277,3 +278,81 @@ void ZyROSConnectionManager::reset()
       }*/
 }
 
+template <class MessageType>
+std::vector< ZyROSConnectorTopicSubscriber<MessageType>* > ZyROSConnectionManager::getSubscribers()
+{
+    std::vector< ZyROSConnectorTopicSubscriber<MessageType>* > subs;
+
+    for (std::vector< boost::shared_ptr<ZyROSListener> >::iterator it = topicListeners.begin();
+        it != topicListeners.end(); it++)
+    {
+        if ((*it)) // TODO: find out why there are sometimes NULL pointers in this vector
+        {
+            if ((*it)->getMessageType().compare(ros::message_traits::DataType<MessageType>::value()) == 0)
+            {
+                subs.push_back(&(*it));
+            }
+        }
+    }
+
+    return subs;
+}
+
+const std::vector<std::string> ZyROSConnectionManager::getTopics() const
+{
+    std::vector<std::string> allTopics;
+    ros::master::V_TopicInfo topinf;
+
+    if (ros::master::check())
+    {
+        ros::master::getTopics(topinf);
+        for (unsigned int k = 0; k < topinf.size(); k++)
+        {
+            allTopics.push_back(topinf.at(k).name);
+        }
+    }
+
+    return allTopics;
+}
+
+const std::vector<std::string> ZyROSConnectionManager::getServices() const
+{
+    std::vector<std::string> allServices;
+    XmlRpc::XmlRpcValue req = "/node";
+    XmlRpc::XmlRpcValue res;
+    XmlRpc::XmlRpcValue pay;
+
+    if (ros::master::check())
+    {
+        ros::master::execute("getSystemState", req, res, pay, true);
+        std::string state[res.size()];
+        for(int x = 0; x < res[2][2].size(); x++)
+        {
+            std::string gh = res[2][2][x][0].toXml().c_str();
+            gh.erase(gh.begin(), gh.begin()+7);
+            gh.erase(gh.end()-8, gh.end());
+            state[x] = gh;
+
+            msg_info("ZyROSConnectionManager") << "Active ROS service: " << gh;
+        }
+    }
+
+    return allServices;
+}
+
+const std::vector<std::string> ZyROSConnectionManager::getNodes() const
+{
+    std::vector<std::string> allNodes;
+    if (ros::master::check())
+    {
+        ros::V_string nodeNames;
+        if (ros::master::getNodes(nodeNames))
+        {
+            for (size_t k = 0; k < nodeNames.size(); k++)
+            {
+                allNodes.push_back(nodeNames.at(k));
+            }
+        }
+    }
+    return allNodes;
+}

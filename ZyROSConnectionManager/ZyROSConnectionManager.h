@@ -36,8 +36,6 @@ namespace Zyklio
             void reset();
             void cleanup();
 
-            //bool setRosMasterURI(const std::string&);
-
             void addPublisher(boost::shared_ptr<ZyROSPublisher>& pub);
 
             void addSubscriber(boost::shared_ptr<ZyROSListener> &sub);
@@ -64,24 +62,25 @@ namespace Zyklio
 
             // return all subscribers with a message type that matches the given template parameter
             template <class MessageType>
-            std::vector< ZyROSConnectorTopicSubscriber<MessageType>* > getSubscribers()
-            {
-                std::vector< ZyROSConnectorTopicSubscriber<MessageType>* > subs;
+            std::vector< ZyROSConnectorTopicSubscriber<MessageType>* > getSubscribers();
 
-                for (std::vector< boost::shared_ptr<ZyROSListener> >::iterator it = topicListeners.begin();
-                    it != topicListeners.end(); it++)
-                {
-                    if ((*it)) // TODO: find out why there are sometimes NULL pointers in this vector
-                    {
-                        if ((*it)->getMessageType().compare(ros::message_traits::DataType<MessageType>::value()) == 0)
-                        {
-                            subs.push_back(&(*it));
-                        }
-                    }
-                }
+            /**
+             * @brief getTopics - retrieve a list of all known ROS topics
+             * @return List of all ROS topic URLs
+             */
+            const std::vector<std::string> getTopics() const;
 
-                return subs;
-            }
+            /**
+             * @brief getServices - retrieve a list of all known ROS services
+             * @return List of all ROS service URLs
+             */
+            const std::vector<std::string> getServices() const;
+
+            /**
+             * @brief getNodes - retrieve a list of all known ROS node names
+             * @return List of all node names
+             */
+            const std::vector<std::string> getNodes() const;
 
         protected:
 
