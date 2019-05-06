@@ -48,7 +48,18 @@ include_directories(${ROS_INCLUDE_DIR})
 include_directories(${LOG4CXX_INCLUDE_DIRS})
 
 # Build list of available ROS message types
-execute_process(COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/list_ros_message_types.sh OUTPUT_VARIABLE ROS_MSG_TYPES OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+SET(ROS_DISTRO "$ENV{ROS_DISTRO}")
+if ("${ROS_DISTRO}" STREQUAL "")
+    SET(ROS_DISTRO "kinetic")
+endif()
+
+SET(ROS_INSTALL_PREFIX "$ENV{ROS_INSTALL_PREFIX}")
+if ("${ROS_INSTALL_PREFIX}" STREQUAL "")
+    SET(ROS_INSTALL_PREFIX "/opt/ros/kinetic")
+endif()
+
+execute_process(COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/list_ros_message_types.sh" "${ROS_DISTRO}" "${ROS_INSTALL_PREFIX}" OUTPUT_VARIABLE ROS_MSG_TYPES OUTPUT_STRIP_TRAILING_WHITESPACE)
 message(STATUS "List of ROS message types: ${ROS_MSG_TYPES}")
 string(REPLACE "\n" ";" ROS_MSG_TYPES_LIST ${ROS_MSG_TYPES})
 foreach(ROS_MSG_TYPE ${ROS_MSG_TYPES_LIST})

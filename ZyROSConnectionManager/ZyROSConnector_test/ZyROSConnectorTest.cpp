@@ -7,6 +7,11 @@
 #endif
 #endif
 
+#ifndef _WIN32
+#include <dirent.h>
+#include <codecvt>
+#endif
+
 #include <SofaTest/Sofa_test.h>
 
 #include <init_ZyROSConnector.h>
@@ -33,7 +38,11 @@ namespace Zyklio
 			bool connectToROSMaster(const std::string& masterUri);
 			bool disconnectFromROSMaster();
 
-			bool ProcessRunning(const std::wstring&);
+            bool ProcessRunning(const std::wstring&
+#ifndef _WIN32
+                                , pid_t* processPid
+#endif
+                                );
 			int CloseProcesses(const std::wstring& processName);
 
 			void TestBody();
@@ -57,7 +66,11 @@ namespace Zyklio
 		}
 	}
 
-	bool RosConnectorTest::ProcessRunning(const std::wstring& processName)
+    bool RosConnectorTest::ProcessRunning(const std::wstring& processName
+#ifndef _WIN32
+                                          , pid_t* processPid
+#endif
+                                          )
 	{
         bool processOpen = false;
 #if _WIN32
@@ -98,7 +111,59 @@ namespace Zyklio
 		CloseHandle(hProcessSnap);
 		return processOpen;
 #else
+        DIR* dir;
+        struct dirent* ent;
+        char buf[512];
 
+        long  pid;
+        char pname[100] = {0,};
+        char state;
+        FILE *fp=NULL;
+
+        if (!(dir = opendir("/proc")))
+        {
+            msg_error("ZyRosConnector_test") << "can't open /proc";
+            return false;
+        }
+
+        while((ent = readdir(dir)) != NULL)
+        {
+            long lpid = atol(ent->d_name);
+            if(lpid < 0)
+                continue;
+
+            snprintf(buf, sizeof(buf), "/proc/%ld/stat", lpid);
+            fp = fopen(buf, "r");
+
+            if (fp) {
+                if ( (fscanf(fp, "%ld (%[^)]) %c", &pid, pname, &state)) != 3 )
+                {
+                    msg_error("ZyRosConnetor_test") << "fscanf failed";
+                    fclose(fp);
+                    closedir(dir);
+                    return false;
+                }
+
+                std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+                std::wstring currentProcessName = converter.from_bytes(pname);
+                if (currentProcessName.compare(processName) == 0)
+                {
+                    fclose(fp);
+                    closedir(dir);
+#ifndef _WIN32
+                    if (processPid != NULL)
+                        *processPid = (pid_t)lpid;
+#endif
+                    processOpen = true;
+                }
+                fclose(fp);
+
+                if (processOpen)
+                    break;
+            }
+        }
+        if (!processOpen)
+            closedir(dir);
 #endif
         return processOpen;
 	}
@@ -149,7 +214,54 @@ namespace Zyklio
 
 		CloseHandle(hProcessSnap);
 #else
+        DIR* dir;
+        struct dirent* ent;
+        char buf[512];
 
+        long  pid;
+        char pname[100] = {0,};
+        char state;
+        FILE *fp=NULL;
+
+        if (!(dir = opendir("/proc")))
+        {
+            msg_error("ZyRosConnector_test") << "can't open /proc";
+            return closed;
+        }
+
+        while((ent = readdir(dir)) != NULL)
+        {
+            long lpid = atol(ent->d_name);
+            if(lpid < 0)
+                continue;
+
+            snprintf(buf, sizeof(buf), "/proc/%ld/stat", lpid);
+            fp = fopen(buf, "r");
+
+            if (fp) {
+                if ((fscanf(fp, "%ld (%[^)]) %c", &pid, pname, &state)) != 3)
+                {
+                    msg_error("ZyRosConnector_test") << "fscanf failed";
+                    fclose(fp);
+                    closedir(dir);
+                    return closed;
+                }
+                std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+                std::wstring currentProcessName = converter.from_bytes(pname);
+                if (currentProcessName.compare(processName) == 0)
+                {
+                    int kill_ret = kill(pid, SIGTERM);
+                    if (kill_ret == 0)
+                    {
+                        msg_info("ZyROSConnector_test") << "Closed running instance of: " << pname;
+                        closed++;
+                    }
+                }
+                fclose(fp);
+            }
+        }
+
+        closedir(dir);
 #endif
 		return closed;
 	}
@@ -206,21 +318,39 @@ int main(int argc, char** argv)
 	std::string rosCoreExecCommand;
 	if (rosRoot_env != NULL)
 	{
-		std::stringstream w_str;
+        std::stringstream w_str;
+#if _WIN32
 		w_str << "/C " << rosRoot_env << L"\\setup.bat & " << rosRoot_env << L"\\bin\\roscore.exe";
 		rosCoreExecCommand = w_str.str();
 		w_str.str("");
 		w_str << rosRoot_env << "\\bin\\roscore.exe";
 		rosCoreExecutable = w_str.str();
+#else
+        w_str << "source " << rosRoot_env << "/../../setup.bash && " << rosRoot_env << "/../../bin/roscore &";
+        rosCoreExecCommand = w_str.str();
+        w_str.str("");
+        w_str << rosRoot_env << "/../../bin/roscore";
+        rosCoreExecutable = w_str.str();
+#endif
 	}
 	else
 	{
+#if _WIN32
 		rosCoreExecutable = "C:\\opt\\ros\\hydro\\x86\\bin\\roscore.exe";
 		rosCoreExecCommand = "C:\\opt\\ros\\hydro\\x86\\setup.bat & C:\\opt\\ros\\hydro\\x86\\bin\\roscore.exe";
+#else
+        rosCoreExecutable = "/opt/ros/kinetic/bin/roscore";
+        rosCoreExecCommand = "source /opt/ros/kinetic/setup.bash && /opt/ros/kinetic/bin/roscore &";
+#endif
 	}
 		
 	std::string rosMasterURI("http://localhost:11311");
 	boost::filesystem::path rosCoreExecutablePath(rosCoreExecutable);
+
+#ifndef _WIN32
+    pid_t rosCorePID;
+#endif
+
 	if (boost::filesystem::exists(rosCoreExecutablePath))
 	{
 #if _WIN32
@@ -231,16 +361,57 @@ int main(int argc, char** argv)
 		rSEI.lpParameters = rosCoreExecCommand.c_str();
 		rSEI.nShow = SW_NORMAL;
 		rSEI.fMask = SEE_MASK_NOCLOSEPROCESS;
+#else
+        bool rosCoreStartSucceeded = false;
+        std::string rosCoreStartCommand("/bin/bash -c \"" + rosCoreExecCommand + "\"");
+        unsigned int rosCoreStartTries = 0;
+
+        msg_info("ZyROSConnector_test") << "Starting roscore using command line: " << rosCoreStartCommand;
+        while (rosCoreStartTries < 5 || rosCoreStartSucceeded)
+        {
+           int ret = system(rosCoreStartCommand.c_str());
+           msg_info("ZyROSConnector_test") << "Attempt " << rosCoreStartTries << " 'system' return value: " << ret;
+           rosCoreStartTries++;
+
+           if (ret == 0)
+           {
+               msg_info("ZyROSConnector_test") << "Start of roscore process succeeded.";
+               rosCoreStartSucceeded = true;
+               break;
+           }
+
+           if (WIFSIGNALED(ret) &&
+               (WTERMSIG(ret) == SIGINT || WTERMSIG(ret) == SIGQUIT))
+           {
+               msg_info("ZyROSConnector_test") << "Start of roscore process succeeded.";
+               rosCoreStartSucceeded = true;
+               break;
+           }
+        }
+
 #endif
 			
         Zyklio::RosConnectorTest test_fixture;
 #if _WIN32
         if (ShellExecuteEx(&rSEI))
+#else
+        if (!test_fixture.ProcessRunning(L"roscore", &rosCorePID))
+        {
+            msg_error("ZyROSConnector_test") << "Failed to start roscore process!";
+            rosCoreStartSucceeded = false;
+        }
+        if (rosCoreStartSucceeded)
 #endif
+
 		{
 			int waitAttempts = 0;
 			// Wait for rosout.exe, since it's the last child process started by roscore
-			while (!test_fixture.ProcessRunning(L"rosout.exe") && waitAttempts <= 20)
+#if _WIN32
+            while (!test_fixture.ProcessRunning(L"rosout.exe") && waitAttempts <= 20)
+#else
+            pid_t processPid;
+            while (!test_fixture.ProcessRunning(L"rosout", &processPid) && waitAttempts <= 20)
+#endif
 			{
                 msg_info("ZyROSConnector_test") << "Waiting for roscore components to start.";
 				waitAttempts++;
@@ -304,12 +475,27 @@ int main(int argc, char** argv)
 					}
 					else
 					{
-                        msg_info("ZyROSConnector_test") << "roscore.exe process finished, exiting.";
+                        msg_info("ZyROSConnector_test") << "roscore.exe process finished.";
 						rosClosed = true;
 						break;
 					}
 #else
+                    int kill_ret = kill(rosCorePID, SIGTERM);
 
+                    if (kill_ret == 0)
+                    {
+                        pid_t rosCorePid_tmp;
+                        if (test_fixture.ProcessRunning(L"roscore", &rosCorePid_tmp))
+                        {
+                            msg_info("ZyROSConnector_test") << "roscore process still running.";
+                        }
+                        else
+                        {
+                            msg_info("ZyROSConnector_test") << "roscore process finished.";
+                            rosClosed = true;
+                            break;
+                        }
+                    }
 #endif
 					closingAttempts++;
 				} while (closingAttempts < 3);
@@ -322,7 +508,9 @@ int main(int argc, char** argv)
 					test_fixture.CloseProcesses(L"rosmaster.exe");
 					test_fixture.CloseProcesses(L"rosout.exe");
 #else
-
+                    test_fixture.CloseProcesses(L"roscore");
+                    test_fixture.CloseProcesses(L"rosmaster");
+                    test_fixture.CloseProcesses(L"rosout");
 #endif
 				}
 			}
@@ -330,6 +518,7 @@ int main(int argc, char** argv)
 	}
 	else
 	{
+        msg_error("ZyROSConnector_test") << "Given roscore executable does not exist: " << rosCoreExecutablePath;
 		return 1;
 	}
 	return 0;
