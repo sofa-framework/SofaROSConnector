@@ -71,7 +71,7 @@ add_definitions(-DROS_BUILD_SHARED_LIBS)
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
 
 target_link_libraries(${PROJECT_NAME} SofaCore SofaHelper SofaDefaultType SofaBaseCollision SofaConstraint SofaSimulationCommon SofaMiscFem tinyxml newmat)
-target_link_libraries(${PROJECT_NAME} ZyMultiThreading)
+target_link_libraries(${PROJECT_NAME} ZyMultiThreading ZyROSConnectorBindings)
 target_link_libraries(${PROJECT_NAME} ZyGripping)
 target_link_libraries(${PROJECT_NAME} ZySOFAControllers)
 target_link_libraries(${PROJECT_NAME} ZyVelocityApproximation)

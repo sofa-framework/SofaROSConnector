@@ -373,22 +373,23 @@ SET(BLENDER_SRCS
 )
 SOURCE_GROUP( BLENDER FILES ${BLENDER_SRCS})
 
-SET(IFC_SRCS
-	IFCLoader.cpp
-	IFCLoader.h
-	IFCReaderGen.cpp
-	IFCReaderGen.h
-	IFCUtil.h
-	IFCUtil.cpp
-	IFCGeometry.cpp
-	IFCMaterial.cpp
-	IFCProfile.cpp
-	IFCCurve.cpp
-	STEPFile.h
-	STEPFileReader.h
-	STEPFileReader.cpp
-)
-SOURCE_GROUP( IFC FILES ${IFC_SRCS})
+# Does not compile with gcc 7.x - not relevant for the customized assimp library, since we rely on the COLLADA format mainly.
+#SET(IFC_SRCS
+#	IFCLoader.cpp
+#	IFCLoader.h
+#	IFCReaderGen.cpp
+#	IFCReaderGen.h
+#	IFCUtil.h
+#	IFCUtil.cpp
+#	IFCGeometry.cpp
+#	IFCMaterial.cpp
+#	IFCProfile.cpp
+#	IFCCurve.cpp
+#	STEPFile.h
+#	STEPFileReader.h
+#	STEPFileReader.cpp
+#)
+#SOURCE_GROUP( IFC FILES ${IFC_SRCS})
 
 SET( XGL_SRCS
 	XGLLoader.cpp
@@ -634,7 +635,7 @@ SET( assim_src
 	${COB_SRCS}
 	${BLENDER_SRCS}
 	${NDO_SRCS}
-	${IFC_SRCS}
+        # ${IFC_SRCS} Does not compile with gcc 7.x
 	${XGL_SRCS}
 	
 	# Third-party libraries
@@ -658,7 +659,7 @@ include_directories(${CMAKE_SOURCE_DIR}/applications/plugins/SofaROSConnector/as
                     )
 
 IF ( BUILD_STATIC_LIB )
-        ADD_LIBRARY( assimp-3.0.1270 STATIC
+        ADD_LIBRARY( assimp-3.0.1270 SHARED
 		${assim_src}
 	)
 ELSE ( BUILD_STATIC_LIB )

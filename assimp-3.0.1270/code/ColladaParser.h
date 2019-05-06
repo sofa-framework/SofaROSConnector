@@ -152,7 +152,7 @@ typedef std::vector<std::pair<std::string, RelativeTransformEntry> > KinematicsM
 
 class ASSIMP_API ColladaParser
 {
-	friend class ColladaLoader;
+    friend class ColladaArschFotze;
 
 public:
 	/** Constructor from XML file */

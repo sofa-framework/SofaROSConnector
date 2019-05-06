@@ -1,5 +1,5 @@
-#ifndef ZYKLIO_TRUROSCONNECTIONMANAGER_H
-#define ZYKLIO_TRUROSCONNECTIONMANAGER_H
+#ifndef ZYKLIO_ROSCONNECTIONMANAGER_H
+#define ZYKLIO_ROSCONNECTIONMANAGER_H
 
 #ifdef _WIN32
 // Ensure that Winsock2.h is included before Windows.h, which can get
@@ -97,4 +97,4 @@ namespace Zyklio
     }
 }
 
-#endif //ZYKLIO_TRUROSCONNECTIONMANAGER_H
+#endif //ZYKLIO_ROSCONNECTIONMANAGER_H

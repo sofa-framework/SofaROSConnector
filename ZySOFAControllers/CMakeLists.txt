@@ -2,12 +2,16 @@ project(ZySOFAControllers)
 
 set(HEADER_FILES
     initZySOFAControllers.h
+    ArticulatedHierarchyController.h
+    ArticulatedHierarchyBVHController.h
     ArbitraryController.h
     RobotController.h
 )
 
 set(SOURCE_FILES
     initZySOFAControllers.cpp
+    ArticulatedHierarchyController.cpp
+    ArticulatedHierarchyBVHController.cpp
     ArbitraryController.cpp
     RobotController.cpp
 )

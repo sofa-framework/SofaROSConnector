@@ -115,23 +115,7 @@ namespace Zyklio
             typedef sofa::helper::fixed_array<std::string, 5> identificationData; // contains: unique identifier(is only set during init); mesh name(is only set during init); selected vertex
             typedef sofa::helper::fixed_array<std::string, 13> currentVelocityApproximationDataType;
             Data < sofa::helper::vector< currentVelocityApproximationDataType > > currentVelocityApproximationData; // Unfortunately, using the type "velocityApproximationData" is not possible with Data 
-                    
-#ifdef ZYKLIO_DEMO
-            template<class T>
-            static bool canCreate(T*& obj, core::objectmodel::BaseContext* context, core::objectmodel::BaseObjectDescription* arg)
-            {
-                std::string sceneHash = sofa::simulation::getSimulation()->getSceneHash();
 
-                sofa::helper::hashCheckHelper hch;
-                if (hch.checkHashCorrectness(sceneHash))
-                {
-                    return Inherit::canCreate(obj, context, arg);
-                }
-
-                std::cout << "This plugin can only be used with the Zyklio demo and the correct demo scene." << std::endl;
-                return false;
-            }
-#endif 
                 
             typedef std::pair <double, std::string> jointData;  // combines a joint value with its name
             typedef std::pair<std::pair<unsigned int,double>, sofa::helper::vector<jointData> > jointMsg;  // combines all joint values and names in a joint_states message with that message's seq number and timestamp

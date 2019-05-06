@@ -2,10 +2,10 @@
 
 @PACKAGE_INIT@
 
-find_package(TruRosConnector REQUIRED)
+find_package(ZyRosConnector REQUIRED)
 
-if(NOT TARGET TruVelocityApproximation)
+if(NOT TARGET ZyVelocityApproximation)
     include("${CMAKE_CURRENT_LIST_DIR}/TruVelocityApproximationTargets.cmake")
 endif()
 
-check_required_components(TruVelocityApproximation)
+check_required_components(ZyVelocityApproximation)

@@ -29,7 +29,7 @@
 #ifndef SOFA_COMPONENT_CONTROLLER_ArbitraryController_H
 #define SOFA_COMPONENT_CONTROLLER_ArbitraryController_H
 
-#include <SofaUserInteraction/ArticulatedHierarchyController.h>
+#include <ArticulatedHierarchyController.h>
 #include <sofa/helper/io/bvh/BVHLoader.h>
 #include <sofa/defaulttype/Vec.h>
 

@@ -2,9 +2,9 @@
 
 @PACKAGE_INIT@
 
-find_package(TruRosConnector REQUIRED)
+find_package(ZyRosConnector REQUIRED)
 
-if(NOT TARGET TruRosConnector)
+if(NOT TARGET ZyRosConnector)
 	include("${CMAKE_CURRENT_LIST_DIR}/TruRosConnector.cmake")
 endif()
 

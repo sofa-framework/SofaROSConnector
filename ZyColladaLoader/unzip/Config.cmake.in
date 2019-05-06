@@ -1,0 +1,12 @@
+# CMake package configuration file for the unzip library
+
+@PACKAGE_INIT@
+
+if(NOT TARGET unzip)
+	include("${CMAKE_CURRENT_LIST_DIR}/unzip.cmake")
+endif()
+
+check_required_components(unzip)
+
+set(UNZIP_LIBRARIES unzip)
+set(UNZIP_INCLUDE_DIRS @PACKAGE_COLLADASCENELOADER_INCLUDE_DIR@)

@@ -41,9 +41,9 @@ bool Assimp::Converter::collectMeshesByNameInplace(const aiScene *inScene)
         for (uint i = 0; i < current->mNumChildren; i++) {
             nodeList.push_back(current->mChildren[i]);
         }
-        // TP anfang
+        // Zykl.io begin
         bool isVisMesh = false;
-        // TP ende
+        // Zykl.io end
         if (current->mNumMeshes > 0) {
             DBG("Merging " << current->mNumMeshes << " into one mesh\n");
 
@@ -57,9 +57,9 @@ bool Assimp::Converter::collectMeshesByNameInplace(const aiScene *inScene)
                 facesCount += cmesh->mNumFaces;
                 verticesCount += cmesh->mNumVertices;
                 boneCount += cmesh->mNumBones;
-                // TP anfang
+                // Zykl.io begin
                 isVisMesh = isVisMesh || cmesh->isVisualMesh;
-                // TP ende
+                // Zykl.io end
             }
 
 
@@ -83,9 +83,9 @@ bool Assimp::Converter::collectMeshesByNameInplace(const aiScene *inScene)
             bigMesh->mMaterialGroups = new unsigned int[bigMesh->mNumMaterialGroups];
             bigMesh->mGroupsMaterialIndex = new unsigned int[bigMesh->mNumMaterialGroups];
 
-            // TP anfang
+            // Zykl.io begin
             bigMesh->isVisualMesh = isVisMesh;
-            // TP ende
+            // Zykl.io end
 
             // Add All vertices and faces to the bigMesh
             int vertexOffset = 0;

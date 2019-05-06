@@ -1,0 +1,7 @@
+# CMake package configuration file for the ZyROSConnectorBindings library
+
+@PACKAGE_INIT@
+
+find_package(ZyRosConnector REQUIRED)
+
+check_required_components(ZyROSConnectorBindings)

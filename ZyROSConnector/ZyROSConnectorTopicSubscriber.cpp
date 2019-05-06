@@ -36,7 +36,7 @@ void ZyROSConnectorTopicSubscriberIface::onMessageReceived()
 }
 
 
-// Template specializations for common/most used ROS messages
+// Template specializations for common ROS messages - even with auto-generated template instantiations, these seem to be required to satisfy the linker?
 
 #include <sensor_msgs/JointState.h>
 #include <geometry_msgs/Pose.h>

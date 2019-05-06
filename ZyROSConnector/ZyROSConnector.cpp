@@ -36,13 +36,12 @@ ZyROSConnector::ZyROSConnector()
     m_rosMasterURI(std::string("http://localhost:11311"))
 {
     m_d = new ZyklioRosConnectorPrivate;
-    std::cout << "ZyROSConnector constructor" << std::endl;
+    msg_info("ZyROSConnector") << "Constructor";
 }
 
 ZyROSConnector::~ZyROSConnector()
 {
-    std::cout << "ZyROSConnector destructor" << std::endl;
-	std::cout << "..." << std::endl;
+    msg_info("ZyROSConnector") << "Destructor";
 
 	if (m_d)
 	{
@@ -208,17 +207,17 @@ void ZyROSConnector::startConnector()
     {
         std::stringstream envVarStream;
         envVarStream << "ROS_MASTER_URI=" << rosMasterUri;
-        std::cout << "Setting ROS_MASTER_URI: " << envVarStream.str() << std::endl;
+        msg_info("ZyROSConnector") << "Setting ROS_MASTER_URI: " << envVarStream.str();
         int putenvRet = putenv((char*) (envVarStream.str().c_str()));
-        std::cout << "putenv return value: " << putenvRet << std::endl;
+        msg_info("ZyROSConnector") << "putenv return value: " << putenvRet;
         if (putenvRet != 0)
         {
-            std::cout << "Error on putenv call: (" << putenvRet << "): " << strerror(errno) << std::endl;
+            msg_error("ZyROSConnector") << "Error on putenv call: (" << putenvRet << "): " << strerror(errno);
         }
     }
     else
     {
-        std::cout << "ROS_MASTER_URI already set in existing environment variable; no resetting necessary." << std::endl;
+        msg_info("ZyROSConnector") << "ROS_MASTER_URI already set in existing environment variable; no resetting necessary.";
     }
 #endif
 
@@ -229,47 +228,51 @@ void ZyROSConnector::startConnector()
 #endif
 
 	if (master_uri_env != NULL)
-	  std::cout << "After _putenv -- Connecting to ROS master: " << master_uri_env << std::endl;
+      msg_warning() << "After _putenv -- Connecting to ROS master: " << master_uri_env;
 	else
-	  std::cerr << "No ROS_MASTER_URI set! Did putenv fail?" << std::endl;
+      msg_error() << "No ROS_MASTER_URI set! Did putenv fail?";
 
 	if (!ros::isInitialized())
 	{
 		try
 		{
-			std::cout << "ROS not initialized, do init (Ctrl+C to abort ROS init and start without ROS)" << std::endl;
-			ros::VP_string remappings;
+            msg_info("ZyROSConnector") << "ROS not initialized, do init (Ctrl+C to abort ROS init and start without ROS)";
+            msg_info("ZyROSConnector") << "Allocating remappings placeholder.";
+            ros::VP_string remappings;
+            msg_info("ZyROSConnector") << "Allocated remappings placeholder.";
 			
-			ros::init(remappings, std::string("TruRosConnector"));
+            msg_info("ZyROSConnector") << "Calling ros::init()";
+            ros::init(remappings, std::string("ZyRosConnector"));
+            msg_info("ZyROSConnector") << "ros::init() finished";
 
 			ros::master::setRetryTimeout(ros::WallDuration(2.0));
 
-			msg_info() << "Creating ROS node handle..." << sendl;
+            msg_info("ZyROSConnector") << "Creating ROS node handle...";
 			m_rosNode.reset(new ros::NodeHandle());
-			msg_info() << "ROS initialization done" << sendl;
+            msg_info("ZyROSConnector") << "ROS initialization done";
 
 		}
 		catch (std::exception& ex)
 		{
-			std::cerr << "Caught std::exception during ROS init: " << ex.what() << std::endl;
+            msg_error("ZyROSConnector") << "Caught std::exception during ROS init: " << ex.what();
 		}													 
 		catch (...)
 		{
-			std::cerr << "Caught unspecified exception during ROS init!" << std::endl;
+            msg_error("ZyROSConnector") << "Caught unspecified exception during ROS init!";
 		}
 	}
 	else
 	{
-		std::cout << "ROS is already initialized, no init necessary." << std::endl;
+        msg_info("ZyROSConnector") << "ROS is already initialized, no init necessary.";
 	}
 }
 
 void ZyROSConnector::stopConnector()
 {
-    std::cout << "ZyROSConnector::stopConnector()" << std::endl;
+    msg_info("ZyROSConnector") << "ZyROSConnector::stopConnector()";
 	if (ros::isInitialized())
 	{	
-		std::cout << "ROS running, shutdown" << std::endl;
+        msg_info("ZyROSConnector") << "ROS running, shutdown";
 		
 		for (std::vector<ros::Subscriber>::iterator it = m_activeSubscribers.begin(); it != m_activeSubscribers.end(); it++)
 		{
@@ -284,10 +287,10 @@ void ZyROSConnector::stopConnector()
 		}
 
 		ros::shutdown();
-		std::cout << "ROS shutdown done" << std::endl;
+        msg_info("ZyROSConnector") << "ROS shutdown done";
 	}
 	else
 	{
-		std::cout << "ROS not running, no shutdown necessary" << std::endl;
+        msg_info("ZyROSConnector") << "ROS not running, no shutdown necessary";
 	}
 }

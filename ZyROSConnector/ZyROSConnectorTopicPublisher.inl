@@ -24,21 +24,3 @@ void ZyROSConnectorTopicPublisher<MessageType>::publishMessage(const MessageType
     m_messageQueue.push_front(msg);
     lock.unlock();
 }
-
-template <class MessageType>
-void ZyROSConnectorTopicPublisher<MessageType>::publishMessageQueue()
-{
-    boost::mutex::scoped_lock lock(m_mutex);
-
-    if (!m_messageQueue.empty())
-    {
-        msg_info("ZyROSConnectorTopicPublisher") << "publishMessageQueue of size " << m_messageQueue.size();
-        while (!m_messageQueue.empty())
-        { 
-            MessageType& msg = m_messageQueue.back();
-            m_publisher.publish(msg);
-            m_messageQueue.pop_back();
-        }
-    }
-    lock.unlock();
-}

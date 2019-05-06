@@ -2798,9 +2798,9 @@ void ColladaParser::ReadNodeGeometry( Node* pNode)
 {
     // referred mesh is given as an attribute of the <instance_geometry> element
     int attrUrl = GetAttribute("url");
-    // TP anfang
+    // Zykl.io begin
     int visualMod = TestAttribute("isVisualModel");
-    // TP ende
+    // Zykl.io end
     const char* url = mReader->getAttributeValue( attrUrl);
     if( url[0] != '#')
         ThrowException( "Unknown reference format");
@@ -2808,7 +2808,7 @@ void ColladaParser::ReadNodeGeometry( Node* pNode)
     Collada::MeshInstance instance;
     instance.mMeshOrController = url+1; // skipping the leading #
 
-    // TP anfang
+    // Zykl.io begin
     if (visualMod > -1)
     {
         //const char* visualAtt = mReader->getAttributeValue(visualMod); // TODO: make the attribute value do something reasonable
@@ -2818,7 +2818,7 @@ void ColladaParser::ReadNodeGeometry( Node* pNode)
     {
         instance.isVisualMesh = false;
     }
-    // TP ende
+    // Zykl.io end
 
     if( !mReader->isEmptyElement())
     {
@@ -3679,7 +3679,7 @@ void ColladaParser::ReadPhysicsModelsLibrary() {
                                                         ReadStringsFromTextContent(p.mWhitelist);
                                                         TestClosing("collides_with");
 
-                                                    // TP anfang
+                                                    // Zykl.io begin
                                                     } else if (IsOpenElement("visual_model")) {
                                                         std::cout << "Reading visual model" << std::endl;
                                                         const char* content = GetTextContent();
@@ -3693,7 +3693,7 @@ void ColladaParser::ReadPhysicsModelsLibrary() {
                                                         }
                                                         //ReadStringsFromTextContent(p.mvisualmodel);
                                                         TestClosing("visual_model");
-                                                    // TP ende
+                                                    // Zykl.io end
 
                                                     } else if( IsOpenElement( "ghost" )){
                                                         if (mReader->getAttributeValue("id")) {

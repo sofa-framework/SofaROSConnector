@@ -79,6 +79,7 @@ using namespace sofa::gui::qt;
 #include <assimp/Exporter.hpp>
 #include <assimp/Importer.hpp>
 #include <assimp/importerdesc.h>
+#include <assimp/DefaultLogger.hpp>
 
 #include <ColladaParser.h>
 #include <ColladaLoader.h>
@@ -86,7 +87,7 @@ using namespace sofa::gui::qt;
 #include <boost/regex.hpp>
 #include <boost/algorithm/string/predicate.hpp>
 
-#include <SofaUserInteraction/ArticulatedHierarchyBVHController.h>
+#include <ZySOFAControllers/ArticulatedHierarchyBVHController.h>
 #include <SofaGeneralRigid/ArticulatedSystemMapping.h>
 #include <SofaGeneralRigid/ArticulatedHierarchyContainer.h>
 #include <SofaRigid/RigidRigidMapping.h>
@@ -244,7 +245,7 @@ public:
 		quaternion = q;
 	}
 
-	void buildJointHierarchyRec(Assimp::ColladaLoader* colladaLoader, Assimp::ColladaParser* parser, const Assimp::Collada::KinematicsModel& kinModel, const std::string& rootJoint, const std::map<std::string, std::string>& kinematicModelInstances, ColladaTransformHelper* transformHelper = NULL)
+    void buildJointHierarchyRec(Assimp::ColladaArschFotze* colladaLoader, Assimp::ColladaParser* parser, const Assimp::Collada::KinematicsModel& kinModel, const std::string& rootJoint, const std::map<std::string, std::string>& kinematicModelInstances, ColladaTransformHelper* transformHelper = NULL)
 	{
 		KinematicModelStructure k_ms;
 		k_ms.modelName = kinModel.name;
@@ -283,9 +284,26 @@ public:
 		}
 		transformHelper->createJointParentTransform(k_ms.modelName, Vector3(0, 0, 0), Quaternion(0, 0, 0, 1) /*, root_joint_name*/);
 
-		Assimp::ColladaParser::KinematicsModelsRelativeTransforms& relativeTransforms = parser->getKinematicsModelsRelativeTransforms();
-		Assimp::ColladaParser::KinematicsModelsRelativeTransforms::const_iterator rtm_it = relativeTransforms.find(k_ms.modelName);
-		if (rtm_it != relativeTransforms.end())
+        std::cout << "===================================================" << std::endl;
+        std::cout << "KinematicsModels known: " << this->kinematicsModels.size() << std::endl;
+        for (auto model_it = this->kinematicsModels.begin(); model_it != this->kinematicsModels.end(); ++model_it)
+        {
+            std::cout << " * " << model_it->first << std::endl;
+        }
+
+        Assimp::ColladaParser::KinematicsModelsRelativeTransforms& relativeTransforms = parser->getKinematicsModelsRelativeTransforms();
+        Assimp::ColladaParser::KinematicsModelsRelativeTransforms::const_iterator rtm_it = relativeTransforms.find(k_ms.modelName);
+
+        std::cout << "Searching kinematic model: \"" << k_ms.modelName << "\" in relativeTransforms" << std::endl;
+        std::cout << "relativeTransforms size: " << relativeTransforms.size() << std::endl;
+
+        for (auto rt_it = relativeTransforms.begin(); rt_it != relativeTransforms.end(); ++rt_it)
+        {
+            std::cout << " * " << rt_it->first << std::endl;
+        }
+        std::cout << "===================================================" << std::endl;
+
+        if (rtm_it != relativeTransforms.end())
 		{
 			const Assimp::RelativeTransformStack& rt_stack = rtm_it->second;
 			for (std::map<unsigned int, std::vector<std::string> >::const_iterator kbl_it = k_ms.kinematicJointsByLevel.begin(); kbl_it != k_ms.kinematicJointsByLevel.end(); ++kbl_it)
@@ -365,7 +383,12 @@ public:
 				}
 			}
 		}
+        else
+        {
+            std::cerr << "" << std::endl;
+        }
 
+        std::cout << "Adding to kinematicsModels: " << k_ms.modelName << std::endl;
 		kinematicsModels[k_ms.modelName] = k_ms;
 	}
 
@@ -497,38 +520,6 @@ bool ZyColladaLoader::load()
 
     // loading file
     const char* filename = m_filename.getFullPath().c_str();
-    
-#ifdef ZYKLIO_DEMO
-    {   // check hash
-        crypto::md5_helper_t md5_hasher;
-
-        std::ifstream file(filename, std::ios::in | std::ios::binary | std::ios::ate);
-
-        if (!file.good())
-        {
-            serr << "Error: ZyColladaLoader: Cannot read file '" << m_filename << "'." << sendl;
-            return false;
-        }
-
-        unsigned int size = file.tellg();
-        char* fileContent = new char[size];
-
-        file.seekg(0, std::ios::beg);
-        file.read(fileContent, size);
-        file.close();
-
-        std::string scene_md5 = md5_hasher.hexdigesttext(fileContent);
-        //std::cout << "MD5 test: " << scene_md5 << " (filesize " << size << ")" << std::endl;
-
-        delete[] fileContent;
-
-        if (!(scene_md5.compare(DEMOSCENE_HASH_STRING) == 0))
-        {
-            std::cout << "Zyklio demo version. Please use the provided .dae file without modifications." << std::endl;
-            return false;
-        }
-    }
-#endif // ZYKLIO_DEMO
 
     std::ifstream file(filename);
 
@@ -540,6 +531,7 @@ bool ZyColladaLoader::load()
 
     // reading file
     try {
+        Assimp::DefaultLogger::create("ZyColladaLoader", Assimp::Logger::VERBOSE, aiDefaultLogStream_STDERR);
         fileRead = readDAE(file, filename);
     }
     catch (std::exception &ex) {
@@ -1274,15 +1266,15 @@ bool ZyColladaLoader::readDAE(std::ifstream &file, const char* filename)
 		if (baseImporter != NULL)
 		{
 			std::cout << " Our ColladaLoader instance was retrieved successfully." << std::endl;
-			Assimp::ColladaLoader* colladaLoader = dynamic_cast<Assimp::ColladaLoader*>(baseImporter);
+            Assimp::ColladaArschFotze* colladaLoader = dynamic_cast<Assimp::ColladaArschFotze*>(baseImporter);
 
 			if (colladaLoader != NULL)
 			{
-				std::vector<Assimp::ColladaLoader::ParserStruct>& colladaParsers = colladaLoader->getParsers();
+                std::vector<Assimp::ColladaArschFotze::ParserStruct>& colladaParsers = colladaLoader->getParsers();
 
 				std::cout << " Parser instances: " << colladaParsers.size() << std::endl;
 				unsigned int parserCount = 0;
-				for (std::vector<Assimp::ColladaLoader::ParserStruct>::iterator pit = colladaParsers.begin(); pit != colladaParsers.end(); ++pit)
+                for (std::vector<Assimp::ColladaArschFotze::ParserStruct>::iterator pit = colladaParsers.begin(); pit != colladaParsers.end(); ++pit)
 				{
 					//Assimp::ColladaLoader::ParserStruct& ps = *pit;
 					Assimp::ColladaParser* parser = pit->parser;
@@ -1949,8 +1941,6 @@ bool ZyColladaLoader::readDAE(std::ifstream &file, const char* filename)
             std::size_t& childIndex = currentNodeInfo.mChildIndex;
             aiMatrix4x4& currentTransformation = currentNodeInfo.mTransformation;
 
-
-
             // process the node just one time
             if (0 == childIndex)
             {
@@ -1975,7 +1965,7 @@ bool ZyColladaLoader::readDAE(std::ifstream &file, const char* filename)
                         break;
                     }
                     else {
-                        //DBG("  NOT Found parent joint: " << baseJointName << std::endl);
+                        DBG("Found parent joint: " << baseJointName << std::endl);
                         jointSearch = parents[0];
                         baseJointName = jointSearch->getName();
                     }
@@ -1991,7 +1981,7 @@ bool ZyColladaLoader::readDAE(std::ifstream &file, const char* filename)
                         toolJoint = jointByObjectName.at(currentNode->getName());
                         if (toolJoint->isToolJoint) {
                             isForceSensitiveTool = true;
-                            //sout << "isForceSensitiveTool: " << baseJointName << " at " << currentNode->getName() << sendl;
+                            sout << "isForceSensitiveTool: " << baseJointName << " at " << currentNode->getName() << sendl;
                             DBG("  isForceSensitiveTool" << std::endl);
                         }
                     }
@@ -2012,12 +2002,14 @@ bool ZyColladaLoader::readDAE(std::ifstream &file, const char* filename)
                     Node::SPtr meshNode = getSimulation()->createNewNode(meshNameStream.str());
 
                     aiMesh* currentAiMesh = currentAiScene->mMeshes[currentAiNode->mMeshes[j]];
-                    /*std::cout << "current node name: " << currentAiNode->mName.C_Str() << ", " << currentAiNode->mId.C_Str() << std::endl;
+
+                    // Zykl.io begin
+                    std::cout << "current node name: " << currentAiNode->mName.C_Str() << ", " << currentAiNode->mId.C_Str() << std::endl;
                     std::cout << "current mesh name: " << currentAiMesh->mName.C_Str() << std::endl;
-                    std::cout << "mesh is collisionGeometry: " << currentAiMesh->isCollisionMesh << std::endl;*/
-                    // TP Anfang
+                    std::cout << "mesh is visualMEsh: " << currentAiMesh->isVisualMesh << std::endl;
+
                     if (currentAiMesh->isVisualMesh) { continue; }
-                    // TP Ende
+                    // Zykl.io end
 
                     // generating a name
                     std::string meshName(currentAiMesh->mName.data, currentAiMesh->mName.length);
@@ -2140,7 +2132,7 @@ bool ZyColladaLoader::readDAE(std::ifstream &file, const char* filename)
 
                         while (p->mParentId.length > 0) {
                             parentMeshId = std::string(p->mParentId.C_Str());
-                            //std::cout << "    mesh: " << p->mMeshId.C_Str() << "  parent: " << parentMeshId << std::endl;
+                            std::cout << "    mesh: " << p->mMeshId.C_Str() << "  parent: " << parentMeshId << std::endl;
                             p = physicsModelByMeshId.at(parentMeshId);
                             isSubMesh = true;
                         }
@@ -2149,7 +2141,6 @@ bool ZyColladaLoader::readDAE(std::ifstream &file, const char* filename)
                     if (!isSubMesh) {
                         currentNode->addChild(meshNode);
                     }
-
 
                     Quaternion firstRot;
                     bool hasAnimation = false;
@@ -2320,18 +2311,17 @@ bool ZyColladaLoader::readDAE(std::ifstream &file, const char* filename)
 
 
                         FixedConstraint<Rigid3dTypes>::SPtr currentFixedConstraint = sofa::core::objectmodel::New<FixedConstraint<Rigid3dTypes> >();
-                        {
-                            // adding the generated FixedConstraint to its parent Node
-                            currentSubNode->addObject(currentFixedConstraint);
+                        msg_info("ZyColladaLoader") << "Instantiated FixedConstraint: 1.";
+                        // adding the generated FixedConstraint to its parent Node
+                        currentSubNode->addObject(currentFixedConstraint);
 
-                            std::stringstream nameStream(meshName);
-                            if (meshName.empty())
-                                nameStream << componentIndex++;
-                            currentFixedConstraint->setName(nameStream.str());
+                        std::stringstream nameStream(meshName);
 
-                            currentFixedConstraint->d_fixAll.setValue(true);
-                        }
+                        if (meshName.empty())
+                            nameStream << componentIndex++;
 
+                        currentFixedConstraint->setName(nameStream.str());
+                        currentFixedConstraint->d_fixAll.setValue(true);
 
                         // generating a SkeletalMotionConstraint and filling up its properties
                         SkeletalMotionConstraint<Rigid3dTypes>::SPtr currentSkeletalMotionConstraint = sofa::core::objectmodel::New<SkeletalMotionConstraint<Rigid3dTypes> >();
@@ -2361,7 +2351,8 @@ bool ZyColladaLoader::readDAE(std::ifstream &file, const char* filename)
                         MechanicalObject<Vec3Types>::SPtr p1, p2, p3, p4, l1, l2, l3, l4;
                         Vec3d VecP(0, 0, 0);
 
-                        if (isForceSensitiveTool) {  // Create Anchor Object
+                        if (isForceSensitiveTool)
+                        {  // Create Anchor Object
                             currentAnchorMechanicalObject = sofa::core::objectmodel::New<MechanicalObject<Rigid3dTypes> >();
                             anchorNode = getSimulation()->createNewNode("Anchor");
                             currentNode->addChild(anchorNode);
@@ -2422,13 +2413,15 @@ bool ZyColladaLoader::readDAE(std::ifstream &file, const char* filename)
                                 l4 = AddSlidingLine(3, currentAnchorMechanicalObject, anchorNode, &fromZ, &toZ);
 
                             }
-                            else if (toolJoint->mType == aiJoint::REVOLUTE) {
+                            else if (toolJoint->mType == aiJoint::REVOLUTE)
+                            {
                                 serr << "aiJoint::REVOLUTE NOT IMPLEMENTED for tools" << sendl;
                             }
 
                         }
 
-                        if (!isSubMesh) {
+                        if (!isSubMesh)
+                        {
                             currentBaseMechanicalObject = sofa::core::objectmodel::New<MechanicalObject<Rigid3dTypes> >();
                             {
                                 // adding the generated MechanicalObject to its parent Node
@@ -2504,15 +2497,16 @@ bool ZyColladaLoader::readDAE(std::ifstream &file, const char* filename)
 
                         bool hasFixedConstraint = false;
 
-                        if (!isSubMesh) {
+                        if (!isSubMesh)
+                        {
                             bool isFixedObject = false;
                             // Add Uniform Mass object, if the PhysicsModel has an entry for this geometry and if dynamic is true.
-                            /*std::cout << "huibuibuibui "<< std::endl;
-                            for (std::map<std::string, aiPhysicsModel*>::iterator bla = physicsModelByMeshId.begin(); bla == physicsModelByMeshId.end(); bla++)
+                            /*for (std::map<std::string, aiPhysicsModel*>::iterator bla = physicsModelByMeshId.begin(); bla == physicsModelByMeshId.end(); bla++)
                             {
                                 std::cout << (*bla).first << std::endl;
                             }*/
-                            if (physicsModelByMeshId.find(meshName) != physicsModelByMeshId.end()) {
+                            if (physicsModelByMeshId.find(meshName) != physicsModelByMeshId.end())
+                            {
                                 aiPhysicsModel* p = physicsModelByMeshId[meshName];
                                 /*std::cout << "dumdidum " << p->mMeshId.C_Str() << ", " << p->mSid.C_Str() << ", " << p->mParentId.C_Str() << ", " << std::endl;*/
                                 if (p->dynamic) {
@@ -2521,15 +2515,18 @@ bool ZyColladaLoader::readDAE(std::ifstream &file, const char* filename)
                                     UniformMass<Rigid3dTypes, Rigid3dMass>::SPtr currentUniformMass = sofa::core::objectmodel::New<UniformMass<Rigid3dTypes, Rigid3dMass> >();
                                     currentUniformMass->setName(meshName);
                                     currentUniformMass->setTotalMass(p->mass);
+
                                     // Zyklio TODO: This used to be setRayleighMass!
 									// currentUniformMass->setMass(1.0);
 
-                                    if (isAttatchedToJoint && !isForceSensitiveTool) {
-                                        //tstBS//currentUniformMass->setTotalMass(9999999.99);
+                                    if (isAttatchedToJoint && !isForceSensitiveTool)
+                                    {
+                                        //currentUniformMass->setTotalMass(9999999.99);
                                     }
 
-                                    if (isForceSensitiveTool) {
-                                        //	currentUniformMass->setTotalMass(0.00001); // Minimal mass -> maximum control ;)  ... object doesnt laag behind.
+                                    if (isForceSensitiveTool)
+                                    {
+                                        //	currentUniformMass->setTotalMass(0.00001); // Minimal mass -> maximum control ... object doesnt lag behind.
                                     }
                                     currentUniformMass->d_showAxisSize.setValue(5);
                                     currentSubNode->addObject(currentUniformMass);
@@ -2551,7 +2548,8 @@ bool ZyColladaLoader::readDAE(std::ifstream &file, const char* filename)
                                     }
 #endif
                                 }
-                                else {
+                                else
+                                {
 
                                     UniformMass<Rigid3dTypes, Rigid3dMass>::SPtr currentUniformMass = sofa::core::objectmodel::New<UniformMass<Rigid3dTypes, Rigid3dMass> >();
                                     {
@@ -2572,30 +2570,32 @@ bool ZyColladaLoader::readDAE(std::ifstream &file, const char* filename)
                                     isFixedObject = true;
                                 }
                             }
-                            else {
+                            else
+                            {
                                 std::cout << "  No physics model for: " << meshName.c_str() << std::endl;
                                 isFixedObject = true;
                             }
 
-                            if ((!hasAnimation && isFixedObject) || (isAttatchedToJoint && !isForceSensitiveTool)) {
+                            if ((!hasAnimation && isFixedObject) || (isAttatchedToJoint && !isForceSensitiveTool))
+                            {
                                 FixedConstraint<Rigid3dTypes>::SPtr currentFixedConstraint = sofa::core::objectmodel::New<FixedConstraint<Rigid3dTypes> >();
-                                {
-                                    // adding the generated FixedConstraint to its parent Node
-                                    currentSubNode->addObject(currentFixedConstraint);
-                                    hasFixedConstraint = true;
+                                msg_info("ZyColladaLoader") << "Instantiated FixedConstraint: 2.";
+                                // adding the generated FixedConstraint to its parent Node
+                                currentSubNode->addObject(currentFixedConstraint);
+                                hasFixedConstraint = true;
 
-                                    std::stringstream nameStream(meshName);
-                                    if (meshName.empty())
-                                        nameStream << componentIndex++;
-                                    currentFixedConstraint->setName(nameStream.str());
+                                std::stringstream nameStream(meshName);
+                                if (meshName.empty())
+                                    nameStream << componentIndex++;
 
-                                    currentFixedConstraint->d_fixAll.setValue(true);
-                                }
+                                currentFixedConstraint->setName(nameStream.str());
+                                currentFixedConstraint->d_fixAll.setValue(true);
                             }
 
                         }
 
-                        if (isForceSensitiveTool) {
+                        if (isForceSensitiveTool)
+                        {
                             // Apply RigidRigidMapping to Anchor if it is a Tool Joint
                             JointInfo ji = jointInfo.at(baseJointName);
                             RigidRigidMapping<Rigid3dTypes, Rigid3dTypes>::SPtr rigidRigidMapping = sofa::core::objectmodel::New<RigidRigidMapping<Rigid3dTypes, Rigid3dTypes> >();
@@ -2608,9 +2608,9 @@ bool ZyColladaLoader::readDAE(std::ifstream &file, const char* filename)
                             rigidRigidMapping->setName(nameStream.str());
 
                             anchorNode->addObject(rigidRigidMapping);
-
                         }
-                        else if (baseJointNameFound) {
+                        else if (baseJointNameFound)
+                        {
                             // Apply RigidRigidMapping if Joint is present for current node
                             JointInfo ji = jointInfo.at(baseJointName);
                             // <RigidRigidMapping template="Rigid,Rigid" name="rigidRigidMap4"  initialPoints="0 0 0 0 0 0 1"  index="4"  globalToLocalCoords="1"  input="@articulatedObject1/6D_DOFs1/6D_Dof"  output="@." />
@@ -2676,37 +2676,40 @@ bool ZyColladaLoader::readDAE(std::ifstream &file, const char* filename)
                         }
 
                         /*
-                                    FixedConstraint<Rigid3dTypes>::SPtr currentFixedConstraint = sofa::core::objectmodel::New<FixedConstraint<Rigid3dTypes> >();
-                                    {
-                                    // adding the generated FixedConstraint to its parent Node
-                                    currentSubNode->addObject(currentFixedConstraint);
+                        FixedConstraint<Rigid3dTypes>::SPtr currentFixedConstraint = sofa::core::objectmodel::New<FixedConstraint<Rigid3dTypes> >();
+                        {
+                        // adding the generated FixedConstraint to its parent Node
+                        currentSubNode->addObject(currentFixedConstraint);
 
-                                    std::stringstream nameStream(meshName);
-                                    if(meshName.empty())
-                                    nameStream << componentIndex++;
-                                    currentFixedConstraint->setName(nameStream.str());
+                        std::stringstream nameStream(meshName);
+                        if(meshName.empty())
+                        nameStream << componentIndex++;
+                        currentFixedConstraint->setName(nameStream.str());
 
-                                    currentFixedConstraint->f_fixAll.setValue(true);
-                                    }
-                                    */
+                        currentFixedConstraint->f_fixAll.setValue(true);
+                        }
+                        */
                     }
 
                     std::stringstream rigidNameStream;
                     if (currentAiMesh->HasBones())
-                        rigidNameStream << "skinning_" << (int)meshId;
+                        rigidNameStream << "skinning_" << meshName << "_" << (int)meshId;
                     else
-                        rigidNameStream << "mesh_" << (int)meshId;
+                        rigidNameStream << "mesh_" << meshName << "_" << (int) meshId;
 
                     Node::SPtr rigidNode = getSimulation()->createNewNode(rigidNameStream.str());
 
-                    if (isSubMesh) {
+                    if (isSubMesh)
+                    {
                         std::cout << "Is SubMesh of " << parentMeshId << std::endl;
                         subMeshesOfMeshId[parentMeshId].push_back(meshName);
 
-                        if (rigidBaseNode.find(parentMeshId) == rigidBaseNode.end()) {
+                        if (rigidBaseNode.find(parentMeshId) == rigidBaseNode.end())
+                        {
                             serr << "Missing Mesh node: " << parentMeshId << sendl;
                         }
-                        else {
+                        else
+                        {
                             rigidBaseNode[parentMeshId]->addChild(rigidNode);
                             blacklist[parentMeshId].push_back(meshName);
                             for (std::vector<std::string>::iterator it = blacklist[parentMeshId].begin(); it != blacklist[parentMeshId].end(); it++) {
@@ -2717,7 +2720,8 @@ bool ZyColladaLoader::readDAE(std::ifstream &file, const char* filename)
 
                         }
                     }
-                    else {
+                    else
+                    {
                         meshNode->addChild(rigidNode);
                     }
                     currentSubNode = rigidNode;
@@ -3232,11 +3236,11 @@ bool ZyColladaLoader::readDAE(std::ifstream &file, const char* filename)
 
 
                     // setting parameters of OglModel or OgreVisualModel and filling up its properties
-                    // TP Anfang
+                    // Zykl.io begin
                     bool switchedModels = false;
-                    // TP Ende
+                    // Zykl.io end
                     {
-                        // TP anfang
+                        // Zykl.io begin
                         aiMesh* visualMesh = NULL;
                         if (physicsModelByMeshId.find(meshName) != physicsModelByMeshId.end()) {
                             aiPhysicsModel* p = physicsModelByMeshId.at(meshName);
@@ -3270,9 +3274,9 @@ bool ZyColladaLoader::readDAE(std::ifstream &file, const char* filename)
                             meshName = std::string(currentAiMesh->mName.data, currentAiMesh->mName.length);
                             std::cout << "Switching to visual mesh: " << currentAiMesh->mName.C_Str() << std::endl;
                         }
-                        // TP ende
+                        // Zykl.io end
 
-                        // TP anfang /////////////////
+                        // Zykl.io begin /////////////////
                         // Fill vertices, triangles and quads of the OglModel with values taken from the given mesh
                         // This is only necessary when the visual mesh and the collision mesh are supposed to be different
 
@@ -3282,7 +3286,7 @@ bool ZyColladaLoader::readDAE(std::ifstream &file, const char* filename)
                         if (0 != currentAiMesh->mNumVertices)
                         {
                             //helper::vector<defaulttype::Vec<3, SReal> >& x = *(currentOglModel->seqPoints.beginEdit());
-                            sofa::defaulttype::ResizableExtVector<sofa::defaulttype::ExtVec3fTypes::Coord> positions;
+                            sofa::defaulttype::ResizableExtVector<sofa::defaulttype::ExtVec3dTypes::Coord> positions;
 
                             std::cout << "  Creating OglModel " << currentNode->getName() << "  " << meshName << std::endl;
                             for (unsigned int k = 0; k < currentAiMesh->mNumVertices; ++k) {
@@ -3294,7 +3298,7 @@ bool ZyColladaLoader::readDAE(std::ifstream &file, const char* filename)
                         }
 
                         // filling up triangle array
-                        //sofa::helper::vector<sofa::core::topology::Triangle> triangles;
+                        // sofa::helper::vector<sofa::core::topology::Triangle> triangles;
                         sofa::defaulttype::ResizableExtVector<sofa::core::topology::BaseMeshTopology::Triangle> triangles;
                         unsigned int numTrianglesTmp = 0;
                         for (unsigned int k = 0; k < currentAiMesh->mNumFaces; ++k)
@@ -3358,7 +3362,7 @@ bool ZyColladaLoader::readDAE(std::ifstream &file, const char* filename)
                                 currentOglModel->setQuads(&quads);
                             }
                         }
-                        // TP ende /////////////////
+                        // Zykl.io end /////////////////
 
                         // Set Backface Culling on, so we can only see the front of a face
                         Data<int> *data = dynamic_cast<Data<int>*>(currentOglModel->findData("cullFace"));
@@ -3493,23 +3497,23 @@ noTrianglesEnd:  // Badass hack goto (for other types than triangles)
                             currentOglModel->materials.endEdit();
                             currentOglModel->groups.endEdit();
 
-                            // TP anfang
+                            // Zykl.io begin
                             if (visualMesh)
                             {
                                 currentAiMesh = currentMeshTmp;
                                 meshName = meshNameTmp;
                                 std::cout << "Switching to back regular mesh: " << currentAiMesh->mName.C_Str() << std::endl;
                             }
-                            // TP ende
+                            // Zykl.io end
                         }
                     }
 
-                    // TP Anfang
+                    // Zykl.io begin
                     if (switchedModels) 
                     {
-                    // TP Ende
-                        // TP Anfang
-                        RigidMapping<Rigid3dTypes, ExtVec3fTypes>::SPtr currentRigidMapping = sofa::core::objectmodel::New<RigidMapping<Rigid3dTypes, ExtVec3fTypes> >();
+                    // Zykl.io end
+                        // Zykl.io begin
+                        RigidMapping<sofa::defaulttype::Rigid3Types, sofa::defaulttype::ExtVec3Types>::SPtr currentRigidMapping = sofa::core::objectmodel::New<RigidMapping<sofa::defaulttype::Rigid3Types, sofa::defaulttype::ExtVec3Types> >();
                         {
                             // adding the generated RigidMapping to its parent Node
                             currentSubNode->addObject(currentRigidMapping);
@@ -3521,11 +3525,11 @@ noTrianglesEnd:  // Badass hack goto (for other types than triangles)
 
                             currentRigidMapping->setModels(currentBaseMechanicalObject.get(), currentOglModel.get());
                         }
-                        // TP Ende
+                        // Zykl.io end
                     }
                     else
                     {
-                        IdentityMapping<Vec3dTypes, ExtVec3fTypes>::SPtr currentIdentityMapping = sofa::core::objectmodel::New<IdentityMapping<Vec3dTypes, ExtVec3fTypes> >();
+                        IdentityMapping<sofa::defaulttype::Vec3Types, sofa::defaulttype::ExtVec3Types>::SPtr currentIdentityMapping = sofa::core::objectmodel::New<IdentityMapping<sofa::defaulttype::Vec3Types, sofa::defaulttype::ExtVec3Types> >();
                         {
                             // adding the generated IdentityMapping to its parent Node
                             currentSubNode->addObject(currentIdentityMapping);
@@ -3577,7 +3581,7 @@ noTrianglesEnd:  // Badass hack goto (for other types than triangles)
         }
     }
 
-    // Apply dangleling links of physics models
+    // Apply dangling links of physics models
     for (unsigned int i = 0; i < rigidBaseLinks.size(); i++) {
         MechanicalObject<Rigid3dTypes>::SPtr rigid = rigidBaseObject.at(rigidBaseLinks.at(i).first);
         RigidRigidMapping<Rigid3dTypes, Rigid3dTypes>::SPtr mapping = rigidBaseLinks.at(i).second;
@@ -3872,7 +3876,7 @@ void ZyColladaLoader::removeEmptyNodes()
     }
 }
 
-// TP Anfang
+// Zykl.io begin
 aiMesh* ZyColladaLoader::getAiMeshByName(std::string meshName, const aiScene* colladaScene)
 {
     aiMesh* meshPnt = NULL;
@@ -3886,7 +3890,7 @@ aiMesh* ZyColladaLoader::getAiMeshByName(std::string meshName, const aiScene* co
     }
     return meshPnt;
 }
-// TP Ende
+// Zykl.io end
 
 } // namespace loader
 

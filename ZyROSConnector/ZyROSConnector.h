@@ -44,59 +44,58 @@ class ZyklioRosConnectorPrivate;
 class SOFA_ZY_ROS_CONNECTOR_API ZyROSConnector : public sofa::core::objectmodel::BaseObject /*: public sofa::simulation::SimulationConcurrentComponent*/
 {
 public:
-  SOFA_CLASS(ZyROSConnector, sofa::core::objectmodel::BaseObject);
+    SOFA_CLASS(ZyROSConnector, sofa::core::objectmodel::BaseObject);
 
-  ZyROSConnector();
-  //ZyROSConnector(std::string rosMasterURI);
-  virtual ~ZyROSConnector();
+    ZyROSConnector();
+    virtual ~ZyROSConnector();
 
-  // SimulationConcurrentComponent API
-  void startComponent();
-  void stopComponent();
-  void pauseComponent();
-  void resumeComponent();
+    // SimulationConcurrentComponent API
+    void startComponent();
+    void stopComponent();
+    void pauseComponent();
+    void resumeComponent();
 
-  bool isConnected() const;
-  bool isThreadRunning() const;
-  boost::condition& connectorCondition();
+    bool isConnected() const;
+    bool isThreadRunning() const;
+    boost::condition& connectorCondition();
 
-  bool setRosMasterURI(const std::string&);
+    bool setRosMasterURI(const std::string&);
 
-  ros::NodeHandlePtr getROSNode();
+    ros::NodeHandlePtr getROSNode();
 
-  bool addTopicListener(const boost::shared_ptr<ZyROSListener> &);
-  bool removeTopicListener(boost::shared_ptr<ZyROSListener>&);
+    bool addTopicListener(const boost::shared_ptr<ZyROSListener> &);
+    bool removeTopicListener(boost::shared_ptr<ZyROSListener>&);
 
-  bool addTopicPublisher(boost::shared_ptr<ZyROSPublisher>&);
-  bool removeTopicPublisher(boost::shared_ptr<ZyROSPublisher>&);
+    bool addTopicPublisher(boost::shared_ptr<ZyROSPublisher>&);
+    bool removeTopicPublisher(boost::shared_ptr<ZyROSPublisher>&);
 
-  size_t getNumTopicListeners() const;
-  size_t getNumTopicPublishers() const;
-
-  boost::posix_time::ptime theTime;
-
-  std::string m_rosMasterURI;
+    size_t getNumTopicListeners() const;
+    size_t getNumTopicPublishers() const;
 
 protected:
-  friend class ZyROSConnectorWorkerThread;
+    friend class ZyROSConnectorWorkerThread;
 
-  void startConnector();
-  void stopConnector();
+    boost::posix_time::ptime theTime;
 
-  void rosLoop();
+    std::string m_rosMasterURI;
 
-  ZyklioRosConnectorPrivate* m_d;
+    void startConnector();
+    void stopConnector();
 
-  ros::NodeHandlePtr m_rosNode;
-  ros::CallbackQueue cb_queue;
+    void rosLoop();
 
-  bool m_connectorThreadActive;
-  boost::condition m_runCondition;
+    ZyklioRosConnectorPrivate* m_d;
 
-  //Data<std::string> m_rosTopics;
+    ros::NodeHandlePtr m_rosNode;
+    ros::CallbackQueue cb_queue;
 
-  //std::vector<std::pair<std::string, std::string> > m_subscribedRosTopics;
-  std::vector<ros::Subscriber> m_activeSubscribers;
+    bool m_connectorThreadActive;
+    boost::condition m_runCondition;
+
+    //Data<std::string> m_rosTopics;
+
+    //std::vector<std::pair<std::string, std::string> > m_subscribedRosTopics;
+    std::vector<ros::Subscriber> m_activeSubscribers;
 };
 }
 }

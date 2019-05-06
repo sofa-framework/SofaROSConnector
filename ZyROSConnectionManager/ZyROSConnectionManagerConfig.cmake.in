@@ -2,10 +2,10 @@
 
 @PACKAGE_INIT@
 
-find_package(TruRosConnector REQUIRED)
+find_package(ZyRosConnector REQUIRED)
 
 if(NOT TARGET ZyROSConnectionManager)
-    include("${CMAKE_CURRENT_LIST_DIR}/TruRosConnectionManagerTargets.cmake")
+    include("${CMAKE_CURRENT_LIST_DIR}/ZyRosConnectionManagerTargets.cmake")
 endif()
 
 check_required_components(ZyROSConnectionManager)

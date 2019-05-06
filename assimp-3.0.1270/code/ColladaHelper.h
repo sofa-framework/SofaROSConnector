@@ -220,9 +220,9 @@ struct MeshInstance
 	///< Map of materials by the subgroup ID they're applied to
 	std::map<std::string, SemanticMappingTable> mMaterials;
 
-    // TP anfang
+    // Zykl.io begin
     bool isVisualMesh;
-    // TP ende
+    // Zykl.io end
 };
 
 /** A reference to a camera inside a node*/
@@ -660,9 +660,9 @@ struct RigidBody
         , mMassFrame_x()
         , mMassFrame_y()
         , mMassFrame_z()
-        // TP anfang
+        // Zykl.io begin
         , mVisualModel()
-        // TP ende
+        // Zykl.io end
     {mTool = new Tool();}
 
 
@@ -678,9 +678,9 @@ struct RigidBody
 
     std::vector<Transform> mTransforms;
     std::vector<std::string> mWhitelist;
-    // TP anfang
+    // Zykl.io begin
     std::string mVisualModel;
-    // TP ende
+    // Zykl.io end
 
     std::vector<Ghost> mGhosts;
 

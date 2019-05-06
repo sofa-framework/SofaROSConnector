@@ -4,9 +4,8 @@ set(CMAKE_VERBOSE_MAKEFILE ON)
 LINK_DIRECTORIES(${CMAKE_BINARY_DIR}/lib)
 
 message(STATUS "Adding SofaROSConnector plugins.")
-add_subdirectory(hashgen)
 add_subdirectory(ZySOFAControllers)
-add_subdirectory(assimp-3.0.1270)
+
 add_subdirectory(ZyColladaLoader)
 add_subdirectory(ZyMultiThreading)
 add_subdirectory(ZyGripping)

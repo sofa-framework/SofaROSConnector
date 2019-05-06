@@ -27,10 +27,6 @@
 #include <SofaConstraint/FrictionContact.h>
 #include "sofa/core/ObjectFactory.h"
 
-#ifdef Zyklio_DEMO
-#include <sofa/simulation/common/Simulation.h>
-#endif //Zyklio_DEMO
-
 namespace Zyklio
 {
     namespace ROSKinematics
@@ -56,26 +52,18 @@ namespace Zyklio
 
         void ZyROSKinematics::init()
         {
-#ifdef Zyklio_DEMO
-            std::string sceneHash = sofa::simulation::getSimulation()->getSceneHash();
-
-            sofa::helper::hashCheckHelper hch;
-            if (!(hch.checkHashCorrectness(sceneHash)))
-            {
-                std::cout << "This plugin can only be used with the Zyklio demo and the correct demo scene." << std::endl;
-                exit(1);
-            }
-#endif //Zyklio_DEMO
             Inherit::init();
         }
 
         void ZyROSKinematics::bwdInit()
         {
+            msg_info("ZyROSKinematics") << "bwdInit()";
             ROSPublishing::ZyROSPublishingHandler publishingHandler;
             bool connectionManagerFound = publishingHandler.setROSConnectionManagerByContext(getContext());
 
             if (connectionManagerFound)
             {
+                msg_info("ZyROSKinematics") << "Found ZyROSConnectionManagerInstance, subscribing to JointState topic: " << topicName.getValue();
                 jointStateSubscriber = boost::shared_ptr< ROSConnector::ZyROSConnectorTopicSubscriber<sensor_msgs::JointState> >(
                     new ROSConnector::ZyROSConnectorTopicSubscriber<sensor_msgs::JointState>(publishingHandler.getROSNodeHandle(), topicName.getValue(), 50, false)
                     );
@@ -114,25 +102,22 @@ namespace Zyklio
 
         void ZyROSKinematics::handleJointStateMessage()
         {
+            msg_info("ZyROSKinematics") << "Received a new JointState message.";
             const sensor_msgs::JointState& msg = jointStateSubscriber->getLatestMessage();
 
             if (velocityApproximationFound)
             {
-                sofa::helper::vector</*Zyklio::VelocityApproximation::TruVelocityApproximator::jointData*/ std::pair <double, std::string>> jntDtVec;
+                sofa::helper::vector<std::pair <double, std::string>> jntDtVec;
                 for (size_t k = 0; k < msg.name.size(); k++)
                 {
-                    /*Zyklio::VelocityApproximation::TruVelocityApproximator::jointData*/ std::pair <double, std::string> jntDt(msg.position[k], msg.name[k]);
+                    std::pair <double, std::string> jntDt(msg.position[k], msg.name[k]);
                     jntDtVec.push_back(jntDt);
                 }
 
-                velocityApproximationHandler.pushJointMsg(/*Zyklio::VelocityApproximation::TruVelocityApproximator::jointMsg(std::pair<unsigned int, double>(msg.header.seq, msg.header.stamp.toSec()), jntDtVec)*/
-                    std::pair<std::pair<unsigned int, double>, sofa::helper::vector< std::pair <double, std::string> > >(std::pair<unsigned int, double>(msg.header.seq, msg.header.stamp.toSec()), jntDtVec));
-            }
-            else
-            {
-                updateJointState(msg);
+                velocityApproximationHandler.pushJointMsg(std::pair<std::pair<unsigned int, double>, sofa::helper::vector< std::pair <double, std::string> > >(std::pair<unsigned int, double>(msg.header.seq, msg.header.stamp.toSec()), jntDtVec));
             }
 
+            updateJointState(msg);
         }
 
         void ZyROSKinematics::updateJointState(const sensor_msgs::JointState& joint_state)
@@ -141,7 +126,7 @@ namespace Zyklio
             boost::posix_time::time_duration dur = (curTime - theTime);
             if (dur.total_milliseconds() > 100)
             {
-                std::cout << "Setting joint values: " << joint_state.name.size() << std::endl;
+                msg_info("ZyROSKinematics") << "Setting joint values: " << joint_state.name.size();
                 for (size_t k = 0; k < joint_state.name.size(); k++)
                 {
                     std::cout << joint_state.name[k] << ";";

@@ -1,5 +1,5 @@
-#ifndef TRUROSCONNECTOR_WORKER_THREAD_H
-#define TRUROSCONNECTOR_WORKER_THREAD_H
+#ifndef ROSCONNECTOR_WORKER_THREAD_H
+#define ROSCONNECTOR_WORKER_THREAD_H
 
 #ifdef _WIN32
 // Ensure that Winsock2.h is included before Windows.h, which can get
@@ -51,4 +51,4 @@ namespace Zyklio
 	}
 }
 
-#endif // TRUROSCONNECTOR_WORKER_THREAD_H
+#endif // ROSCONNECTOR_WORKER_THREAD_H

@@ -412,9 +412,9 @@ protected:
 	void fillObbTreeBlacklists(std::map<std::string, std::vector<std::string> > &connected, std::map<std::string, std::string> &jointForMesh, const std::map<std::string, aiJoint*>  &jointMap, std::map<std::string, aiJoint*> & joints, std::map < std::string, std::vector<std::string> > &blacklist);
 	void fillObbTreeBlacklists2(std::map < std::string, std::vector<std::string> > &blacklist);
     void CheckSolverOrder();
-    // TP Anfang
+    // Zykl.io begin
     aiMesh* getAiMeshByName(std::string meshName, const aiScene* colladaScene);
-    // TP Ende
+    // Zykl.io end
 
     sofa::component::container::MechanicalObject<Vec3dTypes>::SPtr AddSlidingLine(int i, sofa::component::container::MechanicalObject<Rigid3dTypes>::SPtr& src, Node::SPtr& anchorNode, Vec3d* from, Vec3d* to = NULL);
 

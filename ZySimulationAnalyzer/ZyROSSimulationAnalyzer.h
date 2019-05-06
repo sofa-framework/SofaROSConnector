@@ -73,23 +73,6 @@ namespace Zyklio
 
             void setLinInput(float lin) { linInput = lin; }
             void setRotInput(float rot) { rotInput = rot; }
-                    
-#ifdef ZYKLIO_DEMO
-            template<class T>
-            static bool canCreate(T*& obj, core::objectmodel::BaseContext* context, core::objectmodel::BaseObjectDescription* arg)
-            {
-                std::string sceneHash = sofa::simulation::getSimulation()->getSceneHash();
-
-                sofa::helper::hashCheckHelper hch;
-                if (hch.checkHashCorrectness(sceneHash))
-                {
-                    return Inherit::canCreate(obj, context, arg);
-                }
-
-                std::cout << "This plugin can only be used with the Zyklio demo and the correct demo scene." << std::endl;
-                return false;
-            }
-#endif 
 
             Zyklio::ROSPublishing::ZyROSPublishingHandler publishingHandler;
             Zyklio::ROSConnector::ZyROSFloat32MultiArrayPublisher* simResultPublisher;

@@ -1,5 +1,5 @@
-#ifndef TRUROSCONNECTOR_TOPIC_PUBLISHER_H
-#define TRUROSCONNECTOR_TOPIC_PUBLISHER_H
+#ifndef ROSCONNECTOR_TOPIC_PUBLISHER_H
+#define ROSCONNECTOR_TOPIC_PUBLISHER_H
 
 #ifdef _WIN32
 // Ensure that Winsock2.h is included before Windows.h, which can get
@@ -77,4 +77,4 @@ namespace Zyklio
     }
 }
 
-#endif //TRUROSCONNECTOR_TOPIC_PUBLISHER_H
+#endif //ROSCONNECTOR_TOPIC_PUBLISHER_H

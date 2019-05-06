@@ -78,7 +78,7 @@ static const aiImporterDesc desc = {
 
 // ------------------------------------------------------------------------------------------------
 // Returns whether the class can handle the format of the given file. 
-bool ColladaLoader::CanRead( const std::string& pFile, IOSystem* pIOHandler, bool checkSig) const
+bool ColladaArschFotze::CanRead( const std::string& pFile, IOSystem* pIOHandler, bool checkSig) const
 {
     // check file extension
     std::string extension = GetExtension(pFile);
@@ -101,14 +101,14 @@ bool ColladaLoader::CanRead( const std::string& pFile, IOSystem* pIOHandler, boo
 
 // ------------------------------------------------------------------------------------------------
 // Get file extension list
-const aiImporterDesc* ColladaLoader::GetInfo () const
+const aiImporterDesc* ColladaArschFotze::GetInfo () const
 {
     return &desc;
 }
 
 // ------------------------------------------------------------------------------------------------
 // Imports the given file into the given scene structure. 
-void ColladaLoader::InternReadFile( const std::string& pFile, aiScene* pScene, IOSystem* pIOHandler)
+void ColladaArschFotze::InternReadFile( const std::string& pFile, aiScene* pScene, IOSystem* pIOHandler)
 {
     mFileName = pFile;
 
@@ -299,7 +299,7 @@ void ColladaLoader::InternReadFile( const std::string& pFile, aiScene* pScene, I
 
 // ------------------------------------------------------------------------------------------------
 // Recursively constructs a scene node for the given parser node and returns it.
-aiNode* ColladaLoader::BuildHierarchy( const ColladaParser& pParser, const Collada::Node* pNode)
+aiNode* ColladaArschFotze::BuildHierarchy( const ColladaParser& pParser, const Collada::Node* pNode)
 {
     // create a node for it
     aiNode* node = new aiNode();
@@ -345,7 +345,7 @@ aiNode* ColladaLoader::BuildHierarchy( const ColladaParser& pParser, const Colla
 
 // ------------------------------------------------------------------------------------------------
 // Resolve node instances
-void ColladaLoader::ResolveNodeInstances( const ColladaParser& pParser, const Collada::Node* pNode,
+void ColladaArschFotze::ResolveNodeInstances( const ColladaParser& pParser, const Collada::Node* pNode,
                                           std::vector<const Collada::Node*>& resolved)
 {
     // reserve enough storage
@@ -377,7 +377,7 @@ void ColladaLoader::ResolveNodeInstances( const ColladaParser& pParser, const Co
 
 // ------------------------------------------------------------------------------------------------
 // Resolve UV channels
-void ColladaLoader::ApplyVertexToEffectSemanticMapping(Collada::Sampler& sampler,
+void ColladaArschFotze::ApplyVertexToEffectSemanticMapping(Collada::Sampler& sampler,
                                                        const Collada::SemanticMappingTable& table)
 {
     std::map<std::string, Collada::InputSemanticMapEntry>::const_iterator it = table.mMap.find(sampler.mUVChannel);
@@ -391,7 +391,7 @@ void ColladaLoader::ApplyVertexToEffectSemanticMapping(Collada::Sampler& sampler
 
 // ------------------------------------------------------------------------------------------------
 // Builds lights for the given node and references them
-void ColladaLoader::BuildLightsForNode( const ColladaParser& pParser, const Collada::Node* pNode, aiNode* pTarget)
+void ColladaArschFotze::BuildLightsForNode( const ColladaParser& pParser, const Collada::Node* pNode, aiNode* pTarget)
 {
     BOOST_FOREACH( const Collada::LightInstance& lid, pNode->mLights)
     {
@@ -455,7 +455,7 @@ void ColladaLoader::BuildLightsForNode( const ColladaParser& pParser, const Coll
 
 // ------------------------------------------------------------------------------------------------
 // Builds cameras for the given node and references them
-void ColladaLoader::BuildCamerasForNode( const ColladaParser& pParser, const Collada::Node* pNode, aiNode* pTarget)
+void ColladaArschFotze::BuildCamerasForNode( const ColladaParser& pParser, const Collada::Node* pNode, aiNode* pTarget)
 {
     BOOST_FOREACH( const Collada::CameraInstance& cid, pNode->mCameras)
     {
@@ -512,7 +512,7 @@ void ColladaLoader::BuildCamerasForNode( const ColladaParser& pParser, const Col
 
 // ------------------------------------------------------------------------------------------------
 // Builds meshes for the given node and references them
-void ColladaLoader::BuildMeshesForNode( const ColladaParser& pParser, const Collada::Node* pNode, aiNode* pTarget)
+void ColladaArschFotze::BuildMeshesForNode( const ColladaParser& pParser, const Collada::Node* pNode, aiNode* pTarget)
 {
     // accumulated mesh references by this node
     std::vector<size_t> newMeshRefs;
@@ -610,9 +610,9 @@ void ColladaLoader::BuildMeshesForNode( const ColladaParser& pParser, const Coll
             {
                 // else we have to add the mesh to the collection and store its newly assigned index at the node
                 aiMesh* dstMesh = CreateMesh( pParser, srcMesh, submesh, srcController, vertexStart, faceStart);
-                // TP Anfang
+                // Zykl.io begin
                 dstMesh->isVisualMesh = mid.isVisualMesh;
-                // TP Ende
+                // Zykl.io end
 
                 // store the mesh, and store its new index in the node
                 newMeshRefs.push_back( mMeshes.size());
@@ -637,7 +637,7 @@ void ColladaLoader::BuildMeshesForNode( const ColladaParser& pParser, const Coll
 
 // ------------------------------------------------------------------------------------------------
 // Creates a mesh for the given ColladaMesh face subset and returns the newly created mesh
-aiMesh* ColladaLoader::CreateMesh( const ColladaParser& pParser, const Collada::Mesh* pSrcMesh, const Collada::SubMesh& pSubMesh, 
+aiMesh* ColladaArschFotze::CreateMesh( const ColladaParser& pParser, const Collada::Mesh* pSrcMesh, const Collada::SubMesh& pSubMesh, 
                                    const Collada::Controller* pSrcController, size_t pStartVertex, size_t pStartFace)
 {
     aiMesh* dstMesh = new aiMesh();
@@ -869,7 +869,7 @@ aiMesh* ColladaLoader::CreateMesh( const ColladaParser& pParser, const Collada::
 
 // ------------------------------------------------------------------------------------------------
 // Stores all meshes in the given scene
-void ColladaLoader::StoreSceneMeshes( aiScene* pScene)
+void ColladaArschFotze::StoreSceneMeshes( aiScene* pScene)
 {
     pScene->mNumMeshes = mMeshes.size();
     if( mMeshes.size() > 0)
@@ -882,7 +882,7 @@ void ColladaLoader::StoreSceneMeshes( aiScene* pScene)
 
 // ------------------------------------------------------------------------------------------------
 // Stores all cameras in the given scene
-void ColladaLoader::StoreSceneCameras( aiScene* pScene)
+void ColladaArschFotze::StoreSceneCameras( aiScene* pScene)
 {
     pScene->mNumCameras = mCameras.size();
     if( mCameras.size() > 0)
@@ -895,7 +895,7 @@ void ColladaLoader::StoreSceneCameras( aiScene* pScene)
 
 // ------------------------------------------------------------------------------------------------
 // Stores all lights in the given scene
-void ColladaLoader::StoreSceneLights( aiScene* pScene)
+void ColladaArschFotze::StoreSceneLights( aiScene* pScene)
 {
     pScene->mNumLights = mLights.size();
     if( mLights.size() > 0)
@@ -908,7 +908,7 @@ void ColladaLoader::StoreSceneLights( aiScene* pScene)
 
 // ------------------------------------------------------------------------------------------------
 // Stores all textures in the given scene
-void ColladaLoader::StoreSceneTextures( aiScene* pScene)
+void ColladaArschFotze::StoreSceneTextures( aiScene* pScene)
 {
     pScene->mNumTextures = mTextures.size();
     if( mTextures.size() > 0)
@@ -921,7 +921,7 @@ void ColladaLoader::StoreSceneTextures( aiScene* pScene)
 
 // ------------------------------------------------------------------------------------------------
 // Stores all materials in the given scene
-void ColladaLoader::StoreSceneMaterials( aiScene* pScene)
+void ColladaArschFotze::StoreSceneMaterials( aiScene* pScene)
 {
     pScene->mNumMaterials = newMats.size();
 
@@ -936,7 +936,7 @@ void ColladaLoader::StoreSceneMaterials( aiScene* pScene)
 
 // ------------------------------------------------------------------------------------------------
 // Stores all animations 
-void ColladaLoader::StoreAnimations( aiScene* pScene, const ColladaParser& pParser)
+void ColladaArschFotze::StoreAnimations( aiScene* pScene, const ColladaParser& pParser)
 {
     // recursivly collect all animations from the collada scene
     StoreAnimations( pScene, pParser, &pParser.mAnims, "");
@@ -1004,7 +1004,7 @@ void ColladaLoader::StoreAnimations( aiScene* pScene, const ColladaParser& pPars
 
 // ------------------------------------------------------------------------------------------------
 // Constructs the animations for the given source anim 
-void ColladaLoader::StoreAnimations( aiScene* pScene, const ColladaParser& pParser, const Collada::Animation* pSrcAnim, const std::string pPrefix)
+void ColladaArschFotze::StoreAnimations( aiScene* pScene, const ColladaParser& pParser, const Collada::Animation* pSrcAnim, const std::string pPrefix)
 {
     std::string animName = pPrefix.empty() ? pSrcAnim->mName : pPrefix + "_" + pSrcAnim->mName;
 
@@ -1019,7 +1019,7 @@ void ColladaLoader::StoreAnimations( aiScene* pScene, const ColladaParser& pPars
 
 // ------------------------------------------------------------------------------------------------
 // Constructs the animation for the given source anim
-void ColladaLoader::CreateAnimation( aiScene* pScene, const ColladaParser& pParser, const Collada::Animation* pSrcAnim, const std::string& pName)
+void ColladaArschFotze::CreateAnimation( aiScene* pScene, const ColladaParser& pParser, const Collada::Animation* pSrcAnim, const std::string& pName)
 {
     // collect a list of animatable nodes
     std::vector<const aiNode*> nodes;
@@ -1263,7 +1263,7 @@ void ColladaLoader::CreateAnimation( aiScene* pScene, const ColladaParser& pPars
     }
 }
 
-void ColladaLoader::StorePhysicsModel(aiScene* pScene, const ColladaParser& parser) {
+void ColladaArschFotze::StorePhysicsModel(aiScene* pScene, const ColladaParser& parser) {
 
     pScene->mNumPhysicsModel = parser.mPhysicsModelLibrary.size();
     pScene->mPhysicsModel = new aiPhysicsModel*[pScene->mNumPhysicsModel];
@@ -1300,11 +1300,11 @@ void ColladaLoader::StorePhysicsModel(aiScene* pScene, const ColladaParser& pars
             }
         }
 
-        // TP anfang
+        // Zykl.io begin
         if (!c.mVisualModel.empty()) {
             p->mVisualModel = new aiString(c.mVisualModel);
         }
-        // TP ende
+        // Zykl.io end
 
         p->isTool = c.mTool->isTool;
         if (p->isTool) {
@@ -1375,7 +1375,7 @@ void ColladaLoader::StorePhysicsModel(aiScene* pScene, const ColladaParser& pars
     std::cout << "Physics Model stored" << std::endl;
 }
 
- void ColladaLoader::StoreKinematics(aiScene* pScene, const ColladaParser&  parser) {
+ void ColladaArschFotze::StoreKinematics(aiScene* pScene, const ColladaParser&  parser) {
     pScene->mNumJoints = parser.mInstanceKinematicsScene.size();
     pScene->mJoints = new aiJoint*[pScene->mNumJoints];
 
@@ -1553,7 +1553,7 @@ void ColladaLoader::StorePhysicsModel(aiScene* pScene, const ColladaParser& pars
    std::cout << "Kinematic Models stored" << std::endl;
 }
 
-std::string ColladaLoader::FindObjectName(std::string id, Collada::Node * node) {
+std::string ColladaArschFotze::FindObjectName(std::string id, Collada::Node * node) {
     if (node) {
         if (node && node->mID.compare(0, id.length(), id, 0, id.length()) == 0) {
             return node->mName;
@@ -1568,7 +1568,7 @@ std::string ColladaLoader::FindObjectName(std::string id, Collada::Node * node) 
     return "---";
 }
 
-void ColladaLoader::FillRelativeTranslation(aiJoint* j, Collada::Link preLink) {
+void ColladaArschFotze::FillRelativeTranslation(aiJoint* j, Collada::Link preLink) {
     j->mTranslationRel.x = j->mTranslation.x - preLink.trans_x;
     j->mTranslationRel.y = j->mTranslation.y - preLink.trans_y;
     j->mTranslationRel.z = j->mTranslation.z - preLink.trans_z;
@@ -1576,7 +1576,7 @@ void ColladaLoader::FillRelativeTranslation(aiJoint* j, Collada::Link preLink) {
 
 // ------------------------------------------------------------------------------------------------
 // Add a texture to a material structure
-void ColladaLoader::AddTexture ( aiMaterial& mat, const ColladaParser& pParser,
+void ColladaArschFotze::AddTexture ( aiMaterial& mat, const ColladaParser& pParser,
                                  const Collada::Effect& effect,
                                  const Collada::Sampler& sampler,
                                  aiTextureType type, unsigned int idx)
@@ -1639,7 +1639,7 @@ void ColladaLoader::AddTexture ( aiMaterial& mat, const ColladaParser& pParser,
 
 // ------------------------------------------------------------------------------------------------
 // Fills materials from the collada material definitions
-void ColladaLoader::FillMaterials( const ColladaParser& pParser, aiScene* /*pScene*/)
+void ColladaArschFotze::FillMaterials( const ColladaParser& pParser, aiScene* /*pScene*/)
 {
     for (std::vector<std::pair<Collada::Effect*, aiMaterial*> >::iterator it = newMats.begin(),
          end = newMats.end(); it != end; ++it)
@@ -1731,7 +1731,7 @@ void ColladaLoader::FillMaterials( const ColladaParser& pParser, aiScene* /*pSce
 
 // ------------------------------------------------------------------------------------------------
 // Constructs materials from the collada material definitions
-void ColladaLoader::BuildMaterials( ColladaParser& pParser, aiScene* /*pScene*/)
+void ColladaArschFotze::BuildMaterials( ColladaParser& pParser, aiScene* /*pScene*/)
 {
     newMats.reserve(pParser.mMaterialLibrary.size());
 
@@ -1777,7 +1777,7 @@ void ColladaLoader::BuildMaterials( ColladaParser& pParser, aiScene* /*pScene*/)
 
 // ------------------------------------------------------------------------------------------------
 // Resolves the texture name for the given effect texture entry
-aiString ColladaLoader::FindFilenameForEffectTexture( const ColladaParser& pParser,
+aiString ColladaArschFotze::FindFilenameForEffectTexture( const ColladaParser& pParser,
                                                       const Collada::Effect& pEffect, const std::string& pName)
 {
     // recurse through the param references until we end up at an image
@@ -1847,7 +1847,7 @@ aiString ColladaLoader::FindFilenameForEffectTexture( const ColladaParser& pPars
 
 // ------------------------------------------------------------------------------------------------
 // Convert a path read from a collada file to the usual representation
-void ColladaLoader::ConvertPath (aiString& ss)
+void ColladaArschFotze::ConvertPath (aiString& ss)
 {
     // TODO: collada spec, p 22. Handle URI correctly.
     // For the moment we're just stripping the file:// away to make it work.
@@ -1890,7 +1890,7 @@ void ColladaLoader::ConvertPath (aiString& ss)
 
 // ------------------------------------------------------------------------------------------------
 // Reads a float value from an accessor and its data array.
-float ColladaLoader::ReadFloat( const Collada::Accessor& pAccessor, const Collada::Data& pData, size_t pIndex, size_t pOffset) const
+float ColladaArschFotze::ReadFloat( const Collada::Accessor& pAccessor, const Collada::Data& pData, size_t pIndex, size_t pOffset) const
 {
     // FIXME: (thom) Test for data type here in every access? For the moment, I leave this to the caller
     size_t pos = pAccessor.mStride * pIndex + pAccessor.mOffset + pOffset;
@@ -1900,7 +1900,7 @@ float ColladaLoader::ReadFloat( const Collada::Accessor& pAccessor, const Collad
 
 // ------------------------------------------------------------------------------------------------
 // Reads a string value from an accessor and its data array.
-const std::string& ColladaLoader::ReadString( const Collada::Accessor& pAccessor, const Collada::Data& pData, size_t pIndex) const
+const std::string& ColladaArschFotze::ReadString( const Collada::Accessor& pAccessor, const Collada::Data& pData, size_t pIndex) const
 {
     size_t pos = pAccessor.mStride * pIndex + pAccessor.mOffset;
     ai_assert( pos < pData.mStrings.size());

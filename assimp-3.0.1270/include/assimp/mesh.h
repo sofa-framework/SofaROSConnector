@@ -614,9 +614,9 @@ struct aiMesh
 	 *  mesh'es vertex components (usually positions, normals). */
 	C_STRUCT aiAnimMesh** mAnimMeshes;
 
-    // TP Anfang
+    // Zykl.io begin
     bool isVisualMesh;
-    // TP Ende
+    // Zykl.io end
 
 #ifdef __cplusplus
 
@@ -650,9 +650,9 @@ struct aiMesh
         mMaterialGroups = NULL;
         mGroupsMaterialIndex = NULL;
 
-        // TP Anfang
+        // Zykl.io begin
         isVisualMesh = false;
-        // TP Ende
+        // Zykl.io end
 	}
 
 	//! Deletes all storage allocated for the mesh
@@ -812,9 +812,9 @@ struct aiPhysicsModel {
     unsigned int mNumWhitelist;
     aiString** mWhitelist;
 
-    // TP anfang
+    // Zykl.io begin
     aiString* mVisualModel;
-    // TP ende
+    // Zykl.io end
 
     unsigned int mNumSubModels;
 
@@ -826,9 +826,9 @@ struct aiPhysicsModel {
         mNumWhitelist = 0;
         mSubModels = NULL;
         mWhitelist = NULL;
-        // TP anfang
+        // Zykl.io begin
         mVisualModel = NULL;
-        // TP ende
+        // Zykl.io end
         dynamic = false;
         mass = 0.0;
         isGhost = false;
@@ -852,11 +852,11 @@ struct aiPhysicsModel {
         }
         mNumWhitelist = 0;
 
-        // TP anfang
+        // Zykl.io begin
         if (mVisualModel) {
             delete mVisualModel;
         }
-        // TP ende
+        // Zykl.io end
     }
 };
 

@@ -25,10 +25,11 @@ bool ZyROSPublishingHandler::setROSConnectionManagerByContext(sofa::core::object
 
     if (connectionManagerPrivate->connectionManager)
     {
-        std::cout << "(ZyROSPublishingHandler::setROSConnectionManagerByContext) Found the ROSConnectionManager " << connectionManagerPrivate->connectionManager->getName() << std::endl;
+        msg_info("ZyROSPublishingHandler") << "Found a ROSConnectionManager: " << connectionManagerPrivate->connectionManager->getName();
         return true;
     }
-    std::cout << "(ZyROSPublishingHandler::setROSConnectionManagerByContext) WARNING: Could not find a ROSConnectionManager, cannot publish messages." << std::endl;
+
+    msg_warning("ZyROSPublishingHandler") << "Could not find a ROSConnectionManager, cannot publish messages.";
     return false;
 }
 

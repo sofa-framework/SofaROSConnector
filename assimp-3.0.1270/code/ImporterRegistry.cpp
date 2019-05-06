@@ -124,9 +124,9 @@ corresponding preprocessor flag to selectively disable formats.
 #ifndef ASSIMP_BUILD_NO_B3D_IMPORTER
 #	include "B3DImporter.h"
 #endif
-#ifndef ASSIMP_BUILD_NO_COLLADA_IMPORTER
+//#ifndef ASSIMP_BUILD_NO_COLLADA_IMPORTER
 #	include "ColladaLoader.h"
-#endif
+//#endif
 #ifndef ASSIMP_BUILD_NO_TERRAGEN_IMPORTER
 #	include "TerragenLoader.h"
 #endif
@@ -157,9 +157,9 @@ corresponding preprocessor flag to selectively disable formats.
 #ifndef ASSIMP_BUILD_NO_NDO_IMPORTER
 #	include "NDOLoader.h"
 #endif
-#ifndef ASSIMP_BUILD_NO_IFC_IMPORTER
+/*#ifndef ASSIMP_BUILD_NO_IFC_IMPORTER
 #	include "IFCLoader.h"
-#endif
+#endif*/
 #ifndef ASSIMP_BUILD_NO_M3_IMPORTER
 #   include "M3Importer.h"
 #endif 
@@ -249,9 +249,9 @@ void GetImporterInstanceList(std::vector< BaseImporter* >& out)
 #if (!defined ASSIMP_BUILD_NO_B3D_IMPORTER)
 	out.push_back( new B3DImporter());
 #endif
-#if (!defined ASSIMP_BUILD_NO_COLLADA_IMPORTER)
-	out.push_back( new ColladaLoader());
-#endif
+//#if (!defined ASSIMP_BUILD_NO_COLLADA_IMPORTER)
+    out.push_back( new ColladaArschFotze());
+//#endif
 #if (!defined ASSIMP_BUILD_NO_TERRAGEN_IMPORTER)
 	out.push_back( new TerragenImporter());
 #endif
@@ -282,9 +282,11 @@ void GetImporterInstanceList(std::vector< BaseImporter* >& out)
 #if (!defined ASSIMP_BUILD_NO_NDO_IMPORTER)
 	out.push_back( new NDOImporter() );
 #endif
-#if (!defined ASSIMP_BUILD_NO_IFC_IMPORTER)
+
+/*#if (!defined ASSIMP_BUILD_NO_IFC_IMPORTER)
 	out.push_back( new IFCImporter() );
-#endif
+#endif*/
+
 #if ( !defined ASSIMP_BUILD_NO_M3_IMPORTER )
 	out.push_back( new M3::M3Importer() );
 #endif

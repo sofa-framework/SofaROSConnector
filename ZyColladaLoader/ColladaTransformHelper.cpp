@@ -279,7 +279,7 @@ ObjectTransform* ColladaTransformHelper::getJointTransform(const std::string& ob
 	if (this->m_parentJointTransforms.find(objectName) == this->m_parentJointTransforms.end())
 	{
 		std::cout << " no joint hierarchy named " << objectName << " exists, return false." << std::endl;
-		return false;
+        return NULL;
 	}
 
 	std::cout << " search for child " << jointName << " in joint hierarchy " << objectName << std::endl;

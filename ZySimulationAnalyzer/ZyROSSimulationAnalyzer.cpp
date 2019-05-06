@@ -31,10 +31,6 @@
 #include <SofaBaseMechanics/MechanicalObject.h>
 #include "sofa/helper/vector_algebra.h"
 
-#ifdef ZYKLIO_DEMO
-#include <sofa/simulation/common/Simulation.h>
-#endif //ZYKLIO_DEMO
-
 namespace Zyklio
 {
     namespace SimulationAnalysis
@@ -57,19 +53,9 @@ namespace Zyklio
             , linInput(0.0)
             , rotInput(0.0)
         {
-            /*targetName = "falling_1_Object";
-            targetMinHeight = -100.0;
-            targetIterations = 10;
-            targetMovementTolerance = 1.0;*/
-
-            // TODO: get these from ROS topic
-            /*linInput = 0.2;
-            rotInput = 0.12;*/
-
             oldPos = defaulttype::Vec3d(0, 0, 0);
             targetCounter = 0;
 
-            //theTime = boost::posix_time::microsec_clock::local_time();
             boost::posix_time::ptime theTime = boost::posix_time::microsec_clock::local_time();
             boost::posix_time::ptime epoch(boost::gregorian::date(2017, 1, 1)); // 2017 instead of 1970, so that the numbers don't get so big
             timeAtStart = (theTime - epoch).total_seconds();
@@ -77,16 +63,6 @@ namespace Zyklio
 
         void ZyROSSimulationAnalyzer::init()
         {
-#ifdef ZYKLIO_DEMO
-            std::string sceneHash = sofa::simulation::getSimulation()->getSceneHash();
-
-            sofa::helper::hashCheckHelper hch;
-            if (!(hch.checkHashCorrectness(sceneHash)))
-            {
-                std::cout << "This plugin can only be used with the Zyklio demo and the correct demo scene." << std::endl;
-                exit(1);
-            }
-#endif //ZYKLIO_DEMO
             Inherit::init();
         }
 

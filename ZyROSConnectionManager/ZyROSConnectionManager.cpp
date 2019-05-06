@@ -47,9 +47,6 @@ void ZyROSConnectionManager::cleanup()
         while (!topicListeners.empty())
         {
             boost::shared_ptr<ZyROSListener>& current = topicListeners.back();
-            /*msg_info("ZyROSConnectionManager") << "      - calling cleanup";
-                  current->cleanup(); // this crashes for some reason
-                  msg_info("ZyROSConnectionManager") << "      - trying to remove a listener";*/
             if (m_ros_connector->removeTopicListener(current))
             {
                 msg_info("ZyROSConnectionManager") << "-> removed a topic listener";

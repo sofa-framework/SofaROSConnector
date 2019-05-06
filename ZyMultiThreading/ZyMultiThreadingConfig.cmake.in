@@ -3,8 +3,8 @@
 @PACKAGE_INIT@
 find_package(SofaMisc REQUIRED)
 find_package(Boost COMPONENTS system chrono thread REQUIRED)
-if(NOT TARGET TruMultiThreading)
-	include("${CMAKE_CURRENT_LIST_DIR}/TruMultiThreadingTargets.cmake")
+if(NOT TARGET ZyMultiThreading)
+        include("${CMAKE_CURRENT_LIST_DIR}/ZyMultiThreadingTargets.cmake")
 endif()
 
-check_required_components(TruMultiThreading)
+check_required_components(ZyMultiThreading)
