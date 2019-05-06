@@ -34,13 +34,7 @@
 #include <SofaMeshCollision/PointModel.h>
 
 #include <SofaConstraint/FrictionContact.h>
-#ifdef ZYKLIO_DEMO
-#include <sofa/simulation/common/Simulation.h>
-#endif //ZYKLIO_DEMO
-
 #include <boost/date_time/posix_time/posix_time.hpp>
-
-//#define TP_VELOCITY_APPROXIMATION_DEBUG
 
 namespace Zyklio
 {
@@ -101,23 +95,10 @@ namespace Zyklio
                 
             // time in seconds since begin of epoch, using chrono::steady_clock
             epochTime = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
-#ifdef TP_VELOCITY_APPROXIMATION_DEBUG
-            std::cout << std::setprecision(30) << "ZyVelocityApproximator epoch time: " << epochTime << std::endl;
-#endif
         }
 
         void ZyVelocityApproximator::init()
         {
-#ifdef ZYKLIO_DEMO
-            std::string sceneHash = sofa::simulation::getSimulation()->getSceneHash();
-
-            sofa::helper::hashCheckHelper hch;
-            if (!(hch.checkHashCorrectness(sceneHash)))
-            {
-                std::cout << "This plugin can only be used with the Zyklio demo and the correct demo scene." << std::endl;
-                exit(1);
-            }
-#endif //ZYKLIO_DEMO
             Inherit::init();
         }
 

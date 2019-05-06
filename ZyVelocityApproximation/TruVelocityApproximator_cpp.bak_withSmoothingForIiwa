@@ -53,6 +53,7 @@
 #include <SofaConstraint/FrictionContact.h>
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 #include <boost/date_time/posix_time/posix_time.hpp> 
 =======
@@ -62,13 +63,17 @@
 >>>>>>> Working version of the ROS connector plugin for SOFA 18.0x
 #include <sofa/simulation/common/Simulation.h>
 #endif //ZYKLIO_DEMO
+=======
+>>>>>>> Preparing ROS connector examples and test cases.
 
-// asd
 #include <boost/date_time/posix_time/posix_time.hpp> 
+<<<<<<< HEAD
 // qwe
 
 //#define TP_VELOCITY_APPROXIMATION_DEBUG
 >>>>>>> SofaROSConnector plugin plus dependencies added.
+=======
+>>>>>>> Preparing ROS connector examples and test cases.
 
 namespace Zyklio
 {
@@ -120,9 +125,12 @@ namespace Zyklio
             , currentVelocityApproximationData(initData(&currentVelocityApproximationData, sofa::helper::vector< currentVelocityApproximationDataType >(), "currentVelocityApproximationData", "Velocity data of the selected vertices."))
             , currentPosition()
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
             //, oldPosVec3Vec()
 >>>>>>> SofaROSConnector plugin plus dependencies added.
+=======
+>>>>>>> Preparing ROS connector examples and test cases.
             , oldPosVec3CircularVec()
             , positionChange(false)
             , arbitraryController(NULL)
@@ -155,6 +163,7 @@ namespace Zyklio
             // time in seconds since begin of epoch, using chrono::steady_clock
             epochTime = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
 <<<<<<< HEAD
+<<<<<<< HEAD
         }
 
         void ZyVelocityApproximator::init()
@@ -167,20 +176,12 @@ namespace Zyklio
 #ifdef TP_VELOCITY_APPROXIMATION_DEBUG
             std::cout << std::setprecision(30) << "ZyVelocityApproximator epoch time: " << epochTime << std::endl;
 #endif
+=======
+>>>>>>> Preparing ROS connector examples and test cases.
         }
 
         void ZyVelocityApproximator::init()
         {
-#ifdef ZYKLIO_DEMO
-            std::string sceneHash = sofa::simulation::getSimulation()->getSceneHash();
-
-            sofa::helper::hashCheckHelper hch;
-            if (!(hch.checkHashCorrectness(sceneHash)))
-            {
-                std::cout << "This plugin can only be used with the Zyklio demo and the correct demo scene." << std::endl;
-                exit(1);
-            }
-#endif //ZYKLIO_DEMO
             Inherit::init();
         }
 

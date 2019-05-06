@@ -243,7 +243,8 @@ void ZyROSConnectorTopicPublisher<MessageType>::publishMessageQueue()
                         message_cpp_file.write('template class ZyROSConnectorTopicSubscriber<' + message_cpp_type + '>;\n')
                         message_cpp_file.write('\n')
 
-            message_cpp_file.write('boost::shared_ptr<ZyROSListener> ZyROSConnectorMessageSubscriberFactory::createTopicSubscriber(ros::NodeHandlePtr rosNode, const std::string& topicURI, const std::string& messageType)\n')
+                        message_cpp_file.write('boost::shared_ptr<ZyROSListener> ZyROSConnectorMessageSubscriberFactory::createTopicSubscriber(ros::NodeHandlePtr rosNode, const std::string& topicURI, const std::string& messageType)\n')
+
             message_cpp_file.write('{\n')
 
             message_cpp_file.write('\tbool supported = false;\n')
@@ -541,6 +542,8 @@ void ZyROSConnectorServiceServerWorkerThread::main()
 }
 
         """
+
+        self.__excluded_service_names = ['rosapi/GetParam'] # These break compilation when included directly under ROS kinetic
 
         self.__excluded_service_names = ['rosapi/GetParam'] # These break compilation when included directly under ROS kinetic
 

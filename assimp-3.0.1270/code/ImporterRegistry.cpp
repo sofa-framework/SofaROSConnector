@@ -126,6 +126,7 @@ corresponding preprocessor flag to selectively disable formats.
 #endif
 //#ifndef ASSIMP_BUILD_NO_COLLADA_IMPORTER
 #	include "ColladaLoader.h"
+//#endif
 #ifndef ASSIMP_BUILD_NO_TERRAGEN_IMPORTER
 #	include "TerragenLoader.h"
 #endif

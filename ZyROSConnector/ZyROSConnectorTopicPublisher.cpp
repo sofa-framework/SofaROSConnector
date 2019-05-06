@@ -50,8 +50,6 @@ void ZyROSConnectorTopicPublisher<MessageType>::publishMessageQueue()
     }
     lock.unlock();
 }
-        
-
 #include <ZyROS_MessageType_Instantiations_Publishers.h>
 
 

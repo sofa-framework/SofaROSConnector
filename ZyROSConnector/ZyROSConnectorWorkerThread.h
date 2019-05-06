@@ -1,10 +1,5 @@
-<<<<<<< HEAD
 #ifndef ROSCONNECTOR_WORKER_THREAD_H
 #define ROSCONNECTOR_WORKER_THREAD_H
-=======
-#ifndef TRUROSCONNECTOR_WORKER_THREAD_H
-#define TRUROSCONNECTOR_WORKER_THREAD_H
->>>>>>> SofaROSConnector plugin plus dependencies added.
 
 #ifdef _WIN32
 // Ensure that Winsock2.h is included before Windows.h, which can get
