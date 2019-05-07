@@ -38,12 +38,21 @@ namespace Zyklio
 			bool connectToROSMaster(const std::string& masterUri);
 			bool disconnectFromROSMaster();
 
-            bool ProcessRunning(const std::wstring&
-#ifndef _WIN32
-                                , pid_t* processPid
+            bool ProcessRunning(
+#if _WIN32
+                    const std::wstring&
+#else
+                    const std::string&
+                    , pid_t* processPid
 #endif
                                 );
-			int CloseProcesses(const std::wstring& processName);
+            int CloseProcesses(
+#if _WIN32
+                    const std::wstring& processName
+#else
+                    const std::string& processName
+#endif
+                    );
 
 			void TestBody();
 
@@ -66,9 +75,12 @@ namespace Zyklio
 		}
 	}
 
-    bool RosConnectorTest::ProcessRunning(const std::wstring& processName
-#ifndef _WIN32
-                                          , pid_t* processPid
+    bool RosConnectorTest::ProcessRunning(
+#if _WIN32
+            const std::wstring& processName
+#else
+            const std::string&processName,
+            pid_t* processPid
 #endif
                                           )
 	{
@@ -144,8 +156,10 @@ namespace Zyklio
                     return false;
                 }
 
-                std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
-                std::wstring currentProcessName = converter.from_bytes(pname);
+                std::string currentProcessName(pname);
+
+                // msg_info("ZyROSConnector_test") << "Comparing process names: " << processName << " -- " << currentProcessName;
+
                 if (currentProcessName.compare(processName) == 0)
                 {
                     fclose(fp);
@@ -168,7 +182,13 @@ namespace Zyklio
         return processOpen;
 	}
 
-	int RosConnectorTest::CloseProcesses(const std::wstring& processName)
+    int RosConnectorTest::CloseProcesses(
+#if _WIN32
+            const std::wstring& processName
+#else
+            const std::string& processName
+#endif
+            )
 	{
         int closed = 0;
 #if _WIN32
@@ -246,8 +266,7 @@ namespace Zyklio
                     closedir(dir);
                     return closed;
                 }
-                std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
-                std::wstring currentProcessName = converter.from_bytes(pname);
+                std::string currentProcessName(pname);
                 if (currentProcessName.compare(processName) == 0)
                 {
                     int kill_ret = kill(pid, SIGTERM);
@@ -373,6 +392,8 @@ int main(int argc, char** argv)
            msg_info("ZyROSConnector_test") << "Attempt " << rosCoreStartTries << " 'system' return value: " << ret;
            rosCoreStartTries++;
 
+           sleep(2);
+
            if (ret == 0)
            {
                msg_info("ZyROSConnector_test") << "Start of roscore process succeeded.";
@@ -395,7 +416,7 @@ int main(int argc, char** argv)
 #if _WIN32
         if (ShellExecuteEx(&rSEI))
 #else
-        if (!test_fixture.ProcessRunning(L"roscore", &rosCorePID))
+        if (!test_fixture.ProcessRunning("roscore", &rosCorePID))
         {
             msg_error("ZyROSConnector_test") << "Failed to start roscore process!";
             rosCoreStartSucceeded = false;
@@ -410,7 +431,7 @@ int main(int argc, char** argv)
             while (!test_fixture.ProcessRunning(L"rosout.exe") && waitAttempts <= 20)
 #else
             pid_t processPid;
-            while (!test_fixture.ProcessRunning(L"rosout", &processPid) && waitAttempts <= 20)
+            while (!test_fixture.ProcessRunning("rosout", &processPid) && waitAttempts <= 20)
 #endif
 			{
                 msg_info("ZyROSConnector_test") << "Waiting for roscore components to start.";
@@ -430,12 +451,20 @@ int main(int argc, char** argv)
 
 			if (test_fixture.connectToROSMaster(rosMasterURI))
 			{
-				ros::NodeHandle local_nh;
-                ros::Publisher log_pub = local_nh.advertise<rosgraph_msgs::Log>("ZyROSConnector_test", 1000);
+                // ros::NodeHandle local_nh;
+                // ros::Publisher log_pub = local_nh.advertise<rosgraph_msgs::Log>("ZyROSConnector_test", 1000);
 
-                boost::shared_ptr<ZyROSListener> logListener;
+                boost::shared_ptr<ZyROSConnectorTopicSubscriber<rosgraph_msgs::Log>> logListener;
+                boost::shared_ptr<ZyROSConnectorTopicPublisher<rosgraph_msgs::Log>> logPublisher;
+
                 logListener.reset(new ZyROSConnectorTopicSubscriber<rosgraph_msgs::Log>(test_fixture.m_rosConnector->getROSNode(), "/ZyROSConnector_test"));
-				test_fixture.m_rosConnector->addTopicListener(logListener);
+                logPublisher.reset(new ZyROSConnectorTopicPublisher<rosgraph_msgs::Log>(test_fixture.m_rosConnector->getROSNode(), "/ZyROSConnector_test"));
+
+                boost::shared_ptr<ZyROSListener> logClient(logListener.get());
+                boost::shared_ptr<ZyROSPublisher> logSource(logPublisher.get());
+
+                test_fixture.m_rosConnector->addTopicPublisher(logSource);
+                test_fixture.m_rosConnector->addTopicListener(logClient);
 
 				for (unsigned int k = 0; k < 10; ++k)
 				{
@@ -450,11 +479,21 @@ int main(int argc, char** argv)
 					msg.msg = msg_stream.str();
 
                     msg_info("ZyROSConnector_test") << "Publish message " << k << ": " << msg;
-
-					log_pub.publish(msg);
+                    sleep(1);
+                    logPublisher->publishMessage(msg);
 				}
 
-				test_fixture.m_rosConnector->removeTopicListener(logListener);
+                msg_info("ZyROSConnector_test") << "Messages received by listener: " << logListener->getMessageCount();
+                for (size_t k = 0; k < logListener->getMessageCount(); ++k)
+                {
+                    const rosgraph_msgs::Log& log_msg = logListener->getMessage(k);
+                    msg_info("ZyROSConnector_test") << "Log message in received message " << k << ": " << log_msg.msg;
+                }
+
+                logListener->clearMessages();
+                msg_info("ZyROSConnector_test") << "Message count after cleaning: " << logListener->getMessageCount();
+
+                test_fixture.m_rosConnector->removeTopicListener(logClient);
 				test_fixture.disconnectFromROSMaster();
 
                 msg_info("ZyROSConnector_test") << "Shutting down roscore instance.";
@@ -485,7 +524,7 @@ int main(int argc, char** argv)
                     if (kill_ret == 0)
                     {
                         pid_t rosCorePid_tmp;
-                        if (test_fixture.ProcessRunning(L"roscore", &rosCorePid_tmp))
+                        if (test_fixture.ProcessRunning("roscore", &rosCorePid_tmp))
                         {
                             msg_info("ZyROSConnector_test") << "roscore process still running.";
                         }
@@ -508,9 +547,9 @@ int main(int argc, char** argv)
 					test_fixture.CloseProcesses(L"rosmaster.exe");
 					test_fixture.CloseProcesses(L"rosout.exe");
 #else
-                    test_fixture.CloseProcesses(L"roscore");
-                    test_fixture.CloseProcesses(L"rosmaster");
-                    test_fixture.CloseProcesses(L"rosout");
+                    test_fixture.CloseProcesses("rosmaster");
+                    test_fixture.CloseProcesses("rosout");
+                    test_fixture.CloseProcesses("roscore");
 #endif
 				}
 			}

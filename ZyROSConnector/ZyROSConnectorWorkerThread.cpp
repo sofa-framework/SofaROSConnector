@@ -1,5 +1,8 @@
 #include "ZyROSConnectorWorkerThread.h"
 
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
+
 using namespace Zyklio::MultiThreading;
 using namespace Zyklio::ROSConnector;
 
@@ -64,10 +67,12 @@ bool ZyROSConnectorWorkerThread::addTopicPublisher(boost::shared_ptr<ZyROSPublis
     {
         if (publisher->getUuid() == (*it)->getUuid())
         {
+            msg_info("ZyROSConnectorWorkerThread") << "Publisher already registered with UUID: " << boost::lexical_cast<std::string>(publisher->getUuid());
             return false;
         }
     }
 
+    msg_info("ZyROSConnectorWorkerThread") << "Adding new publisher with UUID: " << boost::lexical_cast<std::string>(publisher->getUuid()) << " for message type: " << publisher->getMessageType();
     m_topicPublishers.push_back(boost::move(publisher));
     m_activePublishers.push_back(true);
     return true;
