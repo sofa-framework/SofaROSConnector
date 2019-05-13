@@ -36,8 +36,9 @@ namespace Zyklio
             void reset();
             void cleanup();
 
-            void addPublisher(boost::shared_ptr<ZyROSPublisher>& pub);
+            boost::shared_ptr<ZyROSConnector> getROSConnector();
 
+            void addPublisher(boost::shared_ptr<ZyROSPublisher>& pub);
             void addSubscriber(boost::shared_ptr<ZyROSListener> &sub);
 
             template <class MessageType>
@@ -84,7 +85,7 @@ namespace Zyklio
 
         protected:
 
-            ZyROSConnector* m_ros_connector;
+            boost::shared_ptr<ZyROSConnector> m_ros_connector;
 
             Data<std::string> m_rosMasterURI;
             Data<std::string> m_rosTopics;

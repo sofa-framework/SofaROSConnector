@@ -18,9 +18,20 @@
 
 #include <ZyROSConnector.h>
 #include <ZyROSConnectionManager.h>
+
+#include <ZyROSConnectorTopicPublisher.h>
 #include <ZyROSConnectorTopicSubscriber.h>
 
+#include <ZyROSConnectorServiceClient.h>
+#include <ZyROSConnectorServiceServer.h>
+
+#include <ZyROS_MessageType_Instantiations_Publishers.h>
+#include <ZyROS_MessageType_Instantiations_Subscribers.h>
+
+#include <ZyROS_ServiceType_Client_Instantiations.h>
+
 #include <rosgraph_msgs/Log.h>
+#include <ros/console.h>
 
 #include <boost/filesystem.hpp>
 #include <boost/thread/mutex.hpp>
@@ -28,6 +39,7 @@
 namespace Zyklio
 {
     using namespace Zyklio::ROSConnector;
+    using namespace Zyklio::ROSConnectionManager;
 
 	struct RosConnectorTest : public ::testing::Test
 	{
@@ -56,14 +68,14 @@ namespace Zyklio
 
 			void TestBody();
 
-            ZyROSConnector* m_rosConnector;
+            ZyROSConnectionManager* m_rosConnector;
 
 			boost::mutex m_mutex;
 	};
 
 	RosConnectorTest::RosConnectorTest()
 	{
-        m_rosConnector = new ZyROSConnector();
+        m_rosConnector = new ZyROSConnectionManager();
 	}
 
 	RosConnectorTest::~RosConnectorTest()
@@ -286,22 +298,24 @@ namespace Zyklio
 	}
 
 	bool RosConnectorTest::connectToROSMaster(const std::string& masterUri)
-	{
+    {
+        m_rosConnector->init();
+        m_rosConnector->bwdInit();
         msg_info("ZyROSConnector_Test") << "connectToROSMaster: " << masterUri;
-		m_rosConnector->setRosMasterURI(masterUri);
-		m_rosConnector->startComponent();
-        msg_info("ZyROSConnector_Test") << "connectToROSMaster: startComponent";
-		m_rosConnector->resumeComponent();
-        msg_info("ZyROSConnector_Test") << "connectToROSMaster: resumeComponent";
+        m_rosConnector->getROSConnector()->setRosMasterURI(masterUri);
+        // m_rosConnector->getROSConnector()->startComponent();
+        // msg_info("ZyROSConnector_Test") << "connectToROSMaster: startComponent";
+        // m_rosConnector->getROSConnector()->resumeComponent();
+        // msg_info("ZyROSConnector_Test") << "connectToROSMaster: resumeComponent";
 		
 		boost::mutex::scoped_lock lock(m_mutex);
-		while (!m_rosConnector->isThreadRunning())
+        while (!m_rosConnector->getROSConnector()->isThreadRunning())
 		{
             msg_info("ZyROSConnector_Test") << "Waiting for connector thread to start...";
-			m_rosConnector->connectorCondition().wait(lock);
+            m_rosConnector->getROSConnector()->connectorCondition().wait(lock);
 		}
         msg_info("ZyROSConnector_Test") << "Connector thread started.";
-		if (m_rosConnector->isConnected())
+        if (m_rosConnector->getROSConnector()->isConnected())
 		{
             msg_info("ZyROSConnector_Test") << "Connection to roscore established.";
 			return true;
@@ -313,17 +327,20 @@ namespace Zyklio
 
 	bool RosConnectorTest::disconnectFromROSMaster()
 	{
-        msg_info("ZyROSConnector_Test") << "connectToROSMaster: pauseComponent";
-		m_rosConnector->pauseComponent();
+        /*msg_info("ZyROSConnector_Test") << "connectToROSMaster: pauseComponent";
+        m_rosConnector->getROSConnector()->pauseComponent();
         msg_info("ZyROSConnector_Test") << "connectToROSMaster: stopComponent";
-		m_rosConnector->stopComponent();
+        m_rosConnector->getROSConnector()->stopComponent();*/
 		
+        msg_info("ZyROSConnector_test") << "Cleaning up ROS connector.";
+        m_rosConnector->cleanup();
+
 		return true;
 	}
 
 	void RosConnectorTest::TestBody()
 	{
-
+        msg_info("ZyROSConnector_test") << "Executing Test body.";
 	}
 }
 
@@ -423,7 +440,6 @@ int main(int argc, char** argv)
         }
         if (rosCoreStartSucceeded)
 #endif
-
 		{
 			int waitAttempts = 0;
 			// Wait for rosout.exe, since it's the last child process started by roscore
@@ -449,24 +465,46 @@ int main(int argc, char** argv)
 				return 1;
 			}
 
+            msg_info("ZyROSConnector_test") << "Connecting to ROS master...";
 			if (test_fixture.connectToROSMaster(rosMasterURI))
 			{
                 // ros::NodeHandle local_nh;
                 // ros::Publisher log_pub = local_nh.advertise<rosgraph_msgs::Log>("ZyROSConnector_test", 1000);
 
-                boost::shared_ptr<ZyROSConnectorTopicSubscriber<rosgraph_msgs::Log>> logListener;
-                boost::shared_ptr<ZyROSConnectorTopicPublisher<rosgraph_msgs::Log>> logPublisher;
+                msg_info("ZyROSConnector_test") << "Connected successfully.";
 
-                logListener.reset(new ZyROSConnectorTopicSubscriber<rosgraph_msgs::Log>(test_fixture.m_rosConnector->getROSNode(), "/ZyROSConnector_test"));
-                logPublisher.reset(new ZyROSConnectorTopicPublisher<rosgraph_msgs::Log>(test_fixture.m_rosConnector->getROSNode(), "/ZyROSConnector_test"));
+                const std::vector<std::string> topicNames = test_fixture.m_rosConnector->getTopics();
+                const std::vector<std::string> serviceNames = test_fixture.m_rosConnector->getServices();
 
-                boost::shared_ptr<ZyROSListener> logClient(logListener.get());
-                boost::shared_ptr<ZyROSPublisher> logSource(logPublisher.get());
+                msg_info("ZyROSConnector_test") << "Number of topics available: " << topicNames.size();
+                for (size_t k = 0; k < topicNames.size(); k++)
+                {
+                    msg_info("ZyROSConnector_test") << "Topic " << k << ": " << topicNames[k];
+                }
 
-                test_fixture.m_rosConnector->addTopicPublisher(logSource);
-                test_fixture.m_rosConnector->addTopicListener(logClient);
+                msg_info("ZyROSConnector_test") << "Number of services available: " << serviceNames.size();
+                bool getLoggersServiceExists = false;
+                bool setLoggerLevelServiceExists = false;
+                for (size_t k = 0; k < serviceNames.size(); k++)
+                {
+                    msg_info("ZyROSConnector_test") << "Service " << k << ": " << serviceNames[k];
+                    if (serviceNames[k] == "/rosout/get_loggers")
+                        getLoggersServiceExists = true;
+                    if (serviceNames[k] == "/rosout/set_logger_level")
+                        setLoggerLevelServiceExists = true;
+                }
 
-				for (unsigned int k = 0; k < 10; ++k)
+                ZyROSConnectorTopicSubscriber<rosgraph_msgs::Log>* logListener = new ZyROSConnectorTopicSubscriber<rosgraph_msgs::Log>(test_fixture.m_rosConnector->getROSConnector()->getROSNode(), "/ZyROSConnector_test");
+                ZyROSConnectorTopicPublisher<rosgraph_msgs::Log>* logPublisher = new ZyROSConnectorTopicPublisher<rosgraph_msgs::Log>(test_fixture.m_rosConnector->getROSConnector()->getROSNode(), "/ZyROSConnector_test");
+
+                boost::shared_ptr<ZyROSListener> logClient(logListener);
+                boost::shared_ptr<ZyROSPublisher> logSource(logPublisher);
+
+                test_fixture.m_rosConnector->getROSConnector()->addTopicPublisher(logSource);
+                test_fixture.m_rosConnector->getROSConnector()->addTopicListener(logClient);
+
+                // Test publisher and subscriber wrappers using rosgraph_msgs::Log
+                for (unsigned int k = 0; k <= 10; ++k)
 				{
 					std::stringstream msg_stream;
 					rosgraph_msgs::Log msg;
@@ -478,8 +516,8 @@ int main(int argc, char** argv)
 					msg.line = __LINE__;
 					msg.msg = msg_stream.str();
 
-                    msg_info("ZyROSConnector_test") << "Publish message " << k << ": " << msg;
-                    sleep(1);
+                    msg_info("ZyROSConnector_test") << "Publish message " << k;
+                    usleep(50000);
                     logPublisher->publishMessage(msg);
 				}
 
@@ -493,8 +531,107 @@ int main(int argc, char** argv)
                 logListener->clearMessages();
                 msg_info("ZyROSConnector_test") << "Message count after cleaning: " << logListener->getMessageCount();
 
-                test_fixture.m_rosConnector->removeTopicListener(logClient);
-				test_fixture.disconnectFromROSMaster();
+                msg_info("ZyROSConnector_test") << "Removing topic publisher.";
+                test_fixture.m_rosConnector->getROSConnector()->removeTopicPublisher(logSource);
+                msg_info("ZyROSConnector_test") << "Removing topic subscriber.";
+                test_fixture.m_rosConnector->getROSConnector()->removeTopicListener(logClient);
+
+                // Test instantiation via factory methods
+                boost::shared_ptr<ZyROSListener> log_sink_2 = ZyROSConnectorMessageSubscriberFactory::createTopicSubscriber(test_fixture.m_rosConnector->getRosNodeHandle(), "/ZyROSConnector_test", "rosgraph_msgs::Log");
+                boost::shared_ptr<ZyROSPublisher> log_source_2 = ZyROSConnectorMessagePublisherFactory::createTopicPublisher(test_fixture.m_rosConnector->getRosNodeHandle(), "/ZyROSConnector_test", "rosgraph_msgs::Log");
+
+                ZyROSConnectorTopicPublisher<rosgraph_msgs::Log>* log_publisher_2 = (ZyROSConnectorTopicPublisher<rosgraph_msgs::Log>*)(log_source_2.get());
+
+                test_fixture.m_rosConnector->getROSConnector()->addTopicPublisher(log_source_2);
+                test_fixture.m_rosConnector->getROSConnector()->addTopicListener(log_sink_2);
+
+                // Test publisher and subscriber wrappers using rosgraph_msgs::Log
+                for (unsigned int k = 0; k <= 10; ++k)
+                {
+                    std::stringstream msg_stream;
+                    rosgraph_msgs::Log msg;
+                    msg_stream << "Log message " << k;
+
+                    msg.name = "ZyROSConnector_Test_FactoryMethods";
+                    msg.level = rosgraph_msgs::Log::INFO;
+                    msg.file = __FILE__;
+                    msg.line = __LINE__;
+                    msg.msg = msg_stream.str();
+
+                    msg_info("ZyROSConnector_test") << "Publish message " << k;
+                    usleep(50000);
+                    log_publisher_2->publishMessage(msg);
+                }
+
+                msg_info("ZyROSConnector_test") << "Removing topic publisher.";
+                test_fixture.m_rosConnector->getROSConnector()->removeTopicPublisher(log_source_2);
+                msg_info("ZyROSConnector_test") << "Removing topic subscriber.";
+                test_fixture.m_rosConnector->getROSConnector()->removeTopicListener(log_sink_2);
+
+                // Test service client: Get and set logging parameters of the running roscore
+                if (getLoggersServiceExists)
+                {
+                    msg_info("ZyROSConnector_test") << "Getting list of active logger instances in running roscore.";
+                    boost::shared_ptr<ZyROSServiceClient> getLoggersClient = ZyROSConnectorServiceClientFactory::createServiceClient(test_fixture.m_rosConnector->getRosNodeHandle(), "/rosout/get_loggers", "roscpp::GetLoggers");
+                    if (getLoggersClient)
+                    {
+                        ZyROSConnectorServiceClient<roscpp::GetLoggers, roscpp::GetLoggersRequest, roscpp::GetLoggersResponse>* loggers_service_client = (ZyROSConnectorServiceClient<roscpp::GetLoggers, roscpp::GetLoggersRequest, roscpp::GetLoggersResponse>*)(getLoggersClient.get());
+                        loggers_service_client->setupClient();
+                        test_fixture.m_rosConnector->getROSConnector()->addServiceClient(getLoggersClient);
+
+                        roscpp::GetLoggersRequest loggers_request;
+                        loggers_service_client->enqueueRequest(loggers_request);
+
+                        usleep(50000);
+
+                        msg_info("ZyROSConnector_test") << "Replies received by service client: " << loggers_service_client->getNumResponses();
+
+                        if (loggers_service_client->getNumResponses() > 0)
+                        {
+                            for (size_t t = 0; t < loggers_service_client->getNumResponses(); t++)
+                            {
+                                const roscpp::GetLoggersResponse& loggers_list = loggers_service_client->getResponse(t);
+                                msg_info("ZyROSConnector_test") << "Loggers known in roscore: " << loggers_list.loggers.size();
+                                for (size_t m = 0; m < loggers_list.loggers.size(); ++m)
+                                    msg_info("ZyROSConnector_test") << "Logger: " << loggers_list.loggers[m];
+                            }
+                        }
+
+                        loggers_service_client->shutdownClient();
+
+                        msg_info("ZyROSConnector_test") << "Removing service client from ZyROSConnector";
+                        test_fixture.m_rosConnector->getROSConnector()->removeServiceClient(getLoggersClient);
+                    }
+                }
+
+                if (setLoggerLevelServiceExists)
+                {
+                    msg_info("ZyROSConnector_test") << "Setting logger level in running roscore.";
+                    boost::shared_ptr<ZyROSServiceClient> setLogLevelClient = ZyROSConnectorServiceClientFactory::createServiceClient(test_fixture.m_rosConnector->getRosNodeHandle(), "/rosout/set_logger_level", "roscpp::SetLoggerLevel");
+                    if (setLogLevelClient)
+                    {
+                        ZyROSConnectorServiceClient<roscpp::SetLoggerLevel, roscpp::SetLoggerLevelRequest, roscpp::SetLoggerLevelResponse>* log_level_client = (ZyROSConnectorServiceClient<roscpp::SetLoggerLevel, roscpp::SetLoggerLevelRequest, roscpp::SetLoggerLevelResponse>*)(setLogLevelClient.get());
+                        log_level_client->setupClient();
+                        test_fixture.m_rosConnector->getROSConnector()->addServiceClient(setLogLevelClient);
+
+                        roscpp::SetLoggerLevelRequest log_level_request;
+                        log_level_request.level = ros::console::levels::Debug;
+                        log_level_request.logger = "ros.roscpp";
+
+                        log_level_client->enqueueRequest(log_level_request);
+                        usleep(50000);
+
+                        log_level_client->shutdownClient();
+
+                        msg_info("ZyROSConnector_test") << "Removing service client from ZyROSConnector";
+                        test_fixture.m_rosConnector->getROSConnector()->removeServiceClient(setLogLevelClient);
+                    }
+
+                }
+
+                msg_info("ZyROSConnector_test") << "Disconnecting from ROS master...";
+                test_fixture.disconnectFromROSMaster();
+                msg_info("ZyROSConnector_test") << "Disconnected from ROS master.";
 
                 msg_info("ZyROSConnector_test") << "Shutting down roscore instance.";
 				int closingAttempts = 0;

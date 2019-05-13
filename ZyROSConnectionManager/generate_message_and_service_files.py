@@ -60,18 +60,107 @@ class ROSMessageBindingGenerator(ROSBindingGenerator):
         ROSBindingGenerator.__init__(self)
         self.__ros_message_types = ros_message_types
         self.__base_directory = base_directory
-        self.__ros_message_generated_h_name = 'ZyROS_MessageType_Instantiations.h'
-        self.__ros_message_generated_cpp_name = 'ZyROS_MessageTypes_Instantiations.cpp'
+        self.__script_directory = os.path.dirname(os.path.realpath(__file__))
+        self.__ros_message_subscribers_generated_h_name = 'ZyROS_MessageType_Instantiations_Subscribers.h'
+        self.__ros_message_subscribers_generated_cpp_name = 'ZyROSConnectorTopicSubscriber.cpp'
+        self.__ros_message_publishers_generated_h_name = 'ZyROS_MessageType_Instantiations_Publishers.h'
+        self.__ros_message_publishers_generated_cpp_name = 'ZyROSConnectorTopicPublisher.cpp'
 
         self.__excluded_message_names = [] # These break plugin loading when included directly under ROS kinetic
 
-    def generate_binding_sources(self):
-        self.logger.info('Generating ROS message binding sources. Message definitions passed: ' + str(len(self.__ros_message_types)))
+        self.__message_subscriber_cpp_file_static = """
+#include "ZyROSConnectorTopicSubscriber.inl"
 
+using namespace Zyklio::ROSConnector;
+
+SOFA_DECL_CLASS(ZyROSConnectorTopicSubscriberIface)
+
+ZyROSListener::ZyROSListener()
+    : m_uuid(boost::uuids::random_generator()())
+    , messageType("")
+{
+
+}
+
+ZyROSListener::ZyROSListener(const ZyROSListener& other)
+{
+        if (this != &other)
+        {
+                m_uuid = other.m_uuid;
+                m_rosTopic = other.m_rosTopic;
+        }
+}
+
+ZyROSListener& ZyROSListener::operator=(const ZyROSListener& other)
+{
+        if (this != &other)
+        {
+                m_uuid = other.m_uuid;
+                m_rosTopic = other.m_rosTopic;
+        }
+        return *this;
+}
+
+void ZyROSConnectorTopicSubscriberIface::onMessageReceived()
+{
+        m_sig();
+}
+        """
+
+        self.__message_publisher_cpp_file_static =  """
+#include "ZyROSConnectorTopicPublisher.inl"
+
+using namespace Zyklio::ROSConnector;
+
+ZyROSPublisher::ZyROSPublisher() : m_uuid(boost::uuids::random_generator()())
+{
+
+}
+
+ZyROSPublisher::ZyROSPublisher(const ZyROSPublisher& other)
+{
+    if (this != &other)
+    {
+        m_uuid = other.m_uuid;
+        messageType = other.messageType;
+    }
+}
+
+ZyROSPublisher& ZyROSPublisher::operator=(const ZyROSPublisher& other)
+{
+    if (this != &other)
+    {
+        m_uuid = other.m_uuid;
+        messageType = other.messageType;
+    }
+    return *this;
+}
+
+template <class MessageType>
+void ZyROSConnectorTopicPublisher<MessageType>::publishMessageQueue()
+{
+    boost::mutex::scoped_lock lock(m_mutex);
+
+    if (!m_messageQueue.empty())
+    {
+        msg_info("ZyROSConnectorTopicPublisher") << "publishMessageQueue of size " << m_messageQueue.size();
+        while (!m_messageQueue.empty())
+        {
+            MessageType& msg = m_messageQueue.back();
+            m_publisher.publish(msg);
+            m_messageQueue.pop_back();
+        }
+    }
+    lock.unlock();
+}
+        """
+
+    def generate_ros_message_subscriber_files(self):
+        self.logger.debug('Generating header and CPP for ROS message subscriber instances.')
         header_files_per_message_type = self.find_matching_headers(self.__ros_message_types, True)
         if len(header_files_per_message_type.keys()) > 0:
-            message_source_file_path = os.path.join(self.__base_directory, self.__ros_message_generated_h_name)
-            self.logger.info('Writing header file for messages: ' + message_source_file_path)
+            message_source_file_path = os.path.join(self.__base_directory, self.__ros_message_subscribers_generated_h_name)
+            self.logger.debug('Writing subscriber header file at: ' + message_source_file_path)
             message_source_file = open(message_source_file_path, 'w+')
 
             message_source_file.write('/***********************************************************************\n')
@@ -83,9 +172,9 @@ class ROSMessageBindingGenerator(ROSBindingGenerator):
             message_source_file.write('\n\n')
 
             message_source_file.write('#include <ZyROSConnectorTopicSubscriber.h>\n')
-            message_source_file.write('#include <ZyROSConnectorTopicPublisher.h>')
+            message_source_file.write('#include <ZyROSConnectorTopicPublisher.h>\n')
 
-            message_source_file.write('\n\n')
+            message_source_file.write('\n')
 
             for message_type in sorted(header_files_per_message_type.keys()):
                 self.logger.debug('Matching header files for message type \'' + message_type + '\': ' + str(len(header_files_per_message_type[message_type])))
@@ -109,11 +198,10 @@ class ROSMessageBindingGenerator(ROSBindingGenerator):
             message_source_file.write('\tnamespace ROSConnector\n')
             message_source_file.write('\t{\n')
 
-            message_source_file.write('\t\tclass ZyROSConnectorMessageFactory\n')
+            message_source_file.write('\t\tclass ZyROSConnectorMessageSubscriberFactory\n')
             message_source_file.write('\t\t{\n')
             message_source_file.write('\t\tpublic:\n')
             message_source_file.write('\t\t\tstatic boost::shared_ptr<ZyROSListener> createTopicSubscriber(ros::NodeHandlePtr rosNode, const std::string& topicURI, const std::string& messageType);\n')
-            message_source_file.write('\t\t\tstatic boost::shared_ptr<ZyROSPublisher> createTopicPublisher(ros::NodeHandlePtr rosNode, const std::string& topicURI, const std::string& messageType);\n')
             message_source_file.write('\t\t};\n')
 
             message_source_file.write('\t}\n')
@@ -121,7 +209,7 @@ class ROSMessageBindingGenerator(ROSBindingGenerator):
 
             message_source_file.close()
 
-            message_cpp_file_path = os.path.join(self.__base_directory, self.__ros_message_generated_cpp_name)
+            message_cpp_file_path = os.path.join(self.__script_directory, '..', 'ZyROSConnector', self.__ros_message_subscribers_generated_cpp_name)
             self.logger.info('Writing CPP file for messages: ' + message_cpp_file_path)
             message_cpp_file = open(message_cpp_file_path, 'w+')
 
@@ -133,10 +221,11 @@ class ROSMessageBindingGenerator(ROSBindingGenerator):
             message_cpp_file.write('************************************************************************/\n')
             message_cpp_file.write('\n\n')
 
-            message_cpp_file.write('#include <' + self.__ros_message_generated_h_name + '>\n')
+            message_cpp_file.write(self.__message_subscriber_cpp_file_static + '\n\n')
+
+            message_cpp_file.write('#include <' + self.__ros_message_subscribers_generated_h_name + '>\n')
             message_cpp_file.write('\n\n')
             message_cpp_file.write('using namespace Zyklio::ROSConnector;\n')
-
             for message_type in sorted(header_files_per_message_type.keys()):
                 self.logger.debug('Matching header files for message type \'' + message_type + '\': ' + str(len(header_files_per_message_type[message_type])))
 
@@ -150,42 +239,11 @@ class ROSMessageBindingGenerator(ROSBindingGenerator):
                     message_cpp_file.write('// Publisher and subscriber proxy class instantiation for ROS message type: ' + message_type + '\n')
                     for header_file in header_files_per_message_type[message_type]:
                         message_cpp_type = message_type.replace('/', '::')
+
                         message_cpp_file.write('template class ZyROSConnectorTopicSubscriber<' + message_cpp_type + '>;\n')
-                        message_cpp_file.write('template class ZyROSConnectorTopicPublisher<' + message_cpp_type + '>;\n')
+                        message_cpp_file.write('\n')
 
-                        message_cpp_file.write('template <>\n')
-                        message_cpp_file.write('void ZyROSConnectorTopicPublisher<' + message_cpp_type + '>::publishMessageQueue()\n')
-                        message_cpp_file.write('{\n')
-                        message_cpp_file.write('\tboost::mutex::scoped_lock lock(m_mutex);\n')
-                        message_cpp_file.write('\tif (!m_messageQueue.empty())\n')
-                        message_cpp_file.write('\t{\n')
-                        message_cpp_file.write('\t\tmsg_info("ZyROSConnectorTopicPublisher") << "publishMessageQueue of size " << m_messageQueue.size();\n')
-                        message_cpp_file.write('\t\twhile (!m_messageQueue.empty())\n')
-                        message_cpp_file.write('\t\t{\n')
-                        message_cpp_file.write('\t\t\t' + message_cpp_type + '& msg = m_messageQueue.back();\n')
-                        message_cpp_file.write('\t\t\tm_publisher.publish(msg);\n')
-                        message_cpp_file.write('\t\t\tm_messageQueue.pop_back();\n')
-                        message_cpp_file.write('\t\t}\n')
-                        message_cpp_file.write('\t}\n')
-                        message_cpp_file.write('\tlock.unlock();\n')
-                        message_cpp_file.write('}\n\n')
-
-                        message_cpp_file.write('template <>\n')
-                        message_cpp_file.write('void ZyROSConnectorTopicSubscriber<' + message_cpp_type + '>::cleanup()\n')
-                        message_cpp_file.write('{\n')
-                        message_cpp_file.write('\tif (m_topicConnection.connected())\n')
-                        message_cpp_file.write('\t\tm_topicConnection.disconnect();\n\n')
-                        message_cpp_file.write('\tif (getMessageCount() > 0)\n')
-                        message_cpp_file.write('\t{\n')
-                        message_cpp_file.write('\t\tclearMessages();\n')
-                        message_cpp_file.write('\t}\n')
-                        message_cpp_file.write('}\n')
-
-                message_cpp_file.write('\n')
-
-            message_cpp_file.write('\n\n')
-
-            message_cpp_file.write('boost::shared_ptr<ZyROSListener> ZyROSConnectorMessageFactory::createTopicSubscriber(ros::NodeHandlePtr rosNode, const std::string& topicURI, const std::string& messageType)\n')
+            message_cpp_file.write('boost::shared_ptr<ZyROSListener> ZyROSConnectorMessageSubscriberFactory::createTopicSubscriber(ros::NodeHandlePtr rosNode, const std::string& topicURI, const std::string& messageType)\n')
             message_cpp_file.write('{\n')
 
             message_cpp_file.write('\tbool supported = false;\n')
@@ -205,31 +263,119 @@ class ROSMessageBindingGenerator(ROSBindingGenerator):
                     message_cpp_file.write('\tif (messageType == "' + message_cpp_type + '")\n')
                     message_cpp_file.write('\t{\n')
                     message_cpp_file.write('\t\tsupported = true;\n')
-                    message_cpp_file.write('\t\tconst boost::shared_ptr<ZyROSConnectorTopicSubscriber<' + message_cpp_type + '>> tmp(new ZyROSConnectorTopicSubscriber<' + message_cpp_type + '>(rosNode, topicURI, 50, true));\n')
-                    message_cpp_file.write('\t\ttopicListener = boost::dynamic_pointer_cast<ZyROSListener>(tmp);\n')
+                    # message_cpp_file.write('\t\tconst boost::shared_ptr<ZyROSConnectorTopicSubscriber<' + message_cpp_type + '>> tmp();\n')
+                    message_cpp_file.write('\t\ttopicListener.reset(new ZyROSConnectorTopicSubscriber<' + message_cpp_type + '>(rosNode, topicURI, 50, true));\n')
                     message_cpp_file.write('\t}\n')
 
 
             message_cpp_file.write('\tif (supported)\n')
             message_cpp_file.write('\t{\n')
-            message_cpp_file.write('\t\tmsg_info("ZyROSConnectorMessageFactory") << "ROS message type supported: " << messageType;\n')
+            message_cpp_file.write('\t\tmsg_info("ZyROSConnectorMessageSubscriberFactory") << "ROS message type supported: " << messageType;\n')
             message_cpp_file.write('\t}\n')
             message_cpp_file.write('\telse\n')
             message_cpp_file.write('\t{\n')
-            message_cpp_file.write('\t\tmsg_warning("ZyROSConnectorMessageFactory") << "ROS message type NOT supported: " << messageType;\n')
+            message_cpp_file.write('\t\tmsg_warning("ZyROSConnectorMessageSubscriberFactory") << "ROS message type NOT supported: " << messageType;\n')
             message_cpp_file.write('\t}')
 
             message_cpp_file.write('\treturn topicListener;\n')
 
             message_cpp_file.write('}\n\n')
 
-            message_cpp_file.write('boost::shared_ptr<ZyROSPublisher> ZyROSConnectorMessageFactory::createTopicPublisher(ros::NodeHandlePtr rosNode, const std::string& topicURI, const std::string& messageType)\n')
+            message_cpp_file.close()
+
+    def generate_ros_message_publisher_files(self):
+        self.logger.debug('Generating header and CPP for ROS message publisher instances.')
+        header_files_per_message_type = self.find_matching_headers(self.__ros_message_types, True)
+        if len(header_files_per_message_type.keys()) > 0:
+            message_source_file_path = os.path.join(self.__base_directory, self.__ros_message_publishers_generated_h_name)
+            self.logger.debug('Writing publisher header file at: ' + message_source_file_path)
+            message_source_file = open(message_source_file_path, 'w+')
+
+            message_source_file.write('/***********************************************************************\n')
+            message_source_file.write('ROS message definition headers and ROS connector template instantiations.\n')
+            message_source_file.write('This file is AUTO-GENERATED during the CMake run.\n')
+            message_source_file.write('Please do not modify it by hand.\n')
+            message_source_file.write('The contents will be overwritten and re-generated.\n')
+            message_source_file.write('************************************************************************/\n')
+            message_source_file.write('\n\n')
+
+            message_source_file.write('#include <ZyROSConnectorTopicPublisher.h>\n')
+
+            message_source_file.write('\n')
+
+            for message_type in sorted(header_files_per_message_type.keys()):
+                self.logger.debug('Matching header files for message type \'' + message_type + '\': ' + str(len(header_files_per_message_type[message_type])))
+
+                message_type_is_excluded = False
+                for excluded_message in self.__excluded_message_names:
+                    if message_type.startswith(excluded_message):
+                        self.logger.warning('Excluding ROS message definition: ' + message_type)
+                        message_type_is_excluded = True
+
+                if not message_type_is_excluded:
+                    for header_file in header_files_per_message_type[message_type]:
+                        message_source_file.write('#include <' + header_file + '>\n')
+
+            message_source_file.write('#include <boost/shared_ptr.hpp>\n')
+
+            message_source_file.write('namespace Zyklio\n')
+            message_source_file.write('{\n')
+            message_source_file.write('\tnamespace ROSConnector\n')
+            message_source_file.write('\t{\n')
+
+            message_source_file.write('\t\tclass ZyROSConnectorMessagePublisherFactory\n')
+            message_source_file.write('\t\t{\n')
+            message_source_file.write('\t\tpublic:\n')
+            message_source_file.write('\t\t\tstatic boost::shared_ptr<ZyROSPublisher> createTopicPublisher(ros::NodeHandlePtr rosNode, const std::string& topicURI, const std::string& messageType);\n')
+            message_source_file.write('\t\t};\n')
+
+            message_source_file.write('\t}\n')
+            message_source_file.write('}\n')
+
+            message_source_file.close()
+
+            message_cpp_file_path = os.path.join(self.__script_directory, '..', 'ZyROSConnector', self.__ros_message_publishers_generated_cpp_name)
+            self.logger.info('Writing CPP file for messages: ' + message_cpp_file_path)
+            message_cpp_file = open(message_cpp_file_path, 'w+')
+
+            message_cpp_file.write('/***********************************************************************\n')
+            message_cpp_file.write('ROS message definition headers and ROS connector template instantiations.\n')
+            message_cpp_file.write('This file is AUTO-GENERATED during the CMake run.\n')
+            message_cpp_file.write('Please do not modify it by hand.\n')
+            message_cpp_file.write('The contents will be overwritten and re-generated.\n')
+            message_cpp_file.write('************************************************************************/\n')
+            message_cpp_file.write('\n\n')
+
+            message_cpp_file.write(self.__message_publisher_cpp_file_static + '\n\n')
+
+            message_cpp_file.write('#include <' + self.__ros_message_publishers_generated_h_name + '>\n')
+            message_cpp_file.write('\n\n')
+            message_cpp_file.write('using namespace Zyklio::ROSConnector;\n')
+            for message_type in sorted(header_files_per_message_type.keys()):
+                self.logger.debug('Matching header files for message type \'' + message_type + '\': ' + str(len(header_files_per_message_type[message_type])))
+
+                message_type_is_excluded = False
+                for excluded_message in self.__excluded_message_names:
+                    if message_type.startswith(excluded_message):
+                        self.logger.warning('Excluding ROS message definition: ' + message_type)
+                        message_type_is_excluded = True
+
+                if not message_type_is_excluded:
+                    message_cpp_file.write('// Publisher and subscriber proxy class instantiation for ROS message type: ' + message_type + '\n')
+                    for header_file in header_files_per_message_type[message_type]:
+                        message_cpp_type = message_type.replace('/', '::')
+
+                        message_cpp_file.write('template class ZyROSConnectorTopicPublisher<' + message_cpp_type + '>;\n')
+                        message_cpp_file.write('\n')
+
+            message_cpp_file.write('boost::shared_ptr<ZyROSPublisher> ZyROSConnectorMessagePublisherFactory::createTopicPublisher(ros::NodeHandlePtr rosNode, const std::string& topicURI, const std::string& messageType)\n')
             message_cpp_file.write('{\n')
 
             message_cpp_file.write('\tbool supported = false;\n')
             message_cpp_file.write('\tboost::shared_ptr<ZyROSPublisher> topicPublisher;\n')
 
             for message_type in sorted(header_files_per_message_type.keys()):
+
                 message_type_is_excluded = False
                 for excluded_message in self.__excluded_message_names:
                     if message_type.startswith(excluded_message):
@@ -239,30 +385,33 @@ class ROSMessageBindingGenerator(ROSBindingGenerator):
                 if not message_type_is_excluded:
                     message_cpp_file.write('\t// Publisher instance for ROS message type: ' + message_type + '\n')
                     message_cpp_type = message_type.replace('/', '::')
-
                     message_cpp_file.write('\tif (messageType == "' + message_cpp_type + '")\n')
                     message_cpp_file.write('\t{\n')
                     message_cpp_file.write('\t\tsupported = true;\n')
-                    message_cpp_file.write('\t\tconst boost::shared_ptr<ZyROSConnectorTopicPublisher<' + message_cpp_type + '>> tmp(new ZyROSConnectorTopicPublisher<' + message_cpp_type + '>(rosNode, topicURI, 10));\n')
-                    message_cpp_file.write('\t\ttopicPublisher = boost::dynamic_pointer_cast<ZyROSPublisher>(tmp);\n')
+                    # message_cpp_file.write('\t\tconst boost::shared_ptr<ZyROSConnectorTopicPublisher<' + message_cpp_type + '>> tmp();\n')
+                    message_cpp_file.write('\t\ttopicPublisher.reset(new ZyROSConnectorTopicPublisher<' + message_cpp_type + '>(rosNode, topicURI, 50));\n')
                     message_cpp_file.write('\t}\n')
 
 
             message_cpp_file.write('\tif (supported)\n')
             message_cpp_file.write('\t{\n')
-            message_cpp_file.write('\t\tmsg_info("ZyROSConnectorMessageFactory") << "ROS message type supported: " << messageType;\n')
+            message_cpp_file.write('\t\tmsg_info("ZyROSConnectorMessagePublisherFactory") << "ROS message type supported: " << messageType;\n')
             message_cpp_file.write('\t}\n')
             message_cpp_file.write('\telse\n')
             message_cpp_file.write('\t{\n')
-            message_cpp_file.write('\t\tmsg_warning("ZyROSConnectorMessageFactory") << "ROS message type NOT supported: " << messageType;\n')
-            message_cpp_file.write('\t}\n')
+            message_cpp_file.write('\t\tmsg_warning("ZyROSConnectorMessagePublisherFactory") << "ROS message type NOT supported: " << messageType;\n')
+            message_cpp_file.write('\t}')
 
             message_cpp_file.write('\treturn topicPublisher;\n')
 
-            message_cpp_file.write('}\n')
+            message_cpp_file.write('}\n\n')
 
             message_cpp_file.close()
 
+    def generate_binding_sources(self):
+        self.logger.info('Generating ROS message binding sources. Message definitions passed: ' + str(len(self.__ros_message_types)))
+        self.generate_ros_message_subscriber_files()
+        self.generate_ros_message_publisher_files()
 
 class ROSServiceBindingGenerator(ROSBindingGenerator):
 
@@ -270,8 +419,44 @@ class ROSServiceBindingGenerator(ROSBindingGenerator):
         ROSBindingGenerator.__init__(self)
         self.__ros_service_types = ros_service_types
         self.__base_directory = base_directory
-        self.__ros_service_generated_h_name = 'ZyROS_ServiceType_Instantiations.h'
-        self.__ros_service_generated_cpp_name = 'ZyROS_ServiceTypes_Instantiations.cpp'
+        self.__script_directory = os.path.dirname(os.path.realpath(__file__))
+        self.__ros_service_client_generated_h_name = 'ZyROS_ServiceType_Client_Instantiations.h'
+        self.__ros_service_client_generated_cpp_name = 'ZyROSConnectorServiceClient.cpp'
+        self.__ros_service_server_generated_h_name = 'ZyROS_ServiceType_Server_Instantiations.h'
+        self.__ros_service_server_generated_cpp_name = 'ZyROSConnectorServiceServer.cpp'
+
+        self.__ros_service_client_cpp_source_static = """
+#include "ZyROSConnectorServiceClient.inl"
+
+using namespace Zyklio::ROSConnector;
+
+ZyROSServiceClient::ZyROSServiceClient()
+{
+
+}
+        """
+
+        self.__ros_service_server_cpp_source_static = """
+#include "ZyROSConnectorServiceServer.inl"
+
+using namespace Zyklio::ROSConnector;
+
+ZyROSConnectorServiceServer::ZyROSConnectorServiceServer(ros::NodeHandlePtr rosNode, const std::string& serviceURI): m_d(NULL)
+{
+    m_d = new ZyROSConnectorServiceServerPrivate();
+    m_d->m_serviceURI = serviceURI;
+    m_d->m_rosNodeHandle = rosNode;
+}
+
+ZyROSConnectorServiceServer::~ZyROSConnectorServiceServer()
+{
+    if (m_d)
+    {
+        delete m_d;
+        m_d = NULL;
+    }
+}
+        """
 
         self.__excluded_service_names = ['rosapi/GetParam'] # These break compilation when included directly under ROS kinetic
 
@@ -280,7 +465,7 @@ class ROSServiceBindingGenerator(ROSBindingGenerator):
 
         header_files_per_service_type = self.find_matching_headers(self.__ros_service_types, False)
         if len(header_files_per_service_type.keys()) > 0:
-            service_source_file_path = os.path.join(self.__base_directory, self.__ros_service_generated_h_name)
+            service_source_file_path = os.path.join(self.__base_directory, self.__ros_service_client_generated_h_name)
             self.logger.info('Writing header file for services: ' + service_source_file_path)
             service_source_file = open(service_source_file_path, 'w+')
 
@@ -293,7 +478,6 @@ class ROSServiceBindingGenerator(ROSBindingGenerator):
             service_source_file.write('\n\n')
 
             service_source_file.write('#include <ZyROSConnectorServiceClient.h>\n')
-            service_source_file.write('#include <ZyROSConnectorServiceServer.h>\n')
 
             service_source_file.write('\n\n')
 
@@ -317,26 +501,11 @@ class ROSServiceBindingGenerator(ROSBindingGenerator):
             service_source_file.write('\tnamespace ROSConnector\n')
             service_source_file.write('\t{\n')
 
-            for service_type in sorted(header_files_per_service_type.keys()):
-                self.logger.debug('Matching header files for service type \'' + service_type + '\': ' + str(len(header_files_per_service_type[service_type])))
-
-                service_is_excluded = False
-                for excluded_service in self.__excluded_service_names:
-                    if service_type.startswith(excluded_service):
-                        self.logger.warning('Excluding ROS service definition: ' + service_type)
-                        service_is_excluded = True
-
-                if not service_is_excluded:
-                    service_cpp_type = service_type.replace('/', '::')
-                    service_cpp_request_type = service_cpp_type + 'Request'
-                    service_cpp_response_type = service_cpp_type + 'Response'
-                    service_source_file.write('\t\ttemplate class ZyROSConnectorServiceClient<' + service_cpp_type + ', ' + service_cpp_request_type + ', ' + service_cpp_response_type + '>;\n')
-
-            service_source_file.write('\t\tclass ZyROSConnectorServiceFactory\n')
+            service_source_file.write('\t\tclass ZyROSConnectorServiceClientFactory\n')
             service_source_file.write('\t\t{\n')
             service_source_file.write('\t\tpublic:\n')
             service_source_file.write('\t\t\tstatic boost::shared_ptr<ZyROSServiceClient> createServiceClient(ros::NodeHandlePtr rosNode, const std::string& serviceURI, const std::string& serviceType);\n')
-            service_source_file.write('// \t\t\tstatic boost::shared_ptr<ZyROSServiceServer> createServiceServer(ros::NodeHandlePtr rosNode, const std::string& serviceURI, const std::string& serviceType);\n')
+            # service_source_file.write('// \t\t\tstatic boost::shared_ptr<ZyROSServiceServer> createServiceServer(ros::NodeHandlePtr rosNode, const std::string& serviceURI, const std::string& serviceType);\n')
             service_source_file.write('\t\t};\n')
 
             service_source_file.write('\t}\n')
@@ -344,23 +513,61 @@ class ROSServiceBindingGenerator(ROSBindingGenerator):
 
             service_source_file.close()
 
-            service_cpp_file_path = os.path.join(self.__base_directory, self.__ros_service_generated_cpp_name)
+            service_cpp_file_path = os.path.join(self.__script_directory, '..', 'ZyROSConnector', self.__ros_service_client_generated_cpp_name)
             self.logger.info('Writing CPP file for services: ' + service_cpp_file_path)
-            service_cpp_file = open(service_cpp_file_path, 'w+')
+            service_cpp_file = open(service_cpp_file_path,  'w+')
 
             service_cpp_file.write('/***********************************************************************\n')
-            service_cpp_file.write('ROS service definition headers and ROS connector template instantiations.')
-            service_cpp_file.write('This file is AUTO-GENERATED during the CMake run.')
-            service_cpp_file.write('Please do not modify it by hand.')
-            service_cpp_file.write('The contents will be overwritten and re-generated.')
+            service_cpp_file.write('ROS service definition headers and ROS connector template instantiations.\n')
+            service_cpp_file.write('This file is AUTO-GENERATED during the CMake run.\n')
+            service_cpp_file.write('Please do not modify it by hand.\n')
+            service_cpp_file.write('The contents will be overwritten and re-generated.\n')
             service_cpp_file.write('************************************************************************/\n')
             service_cpp_file.write('\n\n')
 
-            service_cpp_file.write('#include <' + self.__ros_service_generated_h_name + '>')
+            service_cpp_file.write('#include <' + self.__ros_service_client_generated_h_name + '>')
             service_cpp_file.write('\n\n')
-            service_cpp_file.write('using namespace Zyklio::ROSConnector;\n\n')
+            service_cpp_file.write(self.__ros_service_client_cpp_source_static + '\n\n')
 
-            service_cpp_file.write('boost::shared_ptr<ZyROSServiceClient> ZyROSConnectorServiceFactory::createServiceClient(ros::NodeHandlePtr rosNode, const std::string& serviceURI, const std::string& serviceType)\n')
+            # Collect all ROS service definition namespaces - these are obviously needed to satisfy GCC when using
+            # request and response definitions as template parameters!
+
+            service_namespaces = []
+
+            for service_type in sorted(header_files_per_service_type.keys()):
+                service_is_excluded = False
+                for excluded_service in self.__excluded_service_names:
+                    if service_type.startswith(excluded_service):
+                        self.logger.warning('Excluding ROS service definition: ' + service_type)
+                        service_is_excluded = True
+
+                if not service_is_excluded:
+                    # These are guaranteed to be of length 2
+                    service_cpp_namespace = service_type.split('/')
+                    if service_cpp_namespace[0] not in service_namespaces:
+                        service_namespaces.append(service_cpp_namespace[0])
+
+            for namespace in service_namespaces:
+                service_cpp_file.write('using namespace ' + namespace + ';\n')
+
+            service_cpp_file.write('\n')
+
+            for service_type in sorted(header_files_per_service_type.keys()):
+                service_is_excluded = False
+                for excluded_service in self.__excluded_service_names:
+                    if service_type.startswith(excluded_service):
+                        self.logger.warning('Excluding ROS service definition: ' + service_type)
+                        service_is_excluded = True
+
+                if not service_is_excluded:
+                    # These are guaranteed to be of length 2
+                    service_cpp_type = service_type.replace('/', '::')
+                    service_cpp_request_type = service_cpp_type + 'Request'
+                    service_cpp_response_type = service_cpp_type + 'Response'
+                    service_cpp_file.write('template class ZyROSConnectorServiceClient<' + service_cpp_type + ', ' + service_cpp_request_type + ', ' + service_cpp_response_type + '>;\n')
+
+            # Service client factory method
+            service_cpp_file.write('boost::shared_ptr<ZyROSServiceClient> ZyROSConnectorServiceClientFactory::createServiceClient(ros::NodeHandlePtr rosNode, const std::string& serviceURI, const std::string& serviceType)\n')
             service_cpp_file.write('{\n')
 
             service_cpp_file.write('\tbool supported = false;\n')
@@ -383,22 +590,66 @@ class ROSServiceBindingGenerator(ROSBindingGenerator):
                     service_cpp_file.write('\tif (serviceType == "' + service_cpp_type + '")\n')
                     service_cpp_file.write('\t{\n')
                     service_cpp_file.write('\t\tsupported = true;\n')
-                    service_cpp_file.write('\t\tconst boost::shared_ptr<ZyROSConnectorServiceClient<' + service_cpp_type + ', ' + service_cpp_request_type + ', ' + service_cpp_response_type + '>> tmp(new ZyROSConnectorServiceClient<' + service_cpp_type + ', ' + service_cpp_request_type + ', ' + service_cpp_response_type + '>(rosNode, serviceURI, 10));\n')
-                    service_cpp_file.write('\t\tserviceClient = boost::dynamic_pointer_cast<ZyROSServiceClient>(tmp);\n')
+                    # service_cpp_file.write('\t\tconst boost::shared_ptr<ZyROSConnectorServiceClient<' + service_cpp_type + ', ' + service_cpp_request_type + ', ' + service_cpp_response_type + '>> tmp();\n')
+                    service_cpp_file.write('\t\tserviceClient.reset(new ZyROSConnectorServiceClient<' + service_cpp_type + ', ' + service_cpp_request_type + ', ' + service_cpp_response_type + '>(rosNode, serviceURI, 10));\n')
                     service_cpp_file.write('\t}\n')
 
             service_cpp_file.write('\n\tif (supported)\n')
             service_cpp_file.write('\t{\n')
-            service_cpp_file.write('\t\tmsg_info("ZyROSConnectorServiceFactory") << "ROS service type supported: " << serviceType;\n')
+            service_cpp_file.write('\t\tmsg_info("ZyROSConnectorServiceClientFactory") << "ROS service type supported: " << serviceType;\n')
             service_cpp_file.write('\t}\n')
             service_cpp_file.write('\telse\n')
             service_cpp_file.write('\t{\n')
-            service_cpp_file.write('\t\tmsg_warning("ZyROSConnectorServiceFactory") << "ROS service type NOT supported: " << serviceType;\n')
+            service_cpp_file.write('\t\tmsg_warning("ZyROSConnectorServiceClientFactory") << "ROS service type NOT supported: " << serviceType;\n')
             service_cpp_file.write('\t}\n')
 
             service_cpp_file.write('\treturn serviceClient;\n')
 
             service_cpp_file.write('}\n')
+
+            # Service server factory method
+            # For handling service requests, custom logic has to be provided for gathering response data.
+            # There is no obvious way to autogenerate code for that.
+            # But for instancing specializations of ServiceServer methods, this might be necessary.
+#            service_cpp_file.write('boost::shared_ptr<ZyROSServiceServer> ZyROSConnectorServiceFactory::createServiceServer(ros::NodeHandlePtr rosNode, const std::string& serviceURI, const std::string& serviceType)\n')
+#            service_cpp_file.write('{\n')
+
+#            service_cpp_file.write('\tbool supported = false;\n')
+#            service_cpp_file.write('\tboost::shared_ptr<ZyROSServiceServer> serviceServer;\n')
+
+#            for service_type in sorted(header_files_per_service_type.keys()):
+#                service_is_excluded = False
+#                for excluded_service in self.__excluded_service_names:
+#                    if service_type.startswith(excluded_service):
+#                        self.logger.warning('Excluding ROS service definition: ' + service_type)
+#                        service_is_excluded = True
+
+#                if not service_is_excluded:
+#                    service_cpp_file.write('\t// Service server instance for ROS service type: ' + service_type + '\n')
+#                    service_cpp_type = service_type.replace('/', '::')
+
+#                    service_cpp_request_type = service_cpp_type + 'Request'
+#                    service_cpp_response_type = service_cpp_type + 'Response'
+
+#                    service_cpp_file.write('\tif (serviceType == "' + service_cpp_type + '")\n')
+#                    service_cpp_file.write('\t{\n')
+#                    service_cpp_file.write('\t\tsupported = true;\n')
+#                    service_cpp_file.write('\t\tconst boost::shared_ptr<ZyROSConnectorServiceServer<' + service_cpp_type + ', ' + service_cpp_request_type + ', ' + service_cpp_response_type + '>> tmp(new ZyROSConnectorServiceClient<' + service_cpp_type + ', ' + service_cpp_request_type + ', ' + service_cpp_response_type + '>(rosNode, serviceURI, 10));\n')
+#                    service_cpp_file.write('\t\tserviceClient = boost::dynamic_pointer_cast<ZyROSServiceServer>(tmp);\n')
+#                    service_cpp_file.write('\t}\n')
+
+#            service_cpp_file.write('\n\tif (supported)\n')
+#            service_cpp_file.write('\t{\n')
+#            service_cpp_file.write('\t\tmsg_info("ZyROSConnectorServiceFactory") << "ROS service server type supported: " << serviceType;\n')
+#            service_cpp_file.write('\t}\n')
+#            service_cpp_file.write('\telse\n')
+#            service_cpp_file.write('\t{\n')
+#            service_cpp_file.write('\t\tmsg_warning("ZyROSConnectorServiceFactory") << "ROS service server type NOT supported: " << serviceType;\n')
+#            service_cpp_file.write('\t}\n')
+
+#            service_cpp_file.write('\treturn serviceServer;\n')
+
+#            service_cpp_file.write('}\n')
 
             service_cpp_file.close()
 

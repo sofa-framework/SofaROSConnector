@@ -17,12 +17,6 @@ set(HEADER_FILES
         ZyROSConnectorServiceClient.inl
         ZyROSConnectorServiceServer.h
         ZyROSConnectorServiceServer.inl
-
-        # ZyROSTopicListener_Bool.h
-        # ZyROSTopicListener_JointState.h
-        # ZyROSTopicListener_LogMsgs.h
-        # ZyROSTopicPublisher_Float32.h
-        # ZyROSTopicPublisher_Float32MultiArray.h
 )
 
 set(SOURCE_FILES
@@ -32,12 +26,6 @@ set(SOURCE_FILES
         ZyROSConnectorTopicPublisher.cpp
         ZyROSConnectorServiceClient.cpp
         ZyROSConnectorServiceServer.cpp
-
-        # ZyROSTopicListener_Bool.cpp
-        # ZyROSTopicListener_JointState.cpp
-        # ZyROSTopicListener_LogMsgs.cpp
-        # ZyROSTopicPublisher_Float32.cpp
-        # ZyROSTopicPublisher_Float32MultiArray.cpp
 )
 
 find_package(ROS QUIET REQUIRED)
@@ -65,13 +53,15 @@ include_directories(${CMAKE_SOURCE_DIR}/applications/plugins/SofaROSConnector/Zy
 include_directories(${ROS_INCLUDE_DIR})
 include_directories(${LOG4CXX_INCLUDE_DIRS})
 
+include_directories(${CMAKE_BINARY_DIR}/applications/plugins/ZyROSConnector)
+
 add_definitions("-DSOFA_BUILD_ZY_ROS_CONNECTOR")
 add_definitions(-DROS_BUILD_SHARED_LIBS)
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
 
 target_link_libraries(${PROJECT_NAME} SofaCore SofaHelper SofaDefaultType SofaBaseCollision SofaConstraint SofaSimulationCommon SofaMiscFem tinyxml newmat)
-target_link_libraries(${PROJECT_NAME} ZyMultiThreading ZyROSConnectorBindings)
+target_link_libraries(${PROJECT_NAME} ZyMultiThreading)
 target_link_libraries(${PROJECT_NAME} ZyGripping)
 target_link_libraries(${PROJECT_NAME} ZySOFAControllers)
 target_link_libraries(${PROJECT_NAME} ZyVelocityApproximation)

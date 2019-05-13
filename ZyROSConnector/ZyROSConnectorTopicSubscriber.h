@@ -62,7 +62,7 @@ namespace Zyklio
         {
             public:
                 ZyROSConnectorTopicSubscriber();
-                ZyROSConnectorTopicSubscriber(ros::NodeHandlePtr rosNode, const std::string& topic, unsigned int messageQueueLength = 50, bool useGenericMessageHandling = false);
+                ZyROSConnectorTopicSubscriber(ros::NodeHandlePtr rosNode, const std::string& topic, unsigned int messageQueueLength = 10, bool useGenericMessageHandling = false);
                 ~ZyROSConnectorTopicSubscriber();
 
                 ZyROSConnectorTopicSubscriber(const ZyROSConnectorTopicSubscriber& other);
@@ -89,6 +89,7 @@ namespace Zyklio
                 ros::Subscriber m_subscriber;
 
                 boost::circular_buffer<MessageType> m_messageQueue;
+                unsigned int m_lastValidMsgIndex;
                 unsigned int m_messageQueueLength;
 
                 boost::mutex m_mutex;

@@ -37,11 +37,25 @@ namespace Zyklio
         class SOFA_ZY_ROS_CONNECTOR_API ZyROSConnectorServiceServer
         {
             public:
-                ZyROSConnectorServiceServer();
+                ZyROSConnectorServiceServer(ros::NodeHandlePtr rosNode, const std::string&);
+                ~ZyROSConnectorServiceServer();
 
             protected:
                 ZyROSConnectorServiceServerPrivate* m_d;
 
+        };
+
+        template <class RequestType, class ResponseType>
+        class SOFA_ZY_ROS_CONNECTOR_API ZyROSConnectorServiceServerImpl: public ZyROSConnectorServiceServer
+        {
+            public:
+                ZyROSConnectorServiceServerImpl(ros::NodeHandlePtr, const std::string&);
+                ~ZyROSConnectorServiceServerImpl();
+
+                virtual bool advertiseService();
+                virtual bool stopAdvertisingService();
+
+                virtual bool handleRequest(const RequestType&, ResponseType&);
         };
     }
 }

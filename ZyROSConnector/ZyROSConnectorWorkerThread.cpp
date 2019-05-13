@@ -42,7 +42,10 @@ bool ZyROSConnectorWorkerThread::removeTopicListener(boost::shared_ptr<ZyROSList
 	for (std::vector<boost::shared_ptr<ZyROSListener> >::iterator it = m_topicSubscribers.begin(); it != m_topicSubscribers.end(); ++it)
 	{
 		if (subscriber.get() == NULL)
+        {
+            subscriber_idx++;
 			continue;
+        }
 
 		if (subscriber->getUuid() == (*it)->getUuid())
 		{
@@ -86,14 +89,16 @@ bool ZyROSConnectorWorkerThread::removeTopicPublisher(boost::shared_ptr<ZyROSPub
     for (std::vector<boost::shared_ptr<ZyROSPublisher> >::iterator it = m_topicPublishers.begin(); it != m_topicPublishers.end(); ++it)
     {
         if (publisher.get() == NULL)
+        {
+            publisher_idx++;
             continue;
-
+        }
         if (publisher->getUuid() == (*it)->getUuid())
         {
             publisher_pos = publisher_idx;
             break;
         }
-        // TODO / NOTE: shouldn't publisher_idx be incremented somewhere?
+        publisher_idx++;
     }
     if (publisher_pos >= 0 && publisher_pos < m_activePublishers.size())
     {
@@ -101,6 +106,51 @@ bool ZyROSConnectorWorkerThread::removeTopicPublisher(boost::shared_ptr<ZyROSPub
         return true;
     }
 
+    return false;
+}
+
+bool ZyROSConnectorWorkerThread::addServiceClient(boost::shared_ptr<ZyROSServiceClient>& serviceClient)
+{
+    boost::mutex::scoped_lock lock(m_mutex);
+    for (std::vector<boost::shared_ptr<ZyROSServiceClient> >::const_iterator it = m_serviceClients.begin(); it != m_serviceClients.end(); ++it)
+    {
+        if (serviceClient->getUuid() == (*it)->getUuid())
+        {
+            msg_info("ZyROSConnectorWorkerThread") << "Service client already registered with UUID: " << boost::lexical_cast<std::string>(serviceClient->getUuid());
+            return false;
+        }
+    }
+
+    msg_info("ZyROSConnectorWorkerThread") << "Adding new publisher with UUID: " << boost::lexical_cast<std::string>(serviceClient->getUuid()) << " for service: " << serviceClient->getServiceURI();
+    m_serviceClients.push_back(boost::move(serviceClient));
+    m_activeServiceClients.push_back(true);
+    return true;
+}
+
+bool ZyROSConnectorWorkerThread::removeServiceClient(boost::shared_ptr<ZyROSServiceClient>& serviceClient)
+{
+    boost::mutex::scoped_lock lock(m_mutex);
+
+    size_t client_pos = -1, client_idx = 0;
+    for (std::vector<boost::shared_ptr<ZyROSServiceClient> >::iterator it = m_serviceClients.begin(); it != m_serviceClients.end(); ++it)
+    {
+        if (serviceClient.get() == NULL)
+        {
+            client_idx++;
+            continue;
+        }
+        if (serviceClient->getUuid() == (*it)->getUuid())
+        {
+            client_pos = client_idx;
+            break;
+        }
+        client_idx++;
+    }
+    if (client_pos >= 0 && client_pos < m_activeServiceClients.size())
+    {
+        m_activeServiceClients[client_pos] = false;
+        return true;
+    }
     return false;
 }
 
@@ -112,6 +162,11 @@ size_t ZyROSConnectorWorkerThread::getNumTopicListeners() const
 size_t ZyROSConnectorWorkerThread::getNumTopicPublishers() const
 {
     return m_topicPublishers.size();
+}
+
+size_t ZyROSConnectorWorkerThread::getNumServiceClients() const
+{
+    return m_serviceClients.size();
 }
 
 void ZyROSConnectorWorkerThread::main()

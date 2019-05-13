@@ -29,7 +29,7 @@ ZyROSConnectionManager::ZyROSConnectionManager()
       m_rosTopics(initData(&m_rosTopics, "rosTopics", "", "List of ROS topics to subscribe to (semicolon separated, format per entry: <ros topic>:::<message type>)"))
 
 {
-
+    m_ros_connector.reset(new ZyROSConnector());
 }
 
 ZyROSConnectionManager::~ZyROSConnectionManager()
@@ -62,10 +62,14 @@ void ZyROSConnectionManager::cleanup()
         m_ros_connector->pauseComponent();
         msg_info("ZyROSConnectionManager") << "stopComponent";
         m_ros_connector->stopComponent();
-        delete m_ros_connector;
     }
 
     msg_info("ZyROSConnectionManager") << "cleanup() done";
+}
+
+boost::shared_ptr<ZyROSConnector> ZyROSConnectionManager::getROSConnector()
+{
+    return m_ros_connector;
 }
 
 void ZyROSConnectionManager::addPublisher(boost::shared_ptr<ZyROSPublisher>& pub)
@@ -84,7 +88,6 @@ void ZyROSConnectionManager::init()
 {
     msg_info("ZyROSConnectionManager") << "ZyROSConnectionManager::init()";
 
-    m_ros_connector = new ZyROSConnector();
     m_ros_connector->setRosMasterURI(m_rosMasterURI.getValue());
     m_ros_connector->startComponent();
     m_ros_connector->resumeComponent();
@@ -328,7 +331,8 @@ const std::vector<std::string> ZyROSConnectionManager::getServices() const
             std::string gh = res[2][2][x][0].toXml().c_str();
             gh.erase(gh.begin(), gh.begin()+7);
             gh.erase(gh.end()-8, gh.end());
-            state[x] = gh;
+            // state[x] = gh;
+            allServices.push_back(gh);
 
             msg_info("ZyROSConnectionManager") << "Active ROS service: " << gh;
         }

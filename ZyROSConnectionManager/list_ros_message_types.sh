@@ -5,34 +5,28 @@ ROS_DISTRO=""
 
 echo "Argument count: $#"
 
-if [ $# -lt 1 ]; then
-    echo "Usage: $0 <output_directory> (<ROS_INSTALL_PREFIX> <ROS_DISTRIBUTION>)"
+if [ $# -ne 3 ]; then
+    echo "Usage: $0 <output_directory> <ROS_INSTALL_PREFIX> <ROS_DISTRIBUTION>"
     exit 1
 fi
 
-OUTPUT_DIRECTORY=$1
+echo "ROS_ROOT  : $ROS_ROOT"
+echo "ROS_DISTRO: $ROS_DISTRO"
 
-if [ $# == 2 ]; then
-     ROS_INSTALL_PREFIX="/opt/ros"
-     ROS_DISTRO="kinetic"
-else
-     if [ $# == 4 ]; then
-         ROS_INSTALL_PREFIX=$2
-         ROS_DISTRO=$3
-     else
-         ROS_INSTALL_PREFIX="/opt/ros"
-         ROS_DISTRO="kinetic"
-     fi
-fi
+OUTPUT_DIRECTORY=$1
+ROS_INSTALL_PREFIX=$2
+ROS_DISTRIBUTION=$3
 
 echo "Output directory for generated header files: $OUTPUT_DIRECTORY"
 echo "Using ROS install prefix                   : $ROS_INSTALL_PREFIX"
-echo "Using ROS version                          : $ROS_DISTRO"
+echo "Using ROS distribution                     : $ROS_DISTRIBUTION"
 
-if [ -f /opt/ros/$ROS_DISTRO/setup.bash ]; then
-    source /opt/ros/$ROS_DISTRO/setup.bash
+if [ -f "$ROS_INSTALL_PREFIX/setup.bash" ]; then
+    source "$ROS_INSTALL_PREFIX/setup.bash"
+elif [ -f "$ROS_INSTALL_PREFIX/../../setup.bash" ]; then
+    source "$ROS_INSTALL_PREFIX/../../setup.bash"
 else
-    echo "Did not find ROS' setup.bash file under $ROS_INSTALL_PREFIX/$ROS_DISTRO. Please check your ROS installation, or provide the correct install prefix."
+    echo "Did not find ROS' setup.bash file under $ROS_INSTALL_PREFIX. Please check your ROS installation, or provide the correct install prefix."
     exit 1
 fi
 

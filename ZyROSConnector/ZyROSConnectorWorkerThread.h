@@ -30,8 +30,12 @@ namespace Zyklio
                 bool addTopicPublisher(boost::shared_ptr<ZyROSPublisher>&);
                 bool removeTopicPublisher(boost::shared_ptr<ZyROSPublisher>&);
 
+                bool addServiceClient(boost::shared_ptr<ZyROSServiceClient>&);
+                bool removeServiceClient(boost::shared_ptr<ZyROSServiceClient>&);
+
                 size_t getNumTopicListeners() const;
                 size_t getNumTopicPublishers() const;
+                size_t getNumServiceClients() const;
 
 			protected:
 				void main();
@@ -47,6 +51,9 @@ namespace Zyklio
                 std::vector<bool> m_activeSubscribers;
                 std::vector<boost::shared_ptr<ZyROSPublisher> > m_topicPublishers;
                 std::vector<bool> m_activePublishers;
+
+                std::vector<boost::shared_ptr<ZyROSServiceClient> > m_serviceClients;
+                std::vector<bool> m_activeServiceClients;
 		};
 	}
 }

@@ -9,7 +9,12 @@ void ZyROSConnectorTopicSubscriber<MessageType>::processMessage(const boost::sha
 {
     boost::mutex::scoped_lock lock(m_mutex);
     m_messageQueue.push_front(*(msg.get()));
-    //msg_info("ZyROSConnectorTopicSubscriber") << "processMessage " << msg;
+
+    m_lastValidMsgIndex++;
+    if (m_lastValidMsgIndex >= m_messageQueueLength)
+        m_lastValidMsgIndex = 0;
+
+    // msg_info("ZyROSConnectorTopicSubscriber") << "processMessage " << msg;
     lock.unlock();
 
     ZyROSConnectorTopicSubscriberIface::onMessageReceived();
@@ -55,7 +60,7 @@ const MessageType& ZyROSConnectorTopicSubscriber<MessageType>::getLatestMessage(
 template <class MessageType>
 unsigned int ZyROSConnectorTopicSubscriber<MessageType>::getMessageCount() const
 {
-    return m_messageQueue.size();
+    return m_lastValidMsgIndex;
 }
 
 template <class MessageType>
@@ -63,8 +68,8 @@ void ZyROSConnectorTopicSubscriber<MessageType>::clearMessages()
 {
     boost::mutex::scoped_lock lock(m_mutex);
     m_messageQueue.clear();
+    m_lastValidMsgIndex = 0;
 }
-
 
 template <class MessageType>
 ZyROSConnectorTopicSubscriber<MessageType>::ZyROSConnectorTopicSubscriber()
@@ -78,7 +83,7 @@ template <class MessageType>
 ZyROSConnectorTopicSubscriber<MessageType>::ZyROSConnectorTopicSubscriber(ros::NodeHandlePtr rosNode, const std::string& topic, unsigned int messageQueueLength, bool useGenericMessageHandling)
     : m_rosNodeHandle(rosNode)
     , m_messageQueueLength(messageQueueLength)
-    //, m_rosTopic(topic)
+    , m_lastValidMsgIndex(0)
 {
     m_rosTopic = topic;
 

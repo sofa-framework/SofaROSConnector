@@ -42,11 +42,12 @@ namespace Zyklio
                 ZyROSServiceClient(const ZyROSServiceClient&);
                 ZyROSServiceClient& operator=(const ZyROSServiceClient&);
 
-                virtual void cleanup() { msg_info("ZyROSServiceClient") << "cleanup() not implemented for a ZyROSServiceClient!"; }
+                virtual void cleanup() { msg_info("ZyROSServiceClient") << "cleanup() not implemented for a ZyROSServiceClient."; }
 
                 const boost::uuids::uuid& getUuid() { return m_uuid; }
 
-                virtual std::string getServiceURI() { msg_warning("ZyROSServiceClient") << "getServiceURI() not implemented for a ZyROSServiceClient!"; return ""; }
+                virtual std::string getServiceURI() { msg_warning("ZyROSServiceClient") << "getServiceURI() not implemented for a ZyROSServiceClient."; return ""; }
+                virtual void dispatchRequests() { msg_warning("ZyROSServiceClient") << "dispatchRequests() not implemented for a ZyROSServiceClient."; }
 
             protected:
                 boost::uuids::uuid m_uuid;
@@ -65,19 +66,29 @@ namespace Zyklio
                 void clearRequests();
 
                 unsigned int getNumResponses() const;
-                const ResponseType& getLatestResponse() const;
+                const ResponseType& getLatestResponse();
                 const ResponseType& getResponse(size_t);
 
-            protected:
+                bool setupClient();
+                bool shutdownClient();
+
                 void dispatchRequests();
+
+            protected:
+                friend class ZyROSConnectorWorkerThread;
 
                 ros::NodeHandlePtr m_rosNodeHandle;
                 std::string m_serviceURI;
 
-                ros::ServiceClientPtr m_client;
+                ros::ServiceClient m_client;
+
+                unsigned int m_lastValidRequest;
+                unsigned int m_lastValidResponse;
 
                 boost::circular_buffer<RequestType> m_requestQueue;
                 boost::circular_buffer<ResponseType> m_responseQueue;
+
+                boost::circular_buffer<bool> m_clientCallStates;
 
                 unsigned int m_messageQueueLength;
 

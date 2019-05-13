@@ -29,6 +29,9 @@
 #include "ZyROSConnectorTopicSubscriber.h"
 #include "ZyROSConnectorTopicPublisher.h"
 
+#include "ZyROSConnectorServiceClient.h"
+#include "ZyROSConnectorServiceServer.h"
+
 #include <boost/thread/condition.hpp>
 
 //#include <sofa/simulation/SimulationConcurrentComponent.h>
@@ -69,8 +72,12 @@ public:
     bool addTopicPublisher(boost::shared_ptr<ZyROSPublisher>&);
     bool removeTopicPublisher(boost::shared_ptr<ZyROSPublisher>&);
 
+    bool addServiceClient(boost::shared_ptr<ZyROSServiceClient>&);
+    bool removeServiceClient(boost::shared_ptr<ZyROSServiceClient>&);
+
     size_t getNumTopicListeners() const;
     size_t getNumTopicPublishers() const;
+    size_t getNumServiceClients() const;
 
 protected:
     friend class ZyROSConnectorWorkerThread;
@@ -91,11 +98,6 @@ protected:
 
     bool m_connectorThreadActive;
     boost::condition m_runCondition;
-
-    //Data<std::string> m_rosTopics;
-
-    //std::vector<std::pair<std::string, std::string> > m_subscribedRosTopics;
-    std::vector<ros::Subscriber> m_activeSubscribers;
 };
 }
 }

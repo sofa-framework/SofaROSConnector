@@ -84,6 +84,21 @@ size_t ZyROSConnector::getNumTopicPublishers() const
     return m_d->m_connectorThread->getNumTopicPublishers();
 }
 
+bool ZyROSConnector::addServiceClient(boost::shared_ptr<ZyROSServiceClient>& serviceClient)
+{
+    return m_d->m_connectorThread->addServiceClient(serviceClient);
+}
+
+bool ZyROSConnector::removeServiceClient(boost::shared_ptr<ZyROSServiceClient>& serviceClient)
+{
+    return m_d->m_connectorThread->removeServiceClient(serviceClient);
+}
+
+size_t ZyROSConnector::getNumServiceClients() const
+{
+    return m_d->m_connectorThread->getNumServiceClients();
+}
+
 bool ZyROSConnector::setRosMasterURI(const std::string& masterUri)
 {
 	if (!ros::isStarted())
@@ -135,7 +150,18 @@ void ZyROSConnector::rosLoop()
         {
             if (m_d->m_connectorThread->m_activePublishers[k] == true)
             {
-                m_d->m_connectorThread->m_topicPublishers[k]->publishMessageQueue();
+                if (m_d->m_connectorThread->m_topicPublishers[k].get())
+                    m_d->m_connectorThread->m_topicPublishers[k]->publishMessageQueue();
+            }
+        }
+
+        // Send requests from ROS service clients that are active, if any
+        for (size_t k = 0; k < m_d->m_connectorThread->m_activeServiceClients.size(); ++k)
+        {
+            if (m_d->m_connectorThread->m_activeServiceClients[k] == true)
+            {
+                if (m_d->m_connectorThread->m_serviceClients[k].get())
+                    m_d->m_connectorThread->m_serviceClients[k]->dispatchRequests();
             }
         }
 
@@ -273,12 +299,6 @@ void ZyROSConnector::stopConnector()
 	if (ros::isInitialized())
 	{	
         msg_info("ZyROSConnector") << "ROS running, shutdown";
-		
-		for (std::vector<ros::Subscriber>::iterator it = m_activeSubscribers.begin(); it != m_activeSubscribers.end(); it++)
-		{
-			ros::Subscriber& subscriber = (*it);
-			subscriber.shutdown();
-		}
 		
 		if (m_rosNode != NULL)
 		{
