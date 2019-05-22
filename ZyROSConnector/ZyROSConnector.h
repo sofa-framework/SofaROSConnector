@@ -40,66 +40,66 @@ using namespace sofa::core::objectmodel;
 
 namespace Zyklio
 {
-namespace ROSConnector
-{
-// Data members in private implementation
-class ZyklioRosConnectorPrivate;
-class SOFA_ZY_ROS_CONNECTOR_API ZyROSConnector : public sofa::core::objectmodel::BaseObject /*: public sofa::simulation::SimulationConcurrentComponent*/
-{
-public:
-    SOFA_CLASS(ZyROSConnector, sofa::core::objectmodel::BaseObject);
+    namespace ROSConnector
+    {
+        // Data members in private implementation
+        class ZyklioRosConnectorPrivate;
+        class SOFA_ZY_ROS_CONNECTOR_API ZyROSConnector : public sofa::core::objectmodel::BaseObject /*: public sofa::simulation::SimulationConcurrentComponent*/
+        {
+            public:
+                SOFA_CLASS(ZyROSConnector, sofa::core::objectmodel::BaseObject);
 
-    ZyROSConnector();
-    virtual ~ZyROSConnector();
+                ZyROSConnector();
+                virtual ~ZyROSConnector();
 
-    // SimulationConcurrentComponent API
-    void startComponent();
-    void stopComponent();
-    void pauseComponent();
-    void resumeComponent();
+                // SimulationConcurrentComponent API
+                void startComponent();
+                void stopComponent();
+                void pauseComponent();
+                void resumeComponent();
 
-    bool isConnected() const;
-    bool isThreadRunning() const;
-    boost::condition& connectorCondition();
+                bool isConnected() const;
+                bool isThreadRunning() const;
+                boost::condition& connectorCondition();
 
-    bool setRosMasterURI(const std::string&);
+                bool setRosMasterURI(const std::string&);
 
-    ros::NodeHandlePtr getROSNode();
+                ros::NodeHandlePtr getROSNode();
 
-    bool addTopicListener(const boost::shared_ptr<ZyROSListener> &);
-    bool removeTopicListener(boost::shared_ptr<ZyROSListener>&);
+                bool addTopicListener(const boost::shared_ptr<ZyROSListener> &);
+                bool removeTopicListener(boost::shared_ptr<ZyROSListener>&);
 
-    bool addTopicPublisher(boost::shared_ptr<ZyROSPublisher>&);
-    bool removeTopicPublisher(boost::shared_ptr<ZyROSPublisher>&);
+                bool addTopicPublisher(boost::shared_ptr<ZyROSPublisher>&);
+                bool removeTopicPublisher(boost::shared_ptr<ZyROSPublisher>&);
 
-    bool addServiceClient(boost::shared_ptr<ZyROSServiceClient>&);
-    bool removeServiceClient(boost::shared_ptr<ZyROSServiceClient>&);
+                bool addServiceClient(boost::shared_ptr<ZyROSServiceClient>&);
+                bool removeServiceClient(boost::shared_ptr<ZyROSServiceClient>&);
 
-    size_t getNumTopicListeners() const;
-    size_t getNumTopicPublishers() const;
-    size_t getNumServiceClients() const;
+                size_t getNumTopicListeners() const;
+                size_t getNumTopicPublishers() const;
+                size_t getNumServiceClients() const;
 
-protected:
-    friend class ZyROSConnectorWorkerThread;
+            protected:
+                friend class ZyROSConnectorWorkerThread;
 
-    boost::posix_time::ptime theTime;
+                boost::posix_time::ptime theTime;
 
-    std::string m_rosMasterURI;
+                std::string m_rosMasterURI;
 
-    void startConnector();
-    void stopConnector();
+                void startConnector();
+                void stopConnector();
 
-    void rosLoop();
+                void rosLoop();
 
-    ZyklioRosConnectorPrivate* m_d;
+                ZyklioRosConnectorPrivate* m_d;
 
-    ros::NodeHandlePtr m_rosNode;
-    ros::CallbackQueue cb_queue;
+                ros::NodeHandlePtr m_rosNode;
+                ros::CallbackQueue cb_queue;
 
-    bool m_connectorThreadActive;
-    boost::condition m_runCondition;
-};
-}
+                bool m_connectorThreadActive;
+                boost::condition m_runCondition;
+        };
+    }
 }
 
 #endif //ZYKLIO_ROSCONNECTOR_H

@@ -42,7 +42,7 @@ namespace Zyklio
 
         SOFA_DECL_CLASS(ZyGripping);
 
-        int ZyGrippingClass = core::RegisterObject("Description Test test.")
+        int ZyGrippingClass = core::RegisterObject("ROS connector gripper control plugin.")
         .add< ZyGripping >()
         ;
 

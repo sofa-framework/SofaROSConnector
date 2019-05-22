@@ -66,7 +66,7 @@ namespace Zyklio
                 void clearRequests();
 
                 unsigned int getNumResponses() const;
-                const ResponseType& getLatestResponse();
+                bool removeRequest(const size_t&);
                 const ResponseType& getResponse(size_t);
 
                 bool setupClient();
@@ -82,15 +82,14 @@ namespace Zyklio
 
                 ros::ServiceClient m_client;
 
-                unsigned int m_lastValidRequest;
-                unsigned int m_lastValidResponse;
+                unsigned int m_messageQueueLength;
 
                 boost::circular_buffer<RequestType> m_requestQueue;
                 boost::circular_buffer<ResponseType> m_responseQueue;
 
                 boost::circular_buffer<bool> m_clientCallStates;
-
-                unsigned int m_messageQueueLength;
+                boost::circular_buffer<bool> m_clientCallFailedStates;
+                boost::circular_buffer<bool> m_clientSlotsUsed;
 
                 boost::mutex m_mutex;
         };

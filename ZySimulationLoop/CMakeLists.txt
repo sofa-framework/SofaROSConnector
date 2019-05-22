@@ -1,22 +1,13 @@
-project(ZySOFAControllers)
+project(ZySimulationLoop)
 
 set(HEADER_FILES
-    initZySOFAControllers.h
-    ArticulatedHierarchyController.h
-    ArticulatedHierarchyBVHController.h
-    ArbitraryController.h
-    RobotController.h
-    ZyColladaToolHandler.h
-    ZyColladaToolHandler.inl
+    initZySimulationLoop.h
+    ZyPhysicsAnimationLoop.h
 )
 
 set(SOURCE_FILES
-    initZySOFAControllers.cpp
-    ArticulatedHierarchyController.cpp
-    ArticulatedHierarchyBVHController.cpp
-    ArbitraryController.cpp
-    RobotController.cpp
-    ZyColladaToolHandler.cpp
+    initZySimulationLoop.cpp
+    ZyPhysicsAnimationLoop.cpp
 )
 
 
@@ -25,7 +16,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${CMAKE_SOURCE_DIR})
 include_directories(${CMAKE_SOURCE_DIR}/modules)
 
-add_definitions("-DSOFA_BUILD_ZYSOFA_CONTROLLERS")
+add_definitions("-DSOFA_BUILD_ZYSOFA_SIMULATION_LOOP")
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
 

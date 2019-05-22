@@ -24,6 +24,7 @@
 
 #include <ZyROSConnectorServiceClient.h>
 #include <ZyROSConnectorServiceServer.h>
+#include <ZyROSConnectorServiceServer.inl>
 
 #include <ZyROS_MessageType_Instantiations_Publishers.h>
 #include <ZyROS_MessageType_Instantiations_Subscribers.h>
@@ -32,6 +33,10 @@
 
 #include <rosgraph_msgs/Log.h>
 #include <ros/console.h>
+
+#include "ArrayOfFloats.h"
+#include "ArrayOfFloatsRequest.h"
+#include "ArrayOfFloatsResponse.h"
 
 #include <boost/filesystem.hpp>
 #include <boost/thread/mutex.hpp>
@@ -303,11 +308,7 @@ namespace Zyklio
         m_rosConnector->bwdInit();
         msg_info("ZyROSConnector_Test") << "connectToROSMaster: " << masterUri;
         m_rosConnector->getROSConnector()->setRosMasterURI(masterUri);
-        // m_rosConnector->getROSConnector()->startComponent();
-        // msg_info("ZyROSConnector_Test") << "connectToROSMaster: startComponent";
-        // m_rosConnector->getROSConnector()->resumeComponent();
-        // msg_info("ZyROSConnector_Test") << "connectToROSMaster: resumeComponent";
-		
+
 		boost::mutex::scoped_lock lock(m_mutex);
         while (!m_rosConnector->getROSConnector()->isThreadRunning())
 		{
@@ -327,11 +328,6 @@ namespace Zyklio
 
 	bool RosConnectorTest::disconnectFromROSMaster()
 	{
-        /*msg_info("ZyROSConnector_Test") << "connectToROSMaster: pauseComponent";
-        m_rosConnector->getROSConnector()->pauseComponent();
-        msg_info("ZyROSConnector_Test") << "connectToROSMaster: stopComponent";
-        m_rosConnector->getROSConnector()->stopComponent();*/
-		
         msg_info("ZyROSConnector_test") << "Cleaning up ROS connector.";
         m_rosConnector->cleanup();
 
@@ -343,6 +339,73 @@ namespace Zyklio
         msg_info("ZyROSConnector_test") << "Executing Test body.";
 	}
 }
+
+template <class Request, class Response>
+struct AddTwoIntsRequestHandler: public ZyROSConnectorServerRequestHandler<Request, Response>
+{
+    public:
+        AddTwoIntsRequestHandler(const Request& req, Response& resp): ZyROSConnectorServerRequestHandler<Request, Response>(req, resp)
+        {
+
+        }
+
+        bool handleRequest()
+        {
+            msg_info("AddTwoIntsRequestHandler") << "Received a request to add two integers: " << this->req.a << " + " << this->req.b;
+            this->resp.sum = this->req.a + this->req.b;
+            msg_info("AddTwoIntsRequestHandler") << "Result: " << this->resp.sum;
+            return true;
+        }
+};
+
+template <class Request, class Response>
+struct ArrayOfFloatsRequestHandler: public ZyROSConnectorServerRequestHandler<Request, Response>
+{
+    public:
+        ArrayOfFloatsRequestHandler(const Request& req, Response& resp): ZyROSConnectorServerRequestHandler<Request, Response>(req, resp)
+        {
+
+        }
+
+        bool handleRequest()
+        {
+            msg_info("ArrayOfFloatsRequestHandler") << "Received a request to return an array of floats of size: " << this->req.FloatsToReturn.data;
+            this->resp.return_values.data.resize(this->req.FloatsToReturn.data);
+            for (int k = 0; k < this->req.FloatsToReturn.data; k++)
+            {
+                this->resp.return_values.data[k] = 1.0f * k;
+            }
+            return true;
+        }
+};
+
+template class ZyROSConnectorServiceServerImpl<rospy_tutorials::AddTwoIntsRequest, rospy_tutorials::AddTwoIntsResponse, AddTwoIntsRequestHandler<rospy_tutorials::AddTwoIntsRequest, rospy_tutorials::AddTwoIntsResponse>>;
+
+class AddTwoIntsServiceServer: public ZyROSConnectorServiceServerImpl<rospy_tutorials::AddTwoIntsRequest, rospy_tutorials::AddTwoIntsResponse, AddTwoIntsRequestHandler<rospy_tutorials::AddTwoIntsRequest, rospy_tutorials::AddTwoIntsResponse>>
+{
+    public:
+    AddTwoIntsServiceServer(ros::NodeHandlePtr node_handle, const std::string& service_uri):
+        ZyROSConnectorServiceServerImpl<rospy_tutorials::AddTwoIntsRequest, rospy_tutorials::AddTwoIntsResponse, AddTwoIntsRequestHandler<rospy_tutorials::AddTwoIntsRequest, rospy_tutorials::AddTwoIntsResponse>>(node_handle, service_uri)
+    {
+
+    }
+
+    ~AddTwoIntsServiceServer()
+    {}
+};
+
+class ArrayOfFloatsServiceServer: public ZyROSConnectorServiceServerImpl<zyrosconnector_test::ArrayOfFloatsRequest, zyrosconnector_test::ArrayOfFloatsResponse, ArrayOfFloatsRequestHandler<zyrosconnector_test::ArrayOfFloatsRequest, zyrosconnector_test::ArrayOfFloatsResponse>>
+{
+    public:
+    ArrayOfFloatsServiceServer(ros::NodeHandlePtr node_handle, const std::string& service_uri):
+        ZyROSConnectorServiceServerImpl<zyrosconnector_test::ArrayOfFloatsRequest, zyrosconnector_test::ArrayOfFloatsResponse, ArrayOfFloatsRequestHandler<zyrosconnector_test::ArrayOfFloatsRequest, zyrosconnector_test::ArrayOfFloatsResponse>>(node_handle, service_uri)
+    {
+
+    }
+
+    ~ArrayOfFloatsServiceServer()
+    {}
+};
 
 int main(int argc, char** argv)
 {
@@ -593,7 +656,7 @@ int main(int argc, char** argv)
                                 const roscpp::GetLoggersResponse& loggers_list = loggers_service_client->getResponse(t);
                                 msg_info("ZyROSConnector_test") << "Loggers known in roscore: " << loggers_list.loggers.size();
                                 for (size_t m = 0; m < loggers_list.loggers.size(); ++m)
-                                    msg_info("ZyROSConnector_test") << "Logger: " << loggers_list.loggers[m];
+                                    msg_info("ZyROSConnector_test") << "Logger: " << loggers_list.loggers[m] << "\n";
                             }
                         }
 
@@ -629,6 +692,55 @@ int main(int argc, char** argv)
 
                 }
 
+                // Test ROS service server, part 1
+                boost::shared_ptr<ZyROSConnectorServiceServer> array_of_floats_server;
+                array_of_floats_server.reset(new ArrayOfFloatsServiceServer(test_fixture.m_rosConnector->getRosNodeHandle(), "/ZyROSConnector/array_of_floats"));
+                ZyROSConnectorServiceServerWorkerThread* service_worker_aof = new ZyROSConnectorServiceServerWorkerThread(array_of_floats_server);
+
+                if (service_worker_aof->start())
+                {
+                    msg_info("ZyROSConnector_test") << "Started service worker thread for ArrayOfFloats ServiceServer.";
+                    usleep(100000);
+                    boost::shared_ptr<ZyROSServiceClient> array_of_floats_client;
+                    array_of_floats_client.reset(new ZyROSConnectorServiceClient<zyrosconnector_test::ArrayOfFloats, zyrosconnector_test::ArrayOfFloatsRequest, zyrosconnector_test::ArrayOfFloatsResponse>(test_fixture.m_rosConnector->getRosNodeHandle(), "/ZyROSConnector/array_of_floats"));
+
+                    ZyROSConnectorServiceClient<zyrosconnector_test::ArrayOfFloats, zyrosconnector_test::ArrayOfFloatsRequest, zyrosconnector_test::ArrayOfFloatsResponse>* array_of_floats_templated_client = (ZyROSConnectorServiceClient<zyrosconnector_test::ArrayOfFloats, zyrosconnector_test::ArrayOfFloatsRequest, zyrosconnector_test::ArrayOfFloatsResponse>*) (array_of_floats_client.get());
+                    if (array_of_floats_templated_client)
+                    {
+                        array_of_floats_templated_client->setupClient();
+                        test_fixture.m_rosConnector->getROSConnector()->addServiceClient(array_of_floats_client);
+
+                        msg_info("ZyROSConnector_test") << "Sending requests to ArrayOfFloats ServiceServer.";
+                        for (unsigned int k = 0; k < 10; k++)
+                        {
+                            zyrosconnector_test::ArrayOfFloatsRequest req;
+                            req.FloatsToReturn.data = (k + 1) * 2;
+                            array_of_floats_templated_client->enqueueRequest(req);
+
+                            // Wait a little between requests
+                            usleep(25000);
+                        }
+
+                        for (size_t l = 0; l < array_of_floats_templated_client->getNumResponses(); l++)
+                        {
+                            const zyrosconnector_test::ArrayOfFloatsResponse& resp = array_of_floats_templated_client->getResponse(l);
+                            msg_info("ZyROSConnector_test") << "Response " << l << " from array_of_floats_server:\n" << resp.return_values.data.size() << " values.";
+
+                            array_of_floats_templated_client->removeRequest(l);
+                        }
+
+                        array_of_floats_templated_client->shutdownClient();
+                        test_fixture.m_rosConnector->getROSConnector()->removeServiceClient(array_of_floats_client);
+
+                        msg_info("ZyROSConnector_test") << "Stopping ROS service server";
+                        array_of_floats_server->shutdownServer();
+
+                        msg_info("ZyROSConnector_test") << "Shutting down service worker thread";
+                        service_worker_aof->stop();
+                    }
+                }
+
+                // Shutdown the ROS connector and the roscore instance
                 msg_info("ZyROSConnector_test") << "Disconnecting from ROS master...";
                 test_fixture.disconnectFromROSMaster();
                 msg_info("ZyROSConnector_test") << "Disconnected from ROS master.";

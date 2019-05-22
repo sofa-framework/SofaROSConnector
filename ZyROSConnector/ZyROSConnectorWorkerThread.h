@@ -47,8 +47,10 @@ namespace Zyklio
 				ZyROSConnector* m_rosConnector;
 
                 boost::mutex m_mutex;
+
                 std::vector<boost::shared_ptr<ZyROSListener> > m_topicSubscribers;
                 std::vector<bool> m_activeSubscribers;
+
                 std::vector<boost::shared_ptr<ZyROSPublisher> > m_topicPublishers;
                 std::vector<bool> m_activePublishers;
 

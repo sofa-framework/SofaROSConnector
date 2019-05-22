@@ -60,7 +60,7 @@ namespace Zyklio
          * false.
          * 
          */
-        class SOFA_ZYGRIPPING_API ZyGripping : public /*virtual*/ core::objectmodel::BaseObject
+        class SOFA_ZYGRIPPING_API ZyGripping : public core::objectmodel::BaseObject
         {
         public:
             typedef core::objectmodel::BaseObject Inherit;
@@ -73,7 +73,7 @@ namespace Zyklio
         public:
 
             ZyGripping();
-            ~ZyGripping() {};
+            ~ZyGripping() {}
 
             void init();
             void bwdInit();

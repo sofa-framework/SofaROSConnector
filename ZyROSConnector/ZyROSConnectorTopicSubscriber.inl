@@ -14,7 +14,6 @@ void ZyROSConnectorTopicSubscriber<MessageType>::processMessage(const boost::sha
     if (m_lastValidMsgIndex >= m_messageQueueLength)
         m_lastValidMsgIndex = 0;
 
-    // msg_info("ZyROSConnectorTopicSubscriber") << "processMessage " << msg;
     lock.unlock();
 
     ZyROSConnectorTopicSubscriberIface::onMessageReceived();

@@ -47,7 +47,7 @@ namespace Zyklio
         class SOFA_ZY_ROS_CONNECTOR_API ZyROSConnectorTopicPublisher : public ZyROSPublisher
         {
         public:
-            ZyROSConnectorTopicPublisher(ros::NodeHandlePtr rosNode, const std::string& topic, unsigned int messageQueueLength = 10) : m_rosTopic(topic), m_rosNodeHandle(rosNode), m_messageQueueLength(messageQueueLength)
+            ZyROSConnectorTopicPublisher(ros::NodeHandlePtr rosNode, const std::string& topic, unsigned int messageQueueLength = 10) : ZyROSPublisher(), m_rosTopic(topic), m_rosNodeHandle(rosNode), m_messageQueueLength(messageQueueLength)
             {
                 m_messageQueue.resize(m_messageQueueLength);
                 messageType = ros::message_traits::DataType<MessageType>::value();

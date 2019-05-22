@@ -1,0 +1,11 @@
+# CMake package configuration file for the ZySimulationLoop library
+
+@PACKAGE_INIT@
+
+find_package(ZySimulationLoop REQUIRED)
+
+if(NOT TARGET ZyRosConnector)
+	include("${CMAKE_CURRENT_LIST_DIR}/ZySimulationLoop.cmake")
+endif()
+
+check_required_components(ZySimulationLoop)

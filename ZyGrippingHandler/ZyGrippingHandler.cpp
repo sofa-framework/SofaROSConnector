@@ -30,13 +30,13 @@ bool ZyGrippingHandler::setZyGrippingByContext(sofa::core::objectmodel::BaseCont
     {
         for (unsigned int ah = 0; ah < zyGrippingPrivate->zyGrippings.size(); ah++)
         {
-            std::cout << "(ZyGrippingHandler::setROSConnectionManagerByContext) Found the TruGripping " << zyGrippingPrivate->zyGrippings.at(ah)->getName() << std::endl;
+            msg_info("ZyGrippingHandler") << "(ZyGrippingHandler::setROSConnectionManagerByContext) Found ZyGrippingHandler " << zyGrippingPrivate->zyGrippings.at(ah)->getName();
         }
         return true;
     }
     else
     {
-        std::cout << "(ZyGrippingHandler::setROSConnectionManagerByContext) WARNING: Could not find a ZyGripping, cannot handle grippers." << std::endl;
+        msg_warning("ZyGrippingHandler") << "(ZyGrippingHandler::setROSConnectionManagerByContext) WARNING: Could not find a ZyGrippingHandler instance, cannot handle grippers.";
         return false;
     }    
 }

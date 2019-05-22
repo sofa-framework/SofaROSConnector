@@ -1,5 +1,5 @@
-#ifndef TRU_SOFA_PUBLISHINGHANDLER_H
-#define TRU_SOFA_PUBLISHINGHANDLER_H
+#ifndef ZY_SOFA_PUBLISHINGHANDLER_H
+#define ZY_SOFA_PUBLISHINGHANDLER_H
 
 #ifdef _WIN32
 // Ensure that Winsock2.h is included before Windows.h, which can get
@@ -118,4 +118,4 @@ namespace Zyklio
     }
 }
 
-#endif // TRU_SOFA_PUBLISHINGHANDLER_H
+#endif // ZY_SOFA_PUBLISHINGHANDLER_H

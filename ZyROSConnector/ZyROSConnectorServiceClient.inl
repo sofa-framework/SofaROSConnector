@@ -6,12 +6,13 @@ using namespace Zyklio::ROSConnector;
 
 template <class ServiceType, class RequestType, class ResponseType>
 ZyROSConnectorServiceClient<ServiceType, RequestType, ResponseType>::ZyROSConnectorServiceClient(ros::NodeHandlePtr nodeHandle, const std::string& serviceURI, unsigned int queueLength):
-    m_rosNodeHandle(nodeHandle), m_serviceURI(serviceURI), m_messageQueueLength(queueLength),
-    m_lastValidRequest(0), m_lastValidResponse(0)
+    m_rosNodeHandle(nodeHandle), m_serviceURI(serviceURI), m_messageQueueLength(queueLength)
 {
     m_requestQueue.resize(m_messageQueueLength);
     m_responseQueue.resize(m_messageQueueLength);
     m_clientCallStates.resize(m_messageQueueLength);
+    m_clientSlotsUsed.resize(m_messageQueueLength);
+    m_clientCallFailedStates.resize(m_messageQueueLength);
 }
 
 template <class ServiceType, class RequestType, class ResponseType>
@@ -19,9 +20,6 @@ bool ZyROSConnectorServiceClient<ServiceType, RequestType, ResponseType>::setupC
 {
     try
     {
-        /*ros::ServiceClientOptions clientOptions;
-        clientOptions.persistent = true;
-        clientOptions.service = m_serviceURI;*/
         m_client = m_rosNodeHandle->serviceClient<ServiceType>(m_serviceURI, true);
         return true;
     }
@@ -45,11 +43,23 @@ bool ZyROSConnectorServiceClient<ServiceType, RequestType, ResponseType>::shutdo
 template <class ServiceType, class RequestType, class ResponseType>
 bool ZyROSConnectorServiceClient<ServiceType, RequestType, ResponseType>::enqueueRequest(const RequestType& request)
 {
-    m_requestQueue.push_front(request);
+    boost::mutex::scoped_lock lock(m_mutex);
 
-    m_lastValidRequest++;
-    if (m_lastValidRequest >= m_messageQueueLength)
-        m_lastValidRequest = 0;
+    size_t request_idx = -1;
+    for (size_t k = 0; k < m_clientSlotsUsed.size(); k++)
+    {
+        if (!m_clientSlotsUsed[k])
+        {
+            request_idx = k;
+            break;
+        }
+    }
+
+    if (request_idx >= 0)
+    {
+        m_clientSlotsUsed[request_idx] = true;
+        m_requestQueue[request_idx] = request;
+    }
 
     return true;
 }
@@ -63,30 +73,44 @@ void ZyROSConnectorServiceClient<ServiceType, RequestType, ResponseType>::clearR
     m_responseQueue.resize(m_messageQueueLength);
     m_clientCallStates.clear();
     m_clientCallStates.resize(m_messageQueueLength);
-    m_lastValidRequest = 0;
-    m_lastValidResponse = 0;
+    m_clientCallFailedStates.clear();
+    m_clientCallFailedStates.resize(m_messageQueueLength);
 }
 
 template <class ServiceType, class RequestType, class ResponseType>
 unsigned int ZyROSConnectorServiceClient<ServiceType, RequestType, ResponseType>::getNumResponses() const
 {
-    return m_lastValidResponse;
+    return std::count_if(m_clientSlotsUsed.begin(), m_clientSlotsUsed.end(), [](bool i){return i == true;});
 }
 
 template <class ServiceType, class RequestType, class ResponseType>
-const ResponseType& ZyROSConnectorServiceClient<ServiceType, RequestType, ResponseType>::getLatestResponse()
+bool ZyROSConnectorServiceClient<ServiceType, RequestType, ResponseType>::removeRequest(const size_t& idx)
 {
-    /*ResponseType& latestResponse = m_responseQueue.back();
-    ResponseType returnValue(latestResponse);
-    m_responseQueue.pop_back();
-    return returnValue;*/
-    msg_info("ZyROSConnectorServiceClient") << "Returning latest response: " << m_responseQueue.back();
-    return m_responseQueue.back();
+    boost::mutex::scoped_lock lock(m_mutex);
+
+    if (idx > m_clientSlotsUsed.size())
+        return false;
+
+    if (!m_clientSlotsUsed[idx])
+    {
+        return false;
+    }
+    else
+    {
+        m_clientSlotsUsed[idx] = false;
+        m_clientCallStates[idx] = false;
+        m_clientCallFailedStates[idx] = false;
+        m_requestQueue[idx] = RequestType();
+        m_responseQueue[idx] = ResponseType();
+    }
+
+    return true;
 }
 
 template <class ServiceType, class RequestType, class ResponseType>
 const ResponseType& ZyROSConnectorServiceClient<ServiceType, RequestType, ResponseType>::getResponse(size_t idx)
 {
+    static ResponseType emptyResponse;
     /*ResponseType response;
     if (idx < m_responseQueue.size())
     {
@@ -100,44 +124,46 @@ const ResponseType& ZyROSConnectorServiceClient<ServiceType, RequestType, Respon
     if (idx < m_responseQueue.size())
         return m_responseQueue.at(idx);
 
-    return ResponseType();
+    return emptyResponse;
 }
 
 template <class ServiceType, class RequestType, class ResponseType>
 void ZyROSConnectorServiceClient<ServiceType, RequestType, ResponseType>::dispatchRequests()
 {   
-    if (m_lastValidRequest > 0)
+
+    for (size_t k = 0; k < m_clientSlotsUsed.size(); k++)
     {
-        // msg_info("ZyROSConnectorServiceClient") << "dispatchRequests()";
-        // m_responseQueue.clear();
-        // m_responseQueue.resize(m_lastValidRequest);
-        // m_lastValidResponse = 0;
-        for (size_t k = 0; k < m_lastValidRequest; k++)
+        if (m_clientSlotsUsed[k] == true && m_clientCallStates[k] == false)
         {
             if (m_client.exists())
             {
-                if (m_clientCallStates[k])
+                if (!m_clientCallFailedStates[k])
                 {
-                    // msg_info("ZyROSConnectorServiceClient") << "Service call " << k << " already dispatched successfully.";
-                    continue;
+                    msg_info("ZyROSConnectorServiceClient") << "Dispatching service request: " << m_requestQueue.at(k);
+                    bool call_result = m_client.call(m_requestQueue.at(k), m_responseQueue.at(k));
+                    if (call_result)
+                    {
+                        m_clientCallStates[k] = true;
+                        msg_info("ZyROSConnectorServiceClient") << "Service call " << k << " dispatched successfully.";
+                        msg_info("ZyROSConnectorServiceClient") << "Message received for call " << k << ": " << m_responseQueue.at(k);
+
+                        for (size_t p = 0; p < m_clientCallStates.size(); p++)
+                        {
+                            if (m_clientCallStates[p])
+                                msg_info("ROSConnectorServiceClient") << "Call " << p << ": " << m_responseQueue[p];
+                        }
+                    }
+                    else
+                    {
+                        msg_warning("ZyROSConnectorServiceClient") << "Service call " << k << " failed!";
+                        m_clientCallFailedStates[k] = true;
+                    }
                 }
-                bool call_result = m_client.call(m_requestQueue.at(k), m_responseQueue.at(k));
-                m_clientCallStates[k] = call_result;
-                if (call_result)
+                /*else
                 {
-                    msg_info("ZyROSConnectorServiceClient") << "Service call " << k << " dispatched successfully.";
-                    msg_info("ZyROSConnectorServiceClient") << "Message received for call " << k << ": " << m_responseQueue.at(k);
-                    m_lastValidResponse++;
-                }
-                else
-                {
-                    msg_warning("ZyROSConnectorServiceClient") << "Service call " << k << " failed!";
-                }
-            }
-            else
-            {
-                msg_warning("ZyROSConnectorServiceClient") << "Service call " << k << " failed: ROS service " << m_client.getService() << " does not exist!";
-                m_clientCallStates[k] = false;
+                    msg_warning("ZyROSConnectorServiceClient") << "Service call " << k << " failed: ROS service " << m_client.getService() << " does not exist!";
+                    m_clientCallFailedStates[k] = true;
+                }*/
             }
         }
     }

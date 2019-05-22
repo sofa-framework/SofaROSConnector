@@ -27,12 +27,12 @@ bool ZySimulationAnalyzerHandler::setSimAnalyzerByContext(sofa::core::objectmode
 
     if (simulationAnalyzerPrivate->simulationAnalyzer)
     {
-        std::cout << "(ZySimulationAnalyzerHandler::setROSConnectionManagerByContext) Found the ZyROSSimulationAnalyzer " << simulationAnalyzerPrivate->simulationAnalyzer->getName() << std::endl;
+        msg_info("ZySimulationAnalyzerHandler") << "Found ZyROSSimulationAnalyzer instance: " << simulationAnalyzerPrivate->simulationAnalyzer->getName();
         return true;
     }
     else
     {
-        std::cout << "(ZySimulationAnalyzerHandler::setROSConnectionManagerByContext) WARNING: Could not find a ZyROSSimulationAnalyzer, cannot publish messages." << std::endl;
+        msg_warning("ZySimulationAnalyzerHandler") << "Could not find a ZyROSSimulationAnalyzer instance, cannot publish messages." << std::endl;
         return false;
     }    
 }

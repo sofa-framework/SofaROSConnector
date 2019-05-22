@@ -1,5 +1,5 @@
-#ifndef TRU_SOFA_GRIPPING_H
-#define TRU_SOFA_GRIPPING_H
+#ifndef ZY_SOFA_GRIPPING_H
+#define ZY_SOFA_GRIPPING_H
 
 #include "init_ZyGrippingHandler.h"
 
@@ -16,7 +16,7 @@ namespace Zyklio
         /**
          * \brief This is a helper class to help with ZyGripping.
          */
-        class TRU_SOFA_GRIPPINGHANDLER_API ZyGrippingHandler
+        class ZY_SOFA_GRIPPINGHANDLER_API ZyGrippingHandler
 		{
             public:
                 ZyGrippingHandler();
@@ -39,4 +39,4 @@ namespace Zyklio
 	}
 }
 
-#endif // TRU_SOFA_GRIPPING_H
+#endif // ZY_SOFA_GRIPPING_H

@@ -13,7 +13,7 @@ The contents will be overwritten and re-generated.
 
 using namespace Zyklio::ROSConnector;
 
-ZyROSServiceClient::ZyROSServiceClient()
+ZyROSServiceClient::ZyROSServiceClient(): m_uuid(boost::uuids::random_generator()())
 {
 
 }
@@ -32,6 +32,7 @@ using namespace std_srvs;
 using namespace tf;
 using namespace tf2_msgs;
 using namespace topic_tools;
+using namespace zyrosconnector_test;
 
 template class ZyROSConnectorServiceClient<control_msgs::QueryCalibrationState, control_msgs::QueryCalibrationStateRequest, control_msgs::QueryCalibrationStateResponse>;
 template class ZyROSConnectorServiceClient<control_msgs::QueryTrajectoryState, control_msgs::QueryTrajectoryStateRequest, control_msgs::QueryTrajectoryStateResponse>;
@@ -64,6 +65,7 @@ template class ZyROSConnectorServiceClient<topic_tools::MuxAdd, topic_tools::Mux
 template class ZyROSConnectorServiceClient<topic_tools::MuxDelete, topic_tools::MuxDeleteRequest, topic_tools::MuxDeleteResponse>;
 template class ZyROSConnectorServiceClient<topic_tools::MuxList, topic_tools::MuxListRequest, topic_tools::MuxListResponse>;
 template class ZyROSConnectorServiceClient<topic_tools::MuxSelect, topic_tools::MuxSelectRequest, topic_tools::MuxSelectResponse>;
+template class ZyROSConnectorServiceClient<zyrosconnector_test::ArrayOfFloats, zyrosconnector_test::ArrayOfFloatsRequest, zyrosconnector_test::ArrayOfFloatsResponse>;
 boost::shared_ptr<ZyROSServiceClient> ZyROSConnectorServiceClientFactory::createServiceClient(ros::NodeHandlePtr rosNode, const std::string& serviceURI, const std::string& serviceType)
 {
 	bool supported = false;
@@ -253,6 +255,12 @@ boost::shared_ptr<ZyROSServiceClient> ZyROSConnectorServiceClientFactory::create
 	{
 		supported = true;
 		serviceClient.reset(new ZyROSConnectorServiceClient<topic_tools::MuxSelect, topic_tools::MuxSelectRequest, topic_tools::MuxSelectResponse>(rosNode, serviceURI, 10));
+	}
+	// Service client instance for ROS service type: zyrosconnector_test/ArrayOfFloats
+	if (serviceType == "zyrosconnector_test::ArrayOfFloats")
+	{
+		supported = true;
+		serviceClient.reset(new ZyROSConnectorServiceClient<zyrosconnector_test::ArrayOfFloats, zyrosconnector_test::ArrayOfFloatsRequest, zyrosconnector_test::ArrayOfFloatsResponse>(rosNode, serviceURI, 10));
 	}
 
 	if (supported)

@@ -5,7 +5,7 @@
 find_package(ZyRosConnector REQUIRED)
 
 if(NOT TARGET ZyRosConnector)
-	include("${CMAKE_CURRENT_LIST_DIR}/TruRosConnector.cmake")
+	include("${CMAKE_CURRENT_LIST_DIR}/ZyRosConnector.cmake")
 endif()
 
-check_required_components(TruRosConnector)
+check_required_components(ZyRosConnector)

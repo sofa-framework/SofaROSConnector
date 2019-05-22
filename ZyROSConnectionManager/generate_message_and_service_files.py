@@ -430,7 +430,7 @@ class ROSServiceBindingGenerator(ROSBindingGenerator):
 
 using namespace Zyklio::ROSConnector;
 
-ZyROSServiceClient::ZyROSServiceClient()
+ZyROSServiceClient::ZyROSServiceClient(): m_uuid(boost::uuids::random_generator()())
 {
 
 }
@@ -446,6 +446,15 @@ ZyROSConnectorServiceServer::ZyROSConnectorServiceServer(ros::NodeHandlePtr rosN
     m_d = new ZyROSConnectorServiceServerPrivate();
     m_d->m_serviceURI = serviceURI;
     m_d->m_rosNodeHandle = rosNode;
+    m_shutdownRequested = false;
+}
+
+ZyROSConnectorServiceServer::ZyROSConnectorServiceServer(const ZyROSConnectorServiceServer& other): m_d(NULL)
+{
+    m_d = new ZyROSConnectorServiceServerPrivate();
+    m_d->m_serviceURI = other.m_d->m_serviceURI;
+    m_d->m_rosNodeHandle = ros::NodeHandlePtr(other.m_d->m_rosNodeHandle);
+    m_shutdownRequested = other.m_shutdownRequested;
 }
 
 ZyROSConnectorServiceServer::~ZyROSConnectorServiceServer()
@@ -456,6 +465,81 @@ ZyROSConnectorServiceServer::~ZyROSConnectorServiceServer()
         m_d = NULL;
     }
 }
+
+void ZyROSConnectorServiceServer::shutdownServer()
+{
+    boost::mutex::scoped_lock lock(m_mutex);
+    m_shutdownRequested = true;
+}
+
+void ZyROSConnectorServiceServer::serverLoop()
+{
+    ros::Rate service_server_rate(25);
+    m_serverThreadActive = true;
+    while (ros::ok())
+    {
+        if (m_shutdownRequested)
+            break;
+
+        service_server_rate.sleep();
+    }
+
+    m_serverThreadActive = false;
+}
+
+ZyROSConnectorServiceServerWorkerThread::ZyROSConnectorServiceServerWorkerThread(boost::shared_ptr<ZyROSConnectorServiceServer>& service_server): WorkerThread_SingleTask("ROSServiceServerWorker")
+{
+    // Run directly after start call, no initial pause necessary
+    m_start_paused = false;
+    this->m_serviceServer = service_server;
+    m_func = &ZyROSConnectorServiceServer::serverLoop;
+}
+
+void ZyROSConnectorServiceServerWorkerThread::main()
+{
+    msg_info("ZyROSConnectorServiceServerWorkerThread") << "Entering main function of ZyROSConnectorServiceServerWorkerThread";
+    // read and store current thread id
+    m_id = get_current_thread_id();
+
+    // signal that the thread is running
+    signal_state(running);
+
+    // perform on-start custom action
+    on_start();
+
+    if (m_start_paused)
+    {
+        m_request = rq_idle;
+        signal_state(paused);
+    }
+
+    // can throw const boost::thread_interrupted
+    // if interrupt() was call in any interrupt
+    // point
+    try
+    {
+        if (m_serviceServer->advertiseService())
+        {
+            (m_serviceServer.get()->*m_func)();
+            m_serviceServer->stopAdvertisingService();
+        }
+    }
+    catch (const boost::thread_interrupted& ex)
+    {
+        SOFA_UNUSED(ex);
+        msg_warning("ZyROSConnectorServiceServerWorkerThread") << "Thread " << m_name << ": Caught boost::thread_interrupted";
+    }
+
+    // update state
+    signal_state(completed);
+
+    // perform on-exit custom action
+    // after the state was updated
+    on_exit();
+    // clear id
+    m_id = INVALID_THREAD_ID;
+}
+
         """
 
         self.__excluded_service_names = ['rosapi/GetParam'] # These break compilation when included directly under ROS kinetic
@@ -505,7 +589,6 @@ ZyROSConnectorServiceServer::~ZyROSConnectorServiceServer()
             service_source_file.write('\t\t{\n')
             service_source_file.write('\t\tpublic:\n')
             service_source_file.write('\t\t\tstatic boost::shared_ptr<ZyROSServiceClient> createServiceClient(ros::NodeHandlePtr rosNode, const std::string& serviceURI, const std::string& serviceType);\n')
-            # service_source_file.write('// \t\t\tstatic boost::shared_ptr<ZyROSServiceServer> createServiceServer(ros::NodeHandlePtr rosNode, const std::string& serviceURI, const std::string& serviceType);\n')
             service_source_file.write('\t\t};\n')
 
             service_source_file.write('\t}\n')
@@ -514,7 +597,7 @@ ZyROSConnectorServiceServer::~ZyROSConnectorServiceServer()
             service_source_file.close()
 
             service_cpp_file_path = os.path.join(self.__script_directory, '..', 'ZyROSConnector', self.__ros_service_client_generated_cpp_name)
-            self.logger.info('Writing CPP file for services: ' + service_cpp_file_path)
+            self.logger.info('Writing CPP file for service clients: ' + service_cpp_file_path)
             service_cpp_file = open(service_cpp_file_path,  'w+')
 
             service_cpp_file.write('/***********************************************************************\n')
@@ -590,7 +673,6 @@ ZyROSConnectorServiceServer::~ZyROSConnectorServiceServer()
                     service_cpp_file.write('\tif (serviceType == "' + service_cpp_type + '")\n')
                     service_cpp_file.write('\t{\n')
                     service_cpp_file.write('\t\tsupported = true;\n')
-                    # service_cpp_file.write('\t\tconst boost::shared_ptr<ZyROSConnectorServiceClient<' + service_cpp_type + ', ' + service_cpp_request_type + ', ' + service_cpp_response_type + '>> tmp();\n')
                     service_cpp_file.write('\t\tserviceClient.reset(new ZyROSConnectorServiceClient<' + service_cpp_type + ', ' + service_cpp_request_type + ', ' + service_cpp_response_type + '>(rosNode, serviceURI, 10));\n')
                     service_cpp_file.write('\t}\n')
 
@@ -604,13 +686,60 @@ ZyROSConnectorServiceServer::~ZyROSConnectorServiceServer()
             service_cpp_file.write('\t}\n')
 
             service_cpp_file.write('\treturn serviceClient;\n')
-
             service_cpp_file.write('}\n')
+
+            service_cpp_file.close()
+
+            # ROS service server implementation template specializations
+            service_cpp_file_path = os.path.join(self.__script_directory, '..', 'ZyROSConnector', self.__ros_service_server_generated_cpp_name)
+            self.logger.info('Writing CPP file for service servers: ' + service_cpp_file_path)
+            service_cpp_file = open(service_cpp_file_path,  'w+')
+
+            service_cpp_file.write('/***********************************************************************\n')
+            service_cpp_file.write('ROS service definition headers and ROS connector template instantiations.\n')
+            service_cpp_file.write('This file is AUTO-GENERATED during the CMake run.\n')
+            service_cpp_file.write('Please do not modify it by hand.\n')
+            service_cpp_file.write('The contents will be overwritten and re-generated.\n')
+            service_cpp_file.write('************************************************************************/\n')
+            service_cpp_file.write('\n\n')
+
+            service_cpp_file.write(self.__ros_service_server_cpp_source_static + '\n\n')
+
+            for service_type in sorted(header_files_per_service_type.keys()):
+                self.logger.debug('Matching header files for service type \'' + service_type + '\': ' + str(len(header_files_per_service_type[service_type])))
+
+                service_is_excluded = False
+                for excluded_service in self.__excluded_service_names:
+                    if service_type.startswith(excluded_service):
+                        self.logger.warning('Excluding ROS service definition: ' + service_type)
+                        service_is_excluded = True
+
+                if not service_is_excluded:
+                    for header_file in header_files_per_service_type[service_type]:
+                        self.logger.debug('WRITING INCLUDE STATEMENT FOR SERVICE: ' + '#include <' + header_file + '>')
+                        service_cpp_file.write('#include <' + header_file + '>\n')
+
+            for service_type in sorted(header_files_per_service_type.keys()):
+                service_is_excluded = False
+                for excluded_service in self.__excluded_service_names:
+                    if service_type.startswith(excluded_service):
+                        self.logger.warning('Excluding ROS service definition: ' + service_type)
+                        service_is_excluded = True
+
+                if not service_is_excluded:
+                    # These are guaranteed to be of length 2
+                    service_cpp_type = service_type.replace('/', '::')
+                    service_cpp_request_type = service_cpp_type + 'Request'
+                    service_cpp_response_type = service_cpp_type + 'Response'
+                    service_cpp_request_handler = 'ZyROSConnectorServerRequestHandler<' + service_cpp_request_type + ', ' + service_cpp_response_type + '>'
+                    service_cpp_file.write('template class ZyROSConnectorServiceServerImpl<' + service_cpp_request_type + ', ' + service_cpp_response_type + ', ' + service_cpp_request_handler + '>;\n')
+
+            service_cpp_file.close()
 
             # Service server factory method
             # For handling service requests, custom logic has to be provided for gathering response data.
             # There is no obvious way to autogenerate code for that.
-            # But for instancing specializations of ServiceServer methods, this might be necessary.
+            # But for instancing specializations of ServiceServer methods, this is necessary.
 #            service_cpp_file.write('boost::shared_ptr<ZyROSServiceServer> ZyROSConnectorServiceFactory::createServiceServer(ros::NodeHandlePtr rosNode, const std::string& serviceURI, const std::string& serviceType)\n')
 #            service_cpp_file.write('{\n')
 
@@ -650,8 +779,6 @@ ZyROSConnectorServiceServer::~ZyROSConnectorServiceServer()
 #            service_cpp_file.write('\treturn serviceServer;\n')
 
 #            service_cpp_file.write('}\n')
-
-            service_cpp_file.close()
 
 
 if __name__ == '__main__':
