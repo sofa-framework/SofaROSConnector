@@ -22,7 +22,7 @@
 *                                                                             *
 * Contact information: contact@sofa-framework.org                             *
 ******************************************************************************/
-#include "TruPhysicsAnimationLoop.h"
+#include "ZyPhysicsAnimationLoop.h"
 #include <sofa/core/visual/VisualParams.h>
 
 #include <SofaConstraint/LCPConstraintSolver.h>
@@ -43,10 +43,6 @@
 
 #include <sofa/simulation/Node.h>
 
-#ifdef TRUPHYSICS_USE_ROS_SUPPORT
-#include <std_msgs/Bool.h>
-#endif
-
 namespace sofa
 {
 
@@ -59,20 +55,17 @@ namespace animationloop
 using namespace core::behavior;
 using namespace sofa::component::container;
 
-SOFA_DECL_CLASS(TruPhysicsAnimationLoop)
+SOFA_DECL_CLASS(ZyPhysicsAnimationLoop)
 
-int TruPhysicsAnimationLoopClass = core::RegisterObject("truPhysics animationloop")
-        .add< TruPhysicsAnimationLoop >()
-        .addAlias("TruPhysicsFreeMotionMasterSolver")
+int ZyPhysicsAnimationLoopClass = core::RegisterObject("ZyPhysicsAnimationLoop")
+        .add< ZyPhysicsAnimationLoop >()
         ;
 
 
-TruPhysicsAnimationLoop::TruPhysicsAnimationLoop(simulation::Node* gnode)
+ZyPhysicsAnimationLoop::ZyPhysicsAnimationLoop(simulation::Node* gnode)
     : FreeMotionAnimationLoop(gnode)
-    //, intersectionReset(initData(&intersectionReset, false, "intersectionReset", "TruPhysics: set to true to reset a simulation step in which a contact with intersecting triangles occurs."))
     , toolHandler(NULL)
-    //, objectHandler(NULL)
-#ifdef TRUPHYSICS_USE_ROS_SUPPORT
+#ifdef ZY_USE_ROS_SUPPORT
     , publishingHandler()
     , connectionManagerFound(false)
     , timePublisher(NULL)
@@ -82,110 +75,87 @@ TruPhysicsAnimationLoop::TruPhysicsAnimationLoop(simulation::Node* gnode)
     , velocityApproximatorFound(false)
     , velocityApproximationHandler()
     , grippingFound(false)
-    , grippingHandler()
-    //, intersectionOccurred(false)
-    //, tmpResetPos()
-    //, tmpResetVel()
-    //, tmpResetFreePos()
-    //, tmpResetFreeVel()
-    //, resetVecsInitialized(false)
-    //, resetPointSet(false)
-    //, oneResetPointSet(false)
-    //, resetOccurred(false)
-    //, resetCount(0)
 {
+
 }
 
-void TruPhysicsAnimationLoop::init()
+void ZyPhysicsAnimationLoop::init()
 {
     Inherit::init();
 
-#ifndef SOFA_FLOAT
-    toolHandler = getContext()->getRootContext()->get<sofa::component::controller::TruPhysicsColladaToolHandler<Rigid3dTypes> >();
-#else
-    toolHandler = getContext()->getRootContext()->get<sofa::component::controller::TruPhysicsColladaToolHandler<Rigid3fTypes>>();
-#endif
+    toolHandler = getContext()->getRootContext()->get<sofa::component::controller::ZyColladaToolHandler<Rigid3Types> >();
 
-    simAnalyzer = getContext()->getRootContext()->get< TruPhysics::SimulationAnalysis::TruSimulationAnalyzer >();
-
-    //objectHandler = getContext()->getRootContext()->get< sofa::component::controller::TruPhysicsObjectManager >();
+    simAnalyzer = getContext()->getRootContext()->get< Zyklio::SimulationAnalysis::ZyROSSimulationAnalyzer >();
 
     if (toolHandler)
     {
-        std::cout << "(TruPhysicsAnimationLoop::init) Found TruPhysicsColladaToolHandler " << toolHandler->getName() << std::endl;
+        std::cout << "(ZyPhysicsAnimationLoop::init) Found ZyColladaToolHandler " << toolHandler->getName() << std::endl;
     }
 
     if (simAnalyzer)
     {
-        std::cout << "(TruPhysicsAnimationLoop::init) Found TruSimulationAnalyzer " << simAnalyzer->getName() << std::endl;
+        std::cout << "(ZyPhysicsAnimationLoop::init) Found TruSimulationAnalyzer " << simAnalyzer->getName() << std::endl;
     }
-
-    /*if (objectHandler)
-    {
-        std::cout << "(TruPhysicsAnimationLoop::init) Found TruPhysicsObjectManager " << objectHandler->getName() << std::endl;
-    }*/
-
 }
 
-void TruPhysicsAnimationLoop::bwdInit()
+void ZyPhysicsAnimationLoop::bwdInit()
 {
     Inherit::bwdInit();
 
-#ifdef TRUPHYSICS_USE_ROS_SUPPORT
+#ifdef ZY_USE_ROS_SUPPORT
     connectionManagerFound = publishingHandler.setROSConnectionManagerByContext(getContext());
     
     if (connectionManagerFound)
     {
-        timePublisher = new TruPhysics::ROSConnector::TruRosConnectorTopicPublisher<std_msgs::Float32>(publishingHandler.getROSNodeHandle(), "sofaSimTime");
+        timePublisher = new Zyklio::ROSConnector::TruRosConnectorTopicPublisher<std_msgs::Float32>(publishingHandler.getROSNodeHandle(), "sofaSimTime");
         publishingHandler.registerPublisher(timePublisher);
 
-        rigidPosRotPublisher = new TruPhysics::ROSConnector::TruRosConnectorTopicPublisher<std_msgs::Float32MultiArray>(publishingHandler.getROSNodeHandle(), "sofaRigidPositionRotation");
+        rigidPosRotPublisher = new Zyklio::ROSConnector::TruRosConnectorTopicPublisher<std_msgs::Float32MultiArray>(publishingHandler.getROSNodeHandle(), "sofaRigidPositionRotation");
         publishingHandler.registerPublisher(rigidPosRotPublisher);
 
         /*
         // Test code for dealing with all subscribers to a specific topic (not sure if this is needed)
-        std::cout << "(TruPhysicsAnimationLoop::bwdInit) Looking for std_msgs/Bool listeners:" << std::endl;
+        std::cout << "(ZyPhysicsAnimationLoop::bwdInit) Looking for std_msgs/Bool listeners:" << std::endl;
         boolSubscribers = publishingHandler.getSubscribers<std_msgs::Bool>();
 
-        for (std::vector< boost::shared_ptr< TruPhysics::ROSConnector::TruRosConnectorTopicSubscriber<std_msgs::Bool> > >::iterator 
+        for (std::vector< boost::shared_ptr< Zyklio::ROSConnector::TruRosConnectorTopicSubscriber<std_msgs::Bool> > >::iterator
             it = boolSubscribers.begin();
             it != boolSubscribers.end();
             it++)
         {
-            std::cout << "(TruPhysicsAnimationLoop::bwdInit) Found ROS listener of type " << (*it)->getMessageType() << ", for topic " << (*it)->getTopic() << std::endl;
+            std::cout << "(ZyPhysicsAnimationLoop::bwdInit) Found ROS listener of type " << (*it)->getMessageType() << ", for topic " << (*it)->getTopic() << std::endl;
             connectionVec.push_back
             (
-                (*it)->getSignal().connect(boost::bind(&TruPhysicsAnimationLoop::handleBool, this))
+                (*it)->getSignal().connect(boost::bind(&ZyPhysicsAnimationLoop::handleBool, this))
             );
         }
         */
 
-        std::cout << "(TruPhysicsAnimationLoop::bwdInit) Looking for std_msgs/Bool listener:" << std::endl;
+        std::cout << "(ZyPhysicsAnimationLoop::bwdInit) Looking for std_msgs/Bool listener:" << std::endl;
         testBoolSubscriber = publishingHandler.getSubscriber<std_msgs::Bool>("/testBool");
         if (testBoolSubscriber)
         {
-            std::cout << "(TruPhysicsAnimationLoop::bwdInit) Found ROS listener of type " << testBoolSubscriber->getMessageType() << ", for topic " << testBoolSubscriber->getTopic() << std::endl;
+            std::cout << "(ZyPhysicsAnimationLoop::bwdInit) Found ROS listener of type " << testBoolSubscriber->getMessageType() << ", for topic " << testBoolSubscriber->getTopic() << std::endl;
             connectionVec.push_back
             (
-                testBoolSubscriber->getSignal().connect(boost::bind(&TruPhysicsAnimationLoop::handleBool, this))
+                testBoolSubscriber->getSignal().connect(boost::bind(&ZyPhysicsAnimationLoop::handleBool, this))
             );
         }
-        std::cout << "(TruPhysicsAnimationLoop::bwdInit) Stopped looking for std_msgs/Bool listener" << std::endl;
+        std::cout << "(ZyPhysicsAnimationLoop::bwdInit) Stopped looking for std_msgs/Bool listener" << std::endl;
 
     }
 #endif
 
     velocityApproximatorFound = velocityApproximationHandler.setVelocityApproximatorByContext(getContext());
-    grippingFound = grippingHandler.setTruGrippingByContext(getContext());
-    //simAnalyzerFound = simAnalyzerHandler.setSimAnalyzerByContext(getContext());
+    grippingFound = grippingHandler.setZyGrippingByContext(getContext());
 }
 
-void TruPhysicsAnimationLoop::reset()
+void ZyPhysicsAnimationLoop::reset()
 {
     UpdateObbTreeGpuPositions();
 }
 
-void TruPhysicsAnimationLoop::UpdateObbTreeGpuPositions()
+void ZyPhysicsAnimationLoop::UpdateObbTreeGpuPositions()
 {
 	simulation::Node* root = dynamic_cast<simulation::Node*>(getContext());
 	if (root == NULL) return;
@@ -193,15 +163,15 @@ void TruPhysicsAnimationLoop::UpdateObbTreeGpuPositions()
 	std::vector<MechanicalObject<RigidTypes>*> mechanicalObjects;
 	root->getTreeObjects<MechanicalObject<RigidTypes> >(&mechanicalObjects);
 
-#ifdef TRUPHYSICSANIMATIONLOOP_STEP_DEBUG
-    std::cout << "TruPhysicsAnimationLoop::step(): MechObj Positions at end of step" << std::endl;
+#ifdef ZyPhysicsAnimationLoop_STEP_DEBUG
+    std::cout << "ZyPhysicsAnimationLoop::step(): MechObj Positions at end of step" << std::endl;
 #endif
     for (std::vector<MechanicalObject<RigidTypes>*>::const_iterator it = mechanicalObjects.begin(); it != mechanicalObjects.end(); it++)
     {
         defaulttype::Vec3d objPosition(((*it)->getPosition())[0][0], ((*it)->getPosition())[0][1], ((*it)->getPosition())[0][2]);
         defaulttype::Quaternion objOrientation(((*it)->getPosition())[0][3], ((*it)->getPosition())[0][4], ((*it)->getPosition())[0][5], ((*it)->getPosition())[0][6]);
 
-#ifdef TRUPHYSICSANIMATIONLOOP_STEP_DEBUG
+#ifdef ZyPhysicsAnimationLoop_STEP_DEBUG
         std::cout << " * " << (*it)->getName() << ": " << objPosition << ", orientation = " << objOrientation << std::endl;
 #endif
         BaseContext* mechObjContext = (*it)->getContext();
@@ -223,41 +193,13 @@ void TruPhysicsAnimationLoop::UpdateObbTreeGpuPositions()
     }
 }
 
-TruPhysicsAnimationLoop::~TruPhysicsAnimationLoop()
+ZyPhysicsAnimationLoop::~ZyPhysicsAnimationLoop()
 {
     if (defaultSolver != NULL)
         defaultSolver.reset();
-
-    for (std::vector < boost::signals2::connection >::iterator it = connectionVec.begin(); it != connectionVec.end(); it++)
-    {
-        if ((*it).connected())
-        {
-            (*it).disconnect();
-        }
-    }
-
-    /*if (timePublisher)
-    {
-        delete timePublisher;
-    }
-
-    if (rigidPosRotPublisher)
-    {
-        delete rigidPosRotPublisher;
-    }*/
 }
 
-//bool TruPhysicsAnimationLoop::getIntersectionOccurred() const
-//{
-//    return intersectionOccurred;
-//}
-//
-//void TruPhysicsAnimationLoop::setIntersectionOccurred(bool value)
-//{
-//    intersectionOccurred = value;
-//}
-
-void TruPhysicsAnimationLoop::initTmpResetVecs(simulation::common::VectorOperations& vop, const sofa::core::ExecParams* params)
+void ZyPhysicsAnimationLoop::initTmpResetVecs(simulation::common::VectorOperations& vop, const sofa::core::ExecParams* params)
 {
     if (!resetVecsInitialized) {
         // allocate and initialize only once
@@ -285,7 +227,7 @@ void TruPhysicsAnimationLoop::initTmpResetVecs(simulation::common::VectorOperati
     }
 }
 
-void TruPhysicsAnimationLoop::setTmpResetPoint(simulation::common::VectorOperations& vop, sofa::core::behavior::MultiVecCoord& pos, sofa::core::behavior::MultiVecDeriv& vel, sofa::core::behavior::MultiVecCoord& freePos, sofa::core::behavior::MultiVecDeriv& freeVel)
+void ZyPhysicsAnimationLoop::setTmpResetPoint(simulation::common::VectorOperations& vop, sofa::core::behavior::MultiVecCoord& pos, sofa::core::behavior::MultiVecDeriv& vel, sofa::core::behavior::MultiVecCoord& freePos, sofa::core::behavior::MultiVecDeriv& freeVel)
 {
     if (resetVecsInitialized)
     {
@@ -330,14 +272,14 @@ void TruPhysicsAnimationLoop::setTmpResetPoint(simulation::common::VectorOperati
     }
 }
 
-void TruPhysicsAnimationLoop::resetToTmpResetPoint(simulation::common::VectorOperations& vop, simulation::common::MechanicalOperations& mop, sofa::core::behavior::MultiVecCoord& pos, sofa::core::behavior::MultiVecDeriv& vel, sofa::core::behavior::MultiVecCoord& freePos, sofa::core::behavior::MultiVecDeriv& freeVel)
+void ZyPhysicsAnimationLoop::resetToTmpResetPoint(simulation::common::VectorOperations& vop, simulation::common::MechanicalOperations& mop, sofa::core::behavior::MultiVecCoord& pos, sofa::core::behavior::MultiVecDeriv& vel, sofa::core::behavior::MultiVecCoord& freePos, sofa::core::behavior::MultiVecDeriv& freeVel)
 {
     if (resetPointSet)
     {
         //std::cout << "Reset to earlier position. WARNING resets to two steps before last intersection." << std::endl;
         std::cout << "Reset to earlier position." << std::endl;
 
-        std::cout << "writing : " << tmpResetPos ;
+        std::cout << "writing : " << tmpResetPos;
         std::cout << "into: " << pos << std::endl;
 
         vop.v_eq(pos.id(),tmpResetPos.id());
@@ -349,12 +291,12 @@ void TruPhysicsAnimationLoop::resetToTmpResetPoint(simulation::common::VectorOpe
 
         std::cout << "now pos is: " << pos << std::endl;
 
-        mop.propagateXAndV(pos,vel,true);
-        mop.propagateXAndV(freePos,freeVel,true);
+        mop.propagateXAndV(pos,vel);
+        mop.propagateXAndV(freePos,freeVel);
     }
 }
 
-//void TruPhysicsAnimationLoop::step(const sofa::core::ExecParams* params /* PARAMS FIRST */, double dt)
+//void ZyPhysicsAnimationLoop::step(const sofa::core::ExecParams* params /* PARAMS FIRST */, double dt)
 //{
 //
 //    // RealTime
@@ -369,8 +311,8 @@ void TruPhysicsAnimationLoop::resetToTmpResetPoint(simulation::common::VectorOpe
 //	std::vector<MechanicalObject<RigidTypes>*> mechanicalObjects;
 //	root->getTreeObjects<MechanicalObject<RigidTypes> >(&mechanicalObjects);
 //
-//#ifdef TRUPHYSICSANIMATIONLOOP_STEP_DEBUG
-//	std::cout << "TruPhysicsAnimationLoop::step(): MechObj Positions at beginning of step" << std::endl;
+//#ifdef ZyPhysicsAnimationLoop_STEP_DEBUG
+//	std::cout << "ZyPhysicsAnimationLoop::step(): MechObj Positions at beginning of step" << std::endl;
 //	for (std::vector<MechanicalObject<RigidTypes>*>::const_iterator it = mechanicalObjects.begin(); it != mechanicalObjects.end(); it++)
 //	{
 //		defaulttype::Vec3d objPosition(((*it)->getPosition())[0][0], ((*it)->getPosition())[0][1], ((*it)->getPosition())[0][2]);
@@ -488,14 +430,14 @@ void TruPhysicsAnimationLoop::resetToTmpResetPoint(simulation::common::VectorOpe
 //
 //	if (displayTime.getValue())
 //	{
-//		sout << " >>>>> Begin display TruPhysicsAnimationLoop time" << sendl;
+//		sout << " >>>>> Begin display ZyPhysicsAnimationLoop time" << sendl;
 //		sout << " Free Motion " << ((double)CTime::getTime() - time) * timeScale << " ms" << sendl;
 //
 //		time = (double)CTime::getTime();
 //	}
 //
 //	if (f_printLog.getValue())
-//        sout << "TruPhysicsAnimationLoop: computeCollision START" << sendl;
+//        sout << "ZyPhysicsAnimationLoop: computeCollision START" << sendl;
 //
 //	// Collision detection and response creation
 //	AdvancedTimer::stepBegin("Collision");
@@ -503,7 +445,7 @@ void TruPhysicsAnimationLoop::resetToTmpResetPoint(simulation::common::VectorOpe
 //    AdvancedTimer::stepEnd("Collision");
 //
 //    if (f_printLog.getValue())
-//        sout << "TruPhysicsAnimationLoop: computeCollision END" << sendl;
+//        sout << "ZyPhysicsAnimationLoop: computeCollision END" << sendl;
 //
 //    // for simulation reset
 //
@@ -632,7 +574,7 @@ void TruPhysicsAnimationLoop::resetToTmpResetPoint(simulation::common::VectorOpe
 //	if (displayTime.getValue())
 //	{
 //		sout << " contactCorrections " << ((double)CTime::getTime() - time) * timeScale << " ms" << sendl;
-//		sout << "<<<<<< End display TruPhysicsAnimationLoop time." << sendl;
+//		sout << "<<<<<< End display ZyPhysicsAnimationLoop time." << sendl;
 //	}
 //
 //	simulation::MechanicalEndIntegrationVisitor endVisitor(params /* PARAMS FIRST */, dt);
@@ -797,7 +739,7 @@ void TruPhysicsAnimationLoop::resetToTmpResetPoint(simulation::common::VectorOpe
 //	simulation::Visitor::printCloseNode("Step");
 //#endif
 //
-//#ifdef TRUPHYSICSANIMATIONLOOP_DEBUG
+//#ifdef ZyPhysicsAnimationLoop_DEBUG
 //    std::cout << "===== Timing data =====" << std::endl;
 //	sofa::helper::AdvancedTimer::dumpAll();
 //    std::cout << "===== Timing data =====" << std::endl;
@@ -826,7 +768,7 @@ void TruPhysicsAnimationLoop::resetToTmpResetPoint(simulation::common::VectorOpe
 //
 //}
 
-void TruPhysicsAnimationLoop::tpHandleTool(simulation::common::MechanicalOperations& mop, MultiVecCoord& pos/*, MultiVecCoord& freePos*/)
+void ZyPhysicsAnimationLoop::zyHandleTool(simulation::common::MechanicalOperations& mop, MultiVecCoord& pos/*, MultiVecCoord& freePos*/)
 {
     if (toolHandler)
     {
@@ -834,7 +776,7 @@ void TruPhysicsAnimationLoop::tpHandleTool(simulation::common::MechanicalOperati
     }
 }
 
-//void TruPhysicsAnimationLoop::tpHandleObject(simulation::common::MechanicalOperations& mop, MultiVecCoord& pos/*, MultiVecCoord& freePos*/)
+//void ZyPhysicsAnimationLoop::tpHandleObject(simulation::common::MechanicalOperations& mop, MultiVecCoord& pos/*, MultiVecCoord& freePos*/)
 //{
 //    if (objectHandler)
 //    {
@@ -842,12 +784,12 @@ void TruPhysicsAnimationLoop::tpHandleTool(simulation::common::MechanicalOperati
 //    }
 //}
 
-void TruPhysicsAnimationLoop::tpRealTimeStart()
+void ZyPhysicsAnimationLoop::zyRealTimeStart()
 {
     // RealTime
     clock_t timeStart = clock();
     // asd
-    //sofa::component::controller::TruPhysicsObjectManager<Rigid3dTypes>* banane = getObjectHandler();
+    //sofa::component::controller::ZyklioObjectManager<Rigid3dTypes>* banane = getObjectHandler();
 
     //if (banane)
     //{
@@ -879,10 +821,10 @@ void TruPhysicsAnimationLoop::tpRealTimeStart()
     // qwe
 }
 
-void TruPhysicsAnimationLoop::tpRealTimeEnd(double dt)
+void ZyPhysicsAnimationLoop::zyRealTimeEnd(double dt)
 {
     // RealTime
-    if (this->gnode->getRt()) {
+    if (this->gnode->getDt()) {
         clock_t timePassed = clock() - timeStart;
         double wait = dt - ((double)timePassed) / CLOCKS_PER_SEC;
         std::cout << "RealTime Active. Waiting: " << wait << std::endl;
@@ -900,14 +842,14 @@ void TruPhysicsAnimationLoop::tpRealTimeEnd(double dt)
     }
 }
 
-#ifdef TRUPHYSICS_USE_ROS_SUPPORT
-void TruPhysicsAnimationLoop::tpHandleROSMessagesStepBegin()
+#ifdef ZY_USE_ROS_SUPPORT
+void ZyPhysicsAnimationLoop::tpHandleROSMessagesStepBegin()
 {
 }
 #endif
 
-#ifdef TRUPHYSICS_USE_ROS_SUPPORT
-void TruPhysicsAnimationLoop::tpHandleROSMessagesStepEnd()
+#ifdef ZY_USE_ROS_SUPPORT
+void ZyPhysicsAnimationLoop::tpHandleROSMessagesStepEnd()
 {
     if (connectionManagerFound)
     {
@@ -970,7 +912,7 @@ void TruPhysicsAnimationLoop::tpHandleROSMessagesStepEnd()
 }
 #endif
 
-void TruPhysicsAnimationLoop::tpApprox(simulation::common::MechanicalOperations& mop, sofa::core::behavior::MultiVecCoord& pos)
+void ZyPhysicsAnimationLoop::zyApprox(simulation::common::MechanicalOperations& mop, sofa::core::behavior::MultiVecCoord& pos)
 {
     if (velocityApproximatorFound)
     {
@@ -978,7 +920,7 @@ void TruPhysicsAnimationLoop::tpApprox(simulation::common::MechanicalOperations&
     }
 }
 
-void TruPhysicsAnimationLoop::tpGrip(simulation::common::MechanicalOperations& mop, sofa::core::behavior::MultiVecCoord& pos)
+void ZyPhysicsAnimationLoop::zyGrip(simulation::common::MechanicalOperations& mop, sofa::core::behavior::MultiVecCoord& pos)
 {
     if (grippingFound)
     {
@@ -986,17 +928,12 @@ void TruPhysicsAnimationLoop::tpGrip(simulation::common::MechanicalOperations& m
     }
 }
 
-void TruPhysicsAnimationLoop::tpSimAnalyze()
+void ZyPhysicsAnimationLoop::zySimAnalyze()
 {
     if (simAnalyzer)
     {
         simAnalyzer->analyzeSimulationStateAndPublishResult();
     }
-}
-
-void TruPhysicsAnimationLoop::handleBool()
-{
-    std::cout << "TruPhysicsAnimationLoop saw a Bool! It was: " << testBoolSubscriber->getLatestMessage() << std::endl;
 }
 
 } // namespace animationloop

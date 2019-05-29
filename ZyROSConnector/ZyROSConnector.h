@@ -18,10 +18,6 @@
 
 #include <ros/callback_queue.h>
 
-#include <sensor_msgs/JointState.h>
-#include <geometry_msgs/Pose.h>
-#include <std_msgs/Float32.h>
-
 #include <sofa/core/objectmodel/BaseObject.h>
 #include <sofa/core/objectmodel/Data.h>
 
@@ -44,7 +40,7 @@ namespace Zyklio
     {
         // Data members in private implementation
         class ZyklioRosConnectorPrivate;
-        class SOFA_ZY_ROS_CONNECTOR_API ZyROSConnector : public sofa::core::objectmodel::BaseObject /*: public sofa::simulation::SimulationConcurrentComponent*/
+        class SOFA_ZY_ROS_CONNECTOR_API ZyROSConnector : public sofa::core::objectmodel::BaseObject
         {
             public:
                 SOFA_CLASS(ZyROSConnector, sofa::core::objectmodel::BaseObject);

@@ -32,7 +32,7 @@ bool ZySimulationAnalyzerHandler::setSimAnalyzerByContext(sofa::core::objectmode
     }
     else
     {
-        msg_warning("ZySimulationAnalyzerHandler") << "Could not find a ZyROSSimulationAnalyzer instance, cannot publish messages." << std::endl;
+        msg_warning("ZySimulationAnalyzerHandler") << "Could not find a ZyROSSimulationAnalyzer instance, cannot publish messages.";
         return false;
     }    
 }

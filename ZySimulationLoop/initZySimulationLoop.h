@@ -28,9 +28,9 @@
 #include <sofa/helper/system/config.h>
 
 # ifdef SOFA_BUILD_ZYSOFA_CONTROLLERS
-#   define SOFA_ZYSOFA_CONTROLLERS_API SOFA_EXPORT_DYNAMIC_LIBRARY
+#   define SOFA_ZYSOFA_SIMULATION_LOOP_API SOFA_EXPORT_DYNAMIC_LIBRARY
 # else
-#   define SOFA_ZYSOFA_CONTROLLERS_API SOFA_IMPORT_DYNAMIC_LIBRARY
+#   define SOFA_ZYSOFA_SIMULATION_LOOP_API SOFA_IMPORT_DYNAMIC_LIBRARY
 # endif
 
 namespace Zyklio
@@ -38,12 +38,12 @@ namespace Zyklio
     namespace GripperHandling
 	{
 		extern "C" {
-            SOFA_ZYSOFA_CONTROLLERS_API void initExternalModule();
-            SOFA_ZYSOFA_CONTROLLERS_API const char* getModuleName();
-            SOFA_ZYSOFA_CONTROLLERS_API const char* getModuleVersion();
-            SOFA_ZYSOFA_CONTROLLERS_API const char* getModuleLicense();
-            SOFA_ZYSOFA_CONTROLLERS_API const char* getModuleDescription();
-            SOFA_ZYSOFA_CONTROLLERS_API const char* getModuleComponentList();
+            SOFA_ZYSOFA_SIMULATION_LOOP_API void initExternalModule();
+            SOFA_ZYSOFA_SIMULATION_LOOP_API const char* getModuleName();
+            SOFA_ZYSOFA_SIMULATION_LOOP_API const char* getModuleVersion();
+            SOFA_ZYSOFA_SIMULATION_LOOP_API const char* getModuleLicense();
+            SOFA_ZYSOFA_SIMULATION_LOOP_API const char* getModuleDescription();
+            SOFA_ZYSOFA_SIMULATION_LOOP_API const char* getModuleComponentList();
 		}
 	}
 }

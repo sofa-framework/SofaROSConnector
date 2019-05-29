@@ -8,10 +8,10 @@
 #endif
 
 #include "init_ZyROSPublishingHandler.h"
-#include "ZyROSConnectorTopicPublisher.h"
+#include <ZyROSConnectorTopicSubscriber.h>
+#include <ZyROSConnectorTopicPublisher.h>
 
 #include <sofa/core/objectmodel/BaseContext.h>
-#include "ZyROSConnectorTopicSubscriber.h"
 
 namespace Zyklio
 {

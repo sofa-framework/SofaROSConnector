@@ -114,119 +114,6 @@ void ZyROSConnectionManager::bwdInit()
 {
     msg_info("ZyROSConnectionManager") << "ZyROSConnectionManager::bwdInit() begin";
 
-    if (m_ros_connector)
-    {
-        std::string rosTopics_Sequence = this->m_rosTopics.getValue();
-        if (!rosTopics_Sequence.empty())
-        {
-            boost::regex entrySplit(";");
-            boost::regex topicTypeSplit(":::");
-
-            boost::sregex_token_iterator i(rosTopics_Sequence.begin(), rosTopics_Sequence.end(), entrySplit, -1);
-            boost::sregex_token_iterator j;
-            msg_info("ZyROSConnectionManager") << "Detected ROS topics: ";
-            while (i != j)
-            {
-                std::string topicEntryStr = i->str();
-                msg_info("ZyROSConnectionManager") << "   - " << *i++ << ": ";
-                boost::sregex_token_iterator e_i(topicEntryStr.begin(), topicEntryStr.end(), topicTypeSplit, -1);
-                boost::sregex_token_iterator e_j;
-                unsigned int numTokens = 0;
-
-                std::string rosTopic;
-                std::string messageType;
-                while (e_i != e_j)
-                {
-                    if (numTokens == 0)
-                    {
-                        msg_info("ZyROSConnectionManager") << " ROS topic: " << *e_i << " ";
-                        rosTopic = *e_i;
-                    }
-                    else if (numTokens == 1)
-                    {
-                        msg_info("ZyROSConnectionManager") << " Message type: " << *e_i << " ";
-                        messageType = *e_i;
-                    }
-                    *e_i++;
-                    numTokens++;
-
-                    msg_info("ZyROSConnectionManager");
-                    if (!rosTopic.empty() && !messageType.empty())
-                    {
-                        //this->m_subscribedRosTopics.push_back(std::make_pair(rosTopic, messageType));
-
-                        msg_info("ZyROSConnectionManager") << "Trying to start listener for topic " << rosTopic << " of type " << messageType;
-
-                        bool supported = false;
-
-                        if (messageType.compare("std_msgs::Bool") == 0)
-                        {
-                            supported = true;
-
-                            //boost::shared_ptr<ZyROSConnectorTopicSubscriber<std_msgs::Bool>> tmp(new ZyROSConnectorTopicSubscriber<std_msgs::Bool>(m_ros_connector->getROSNode(), rosTopic));
-                            //boost::shared_ptr<ZyROSConnectorTopicSubscriber<std_msgs::Bool>> tmp(new ZyROSConnectorTopicSubscriber<std_msgs::Bool>(m_ros_connector->getROSNode(), rosTopic, 50 , true));
-
-                            // "manually":
-                            /*m_ros_connector->addTopicListener(boost::dynamic_pointer_cast<ZyROSListener>(tmp));
-                            topicListeners.push_back(boost::dynamic_pointer_cast<ZyROSListener>(tmp)); */
-
-                            // variant 1:
-                            //addSubscriber(boost::dynamic_pointer_cast<ZyROSListener>(tmp));
-                            
-                            // variant 2:
-                            //addSubscriber<std_msgs::Bool>(tmp);
-
-                            //////
-                            // variant 3 (doesn't need the boost::shared_ptr<ZyROSConnectorTopicSubscriber<std_msgs::Bool>> at all):
-                            subscribeToTopic<std_msgs::Bool>(rosTopic);
-                        }
-                        else if (messageType.compare("std_msgs::Float32") == 0)
-                        {
-                            supported = true;
-
-                            const boost::shared_ptr<ZyROSConnectorTopicSubscriber<std_msgs::Float32>> tmp(new ZyROSConnectorTopicSubscriber<std_msgs::Float32>(m_ros_connector->getROSNode(), rosTopic, 50, true));
-
-                            m_ros_connector->addTopicListener(boost::dynamic_pointer_cast<ZyROSListener>(tmp));
-                            topicListeners.push_back(boost::dynamic_pointer_cast<ZyROSListener>(tmp));
-                        }
-                        else if (messageType.compare("std_msgs::Float64MultiArray") == 0)
-                        {
-                            supported = true;
-
-                            const boost::shared_ptr<ZyROSConnectorTopicSubscriber<std_msgs::Float64MultiArray>> tmp(new ZyROSConnectorTopicSubscriber<std_msgs::Float64MultiArray>(m_ros_connector->getROSNode(), rosTopic, 50, true));
-
-                            m_ros_connector->addTopicListener(boost::dynamic_pointer_cast<ZyROSListener>(tmp));
-                            topicListeners.push_back(boost::dynamic_pointer_cast<ZyROSListener>(tmp));
-                        }
-                        else if (messageType.compare("std_msgs::String") == 0)
-                        {
-                            supported = true;
-
-                            const boost::shared_ptr<ZyROSConnectorTopicSubscriber<std_msgs::String>> tmp(new ZyROSConnectorTopicSubscriber<std_msgs::String>(m_ros_connector->getROSNode(), rosTopic, 50, true));
-
-                            m_ros_connector->addTopicListener(boost::dynamic_pointer_cast<ZyROSListener>(tmp));
-                            topicListeners.push_back(boost::dynamic_pointer_cast<ZyROSListener>(tmp));
-                        }
-                        else if (messageType.compare("sensor_msgs::JointState") == 0)
-                        {
-                            supported = true;
-
-                            const boost::shared_ptr<ZyROSConnectorTopicSubscriber<sensor_msgs::JointState>> tmp(new ZyROSConnectorTopicSubscriber<sensor_msgs::JointState>(m_ros_connector->getROSNode(), rosTopic, 50, true));
-                            m_ros_connector->addTopicListener(boost::dynamic_pointer_cast<ZyROSListener>(tmp));
-                            topicListeners.push_back(boost::dynamic_pointer_cast<ZyROSListener>(tmp));
-                        }
-
-                        if (!supported)
-                        {
-                            msg_info("ZyROSConnectionManager") << "Unsupported message type: " << messageType;
-                        }
-                    }
-                }
-                msg_info("ZyROSConnectionManager");
-            }
-        }
-    }
-
     ros::master::V_TopicInfo topinf;
     ros::V_string nodeStr;
     std::stringstream tmpmsg;
@@ -267,15 +154,6 @@ void ZyROSConnectionManager::bwdInit()
 void ZyROSConnectionManager::reset()
 {
     msg_info("ZyROSConnectionManager") << "ZyROSConnectionManager::reset()";
-    /*if (m_ros_connector)
-      {
-          if (ros::isStarted())
-          {
-              m_ros_connector->pauseComponent();
-          }
-          m_ros_connector->setRosMasterURI(m_rosMasterURI.getValue());
-          m_ros_connector->resumeComponent();
-      }*/
 }
 
 template <class MessageType>

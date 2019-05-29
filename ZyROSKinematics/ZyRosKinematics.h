@@ -43,6 +43,8 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include "ZyVelocityApproximationHandler.h"
 
+#include <sensor_msgs/JointState.h>
+
 namespace Zyklio
 {
     namespace ROSKinematics

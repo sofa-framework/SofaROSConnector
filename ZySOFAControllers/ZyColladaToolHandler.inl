@@ -46,11 +46,9 @@ namespace sofa
             ZyColladaToolHandler<DataTypes>::ZyColladaToolHandler()
                 : armatureEndStateV()
                 , toolStateV()
-                //, robotController(NULL)
                 , oldPosV()
-                , armatureEndNodePath(initData(&armatureEndNodePath, "armatureEndNodePath", "TruPhysics: Path to the end of the kinematics chain. Start with first node under root, separate nodes with slashes, don't put a slash at the end.")) // TODO: replace this with the proper SOFA way to do this
-                , toolNodePath(initData(&toolNodePath, "toolNodePath", "TruPhysics: Path to the root node of the tool. Start with first node under root, separate nodes with slashes, don't put a slash at the end.")) // TODO: replace this with the proper SOFA way to do this
-                //, robotControllerNodePath(initData(&robotControllerNodePath, "robotControllerNodePath", "TruPhysics: Path to the robot controller. Start with first node under root, separate nodes with slashes, don't put a slash at the end."))
+                , armatureEndNodePath(initData(&armatureEndNodePath, "armatureEndNodePath", "Zyklio: Path to the end of the kinematics chain. Start with first node under root, separate nodes with slashes, don't put a slash at the end.")) // TODO: replace this with the proper SOFA way to do this
+                , toolNodePath(initData(&toolNodePath, "toolNodePath", "Zyklio: Path to the root node of the tool. Start with first node under root, separate nodes with slashes, don't put a slash at the end.")) // TODO: replace this with the proper SOFA way to do this
                 , canHandleTools(false)
             {
             }
@@ -75,15 +73,12 @@ namespace sofa
                     toolStateV.resize(armatureEndNodePathV.size());
 
                     canHandleTools = true;
-                    for (unsigned int stateI = 0; stateI < armatureEndNodePathV.size() /* == toolNodePathV.size() */; stateI++)
+                    for (unsigned int stateI = 0; stateI < armatureEndNodePathV.size(); stateI++)
                     {
 
                         // <!-- TODO: replace this with the proper SOFA way to do this 
-                        std::cout << "(ZyColladaToolHandler::bwdInit) armatureEndNodePath: " << armatureEndNodePathV.at(stateI) << std::endl;
-                        std::cout << "(ZyColladaToolHandler::bwdInit) toolNodePath: " << toolNodePathV.at(stateI) << std::endl;
-                        //std::cout << "(ZyColladaToolHandler::bwdInit) robotControllerNodePath: " << robotControllerNodePath.getValue() << std::endl;
-                        std::cout << "(ZyColladaToolHandler::bwdInit) (if it crashes now, one of those is probably wrong)" << std::endl;
-
+                        msg_info("ZyColladaToolHandler") << "armatureEndNodePath: " << armatureEndNodePathV.at(stateI);
+                        msg_info("ZyColladaToolHandler") << "toolNodePath: " << toolNodePathV.at(stateI);
                         {
                             std::istringstream readPathStream(armatureEndNodePathV.at(stateI));
 
@@ -128,36 +123,27 @@ namespace sofa
 
                         if (armatureEndStateV.at(stateI))
                         {
-                            std::cout << "(ZyColladaToolHandler::bwdInit) End of kinematics chain (tool attachment point): " << armatureEndStateV.at(stateI)->getName() << std::endl;
+                            msg_info("ZyColladaToolHandler") << "End of kinematics chain (tool attachment point): " << armatureEndStateV.at(stateI)->getName();
                         }
                         else
                         {
-                            std::cout << "(ZyColladaToolHandler::bwdInit) End of kinematics chain (tool attachment point) with path \"" << armatureEndNodePath.getValue().at(stateI) << "\" not found." << std::endl;
+                            msg_warning("ZyColladaToolHandler") << "End of kinematics chain (tool attachment point) with path \"" << armatureEndNodePath.getValue().at(stateI) << "\" not found.";
                         }
 
                         if (toolStateV.at(stateI))
                         {
-                            std::cout << "(ZyColladaToolHandler::bwdInit) Attached tool: " << toolStateV.at(stateI)->getName() << std::endl;
+                            msg_info("ZyColladaToolHandler") << "Attached tool: " << toolStateV.at(stateI)->getName();
                         }
                         else
                         {
-                            std::cout << "(ZyColladaToolHandler::bwdInit) Attached tool with path \"" << toolNodePath.getValue().at(stateI) << "\" not found." << std::endl;
+                            msg_warning("ZyColladaToolHandler") << "Attached tool with path \"" << toolNodePath.getValue().at(stateI) << "\" not found.";
                         }
-
-                        /*if (robotController)
-                        {
-                        std::cout << "(ZyColladaToolHandler::bwdInit) Found RobotController " << robotController->getName() << std::endl;
-                        }
-                        else
-                        {
-                        std::cout << "(ZyColladaToolHandler::bwdInit) No RobotController found." << std::endl;
-                        }*/
                     }
                 }
                 else
                 {
                     canHandleTools = false; 
-                    std::cout << "(ZyColladaToolHandler::bwdInit) ERROR: Not the same number of armatureEndNodePath (" << armatureEndNodePathV.size() << " given) and toolNodePath (" << toolNodePathV.size() << " given)." << std::endl;
+                    msg_error("ZyColladaToolHandler") << "Not the same number of armatureEndNodePaths (" << armatureEndNodePathV.size() << " given) and toolNodePaths (" << toolNodePathV.size() << " given)!";
                 }
             }
 
@@ -167,21 +153,13 @@ namespace sofa
                 if (canHandleTools)
                 {
                     mop.propagateX(pos);
-                    //mop.propagateX(freePos, true);
 
-                    for (unsigned int stateI = 0; stateI < armatureEndStateV.size() /* == toolStateV.size() */; stateI++)
+                    for (unsigned int stateI = 0; stateI < armatureEndStateV.size(); stateI++)
                     {
-                        if (armatureEndStateV.at(stateI) && toolStateV.at(stateI) /*&& robotController*/)
+                        if (armatureEndStateV.at(stateI) && toolStateV.at(stateI))
                         {
-
-                            //std::cout << "End of kinematics chain (tool attachment point): " << armatureEndState->getName() << std::endl;
-                            //std::cout << "Attached tool: " << toolState->getName() << std::endl;
-
                             VecCoord curPos = toolStateV.at(stateI)->getPosition();
                             VecCoord newPos = armatureEndStateV.at(stateI)->getPosition();
-
-                            //std::cout << "oldPosV(" << stateI << "): " << oldPosV.at(stateI) << std::endl;
-                            //std::cout << "newPos: " << newPos << std::endl;
 
                             VecCoord posChange = newPos;
                             double posChangeAcc = 0.0;
@@ -190,10 +168,6 @@ namespace sofa
                                 posChange[0][i] = newPos[0][i] - oldPosV.at(stateI)[0][i];
                                 posChangeAcc += (posChange[0][i] * posChange[0][i]);
                             }
-
-                            //std::cout << posChangeAcc << std::endl;
-
-                            //std::cout << "Moving tool by: " << posChange << std::endl;
 
                             if (posChangeAcc > 0.000000000001)
                             {
@@ -224,4 +198,5 @@ namespace sofa
     } // namespace component
 
 } // namespace sofa
+
 #endif
