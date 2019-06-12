@@ -442,11 +442,11 @@ ZyROSServiceClient::ZyROSServiceClient(): m_uuid(boost::uuids::random_generator(
 
 using namespace Zyklio::ROSConnector;
 
-ZyROSConnectorServiceServer::ZyROSConnectorServiceServer(ros::NodeHandlePtr rosNode, const std::string& serviceURI): m_d(NULL)
+ZyROSConnectorServiceServer::ZyROSConnectorServiceServer(/*ros::NodeHandlePtr rosNode,*/ const std::string& serviceURI): m_d(NULL)
 {
     m_d = new ZyROSConnectorServiceServerPrivate();
     m_d->m_serviceURI = serviceURI;
-    m_d->m_rosNodeHandle = rosNode;
+    m_d->m_rosNodeHandle.reset(new ros::NodeHandle());
     m_shutdownRequested = false;
 }
 
@@ -454,7 +454,7 @@ ZyROSConnectorServiceServer::ZyROSConnectorServiceServer(const ZyROSConnectorSer
 {
     m_d = new ZyROSConnectorServiceServerPrivate();
     m_d->m_serviceURI = other.m_d->m_serviceURI;
-    m_d->m_rosNodeHandle = ros::NodeHandlePtr(other.m_d->m_rosNodeHandle);
+    m_d->m_rosNodeHandle.reset(new ros::NodeHandle());
     m_shutdownRequested = other.m_shutdownRequested;
 }
 
@@ -462,6 +462,9 @@ ZyROSConnectorServiceServer::~ZyROSConnectorServiceServer()
 {
     if (m_d)
     {
+        if (m_d->m_rosNodeHandle)
+            m_d->m_rosNodeHandle->shutdown();
+
         delete m_d;
         m_d = NULL;
     }
@@ -486,6 +489,12 @@ void ZyROSConnectorServiceServer::serverLoop()
     }
 
     m_serverThreadActive = false;
+
+    if (m_d->m_rosNodeHandle)
+    {
+        msg_info("ZyROSConnectorServiceServer") << "Shutting down service server ROS node.";
+        m_d->m_rosNodeHandle->shutdown();
+    }
 }
 
 ZyROSConnectorServiceServerWorkerThread::ZyROSConnectorServiceServerWorkerThread(boost::shared_ptr<ZyROSConnectorServiceServer>& service_server): WorkerThread_SingleTask("ROSServiceServerWorker")
@@ -543,7 +552,7 @@ void ZyROSConnectorServiceServerWorkerThread::main()
 
         """
 
-        self.__excluded_service_names = ['rosapi/GetParam'] # These break compilation when included directly under ROS kinetic
+        self.__excluded_service_names = [] # These break compilation when included directly under ROS kinetic
 
         self.__excluded_service_names = ['rosapi/GetParam'] # These break compilation when included directly under ROS kinetic
 
@@ -706,7 +715,7 @@ void ZyROSConnectorServiceServerWorkerThread::main()
             service_cpp_file.write('************************************************************************/\n')
             service_cpp_file.write('\n\n')
 
-            service_cpp_file.write(self.__ros_service_server_cpp_source_static + '\n\n')
+            service_cpp_file.write(self.__ros_service_server_cpp_source_static + '\n')
 
             for service_type in sorted(header_files_per_service_type.keys()):
                 self.logger.debug('Matching header files for service type \'' + service_type + '\': ' + str(len(header_files_per_service_type[service_type])))
@@ -722,6 +731,7 @@ void ZyROSConnectorServiceServerWorkerThread::main()
                         self.logger.debug('WRITING INCLUDE STATEMENT FOR SERVICE: ' + '#include <' + header_file + '>')
                         service_cpp_file.write('#include <' + header_file + '>\n')
 
+            service_cpp_file.write('// ROS service server template type instantiations\n')
             for service_type in sorted(header_files_per_service_type.keys()):
                 service_is_excluded = False
                 for excluded_service in self.__excluded_service_names:
@@ -737,51 +747,25 @@ void ZyROSConnectorServiceServerWorkerThread::main()
                     service_cpp_request_handler = 'ZyROSConnectorServerRequestHandler<' + service_cpp_request_type + ', ' + service_cpp_response_type + '>'
                     service_cpp_file.write('template class ZyROSConnectorServiceServerImpl<' + service_cpp_request_type + ', ' + service_cpp_response_type + ', ' + service_cpp_request_handler + '>;\n')
 
+            service_cpp_file.write('\n\n')
+
+            service_cpp_file.write('// ROS service server worker thread template type instantiations\n')
+            for service_type in sorted(header_files_per_service_type.keys()):
+                service_is_excluded = False
+                for excluded_service in self.__excluded_service_names:
+                    if service_type.startswith(excluded_service):
+                        self.logger.warning('Excluding ROS service definition: ' + service_type)
+                        service_is_excluded = True
+
+                if not service_is_excluded:
+                    # These are guaranteed to be of length 2
+                    service_cpp_type = service_type.replace('/', '::')
+                    service_cpp_request_type = service_cpp_type + 'Request'
+                    service_cpp_response_type = service_cpp_type + 'Response'
+                    service_cpp_request_handler = 'ZyROSConnectorServerRequestHandler<' + service_cpp_request_type + ', ' + service_cpp_response_type + '>'
+                    service_cpp_file.write('template class ZyROSConnectorServiceServerWorkerThread<' + service_cpp_request_type + ', ' + service_cpp_response_type + ', ' + service_cpp_request_handler + '>;\n')
+
             service_cpp_file.close()
-
-            # Service server factory method
-            # For handling service requests, custom logic has to be provided for gathering response data.
-            # There is no obvious way to autogenerate code for that.
-            # But for instancing specializations of ServiceServer methods, this is necessary.
-#            service_cpp_file.write('boost::shared_ptr<ZyROSServiceServer> ZyROSConnectorServiceFactory::createServiceServer(ros::NodeHandlePtr rosNode, const std::string& serviceURI, const std::string& serviceType)\n')
-#            service_cpp_file.write('{\n')
-
-#            service_cpp_file.write('\tbool supported = false;\n')
-#            service_cpp_file.write('\tboost::shared_ptr<ZyROSServiceServer> serviceServer;\n')
-
-#            for service_type in sorted(header_files_per_service_type.keys()):
-#                service_is_excluded = False
-#                for excluded_service in self.__excluded_service_names:
-#                    if service_type.startswith(excluded_service):
-#                        self.logger.warning('Excluding ROS service definition: ' + service_type)
-#                        service_is_excluded = True
-
-#                if not service_is_excluded:
-#                    service_cpp_file.write('\t// Service server instance for ROS service type: ' + service_type + '\n')
-#                    service_cpp_type = service_type.replace('/', '::')
-
-#                    service_cpp_request_type = service_cpp_type + 'Request'
-#                    service_cpp_response_type = service_cpp_type + 'Response'
-
-#                    service_cpp_file.write('\tif (serviceType == "' + service_cpp_type + '")\n')
-#                    service_cpp_file.write('\t{\n')
-#                    service_cpp_file.write('\t\tsupported = true;\n')
-#                    service_cpp_file.write('\t\tconst boost::shared_ptr<ZyROSConnectorServiceServer<' + service_cpp_type + ', ' + service_cpp_request_type + ', ' + service_cpp_response_type + '>> tmp(new ZyROSConnectorServiceClient<' + service_cpp_type + ', ' + service_cpp_request_type + ', ' + service_cpp_response_type + '>(rosNode, serviceURI, 10));\n')
-#                    service_cpp_file.write('\t\tserviceClient = boost::dynamic_pointer_cast<ZyROSServiceServer>(tmp);\n')
-#                    service_cpp_file.write('\t}\n')
-
-#            service_cpp_file.write('\n\tif (supported)\n')
-#            service_cpp_file.write('\t{\n')
-#            service_cpp_file.write('\t\tmsg_info("ZyROSConnectorServiceFactory") << "ROS service server type supported: " << serviceType;\n')
-#            service_cpp_file.write('\t}\n')
-#            service_cpp_file.write('\telse\n')
-#            service_cpp_file.write('\t{\n')
-#            service_cpp_file.write('\t\tmsg_warning("ZyROSConnectorServiceFactory") << "ROS service server type NOT supported: " << serviceType;\n')
-#            service_cpp_file.write('\t}\n')
-
-#            service_cpp_file.write('\treturn serviceServer;\n')
-
-#            service_cpp_file.write('}\n')
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG)

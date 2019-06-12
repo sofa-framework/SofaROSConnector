@@ -532,6 +532,9 @@ template class ZyROSConnectorTopicSubscriber<smach_msgs::SmachContainerStatus>;
 // Publisher and subscriber proxy class instantiation for ROS message type: smach_msgs/SmachContainerStructure
 template class ZyROSConnectorTopicSubscriber<smach_msgs::SmachContainerStructure>;
 
+// Publisher and subscriber proxy class instantiation for ROS message type: sofa_softrobots_msgs/BodyTransforms
+template class ZyROSConnectorTopicSubscriber<sofa_softrobots_msgs::BodyTransforms>;
+
 // Publisher and subscriber proxy class instantiation for ROS message type: std_msgs/Bool
 template class ZyROSConnectorTopicSubscriber<std_msgs::Bool>;
 
@@ -1672,6 +1675,12 @@ boost::shared_ptr<ZyROSListener> ZyROSConnectorMessageSubscriberFactory::createT
 	{
 		supported = true;
 		topicListener.reset(new ZyROSConnectorTopicSubscriber<smach_msgs::SmachContainerStructure>(rosNode, topicURI, 50, true));
+	}
+	// Subscriber instance for ROS message type: sofa_softrobots_msgs/BodyTransforms
+	if (messageType == "sofa_softrobots_msgs::BodyTransforms")
+	{
+		supported = true;
+		topicListener.reset(new ZyROSConnectorTopicSubscriber<sofa_softrobots_msgs::BodyTransforms>(rosNode, topicURI, 50, true));
 	}
 	// Subscriber instance for ROS message type: std_msgs/Bool
 	if (messageType == "std_msgs::Bool")

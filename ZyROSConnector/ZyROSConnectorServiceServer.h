@@ -35,17 +35,19 @@ namespace Zyklio
         class SOFA_ZY_ROS_CONNECTOR_API ZyROSConnectorServiceServer
         {
             public:
-                ZyROSConnectorServiceServer(ros::NodeHandlePtr rosNode, const std::string&);
+                ZyROSConnectorServiceServer(/*ros::NodeHandlePtr rosNode,*/ const std::string&);
                 ZyROSConnectorServiceServer(const ZyROSConnectorServiceServer&);
                 ~ZyROSConnectorServiceServer();
 
                 virtual bool advertiseService();
                 virtual bool stopAdvertisingService();
-
                 virtual void shutdownServer();
 
+                template <class Request, class Response, class RequestHandler>
+                bool handleRequest(const Request& req, Response& resp);
+
             protected:
-                friend class ZyROSConnectorServiceServerWorkerThread;
+                // friend class ZyROSConnectorServiceServerWorkerThread;
                 void serverLoop();
 
                 ZyROSConnectorServiceServerPrivate* m_d;
@@ -55,61 +57,55 @@ namespace Zyklio
                 boost::mutex m_mutex;
         };
 
-        struct ZyROSConnectorServerRequestHandlerBase
+        /*struct ZyROSConnectorServerRequestHandlerBase
         {
             virtual bool handleRequest() = 0;
-        };
+        };*/
 
         template <class Request, class Response>
-        struct ZyROSConnectorServerRequestHandler : public ZyROSConnectorServerRequestHandlerBase
+        struct ZyROSConnectorServerRequestHandler //: public ZyROSConnectorServerRequestHandlerBase
         {
             public:
-                ZyROSConnectorServerRequestHandler(const Request& request, Response& response)
+                // ZyROSConnectorServerRequestHandler() {}
+
+                ZyROSConnectorServerRequestHandler(/*const Request& request, Response& response, */void* handler_param = nullptr)
                 {
-                    req = request;
-                    resp = response;
+                    /*req = request;
+                    resp = response;*/
+                    param = handler_param;
                 }
 
-                Request req;
-                Response resp;
+                // Request req;
+                // Response resp;
+                void* param;
 
-           bool handleRequest()
+           bool handleRequest(const Request& req, Response& resp)
            {
                 msg_info("ZyROSConnectorServerRequestHandler") << "handleRequest()";
                 return false;
            }
         };
 
-        /*class SOFA_ZY_ROS_CONNECTOR_API ZyROSServerRequestHandler
-        {
-            public:
-                template <class RequestType, class ResponseType> bool handleRequest(const RequestType&, ResponseType&)
-                {
-                    msg_warning("ZyROSServerRequestHandler") << "handleRequest needs to be overridden in derived class for custom logic.";
-                    return false;
-                }
-        };*/
-
-        template <class RequestType, class ResponseType, class RequestHandler>
+        template <class RequestType, class ResponseType, class RequestHandler = ZyROSConnectorServerRequestHandler<RequestType, ResponseType> >
         class SOFA_ZY_ROS_CONNECTOR_API ZyROSConnectorServiceServerImpl: public ZyROSConnectorServiceServer
         {
             public:
-                ZyROSConnectorServiceServerImpl(ros::NodeHandlePtr, const std::string&);
+                ZyROSConnectorServiceServerImpl(/*ros::NodeHandlePtr,*/ const std::string&);
                 ~ZyROSConnectorServiceServerImpl();
 
                 virtual bool advertiseService();
-                virtual bool stopAdvertisingService();
 
-                bool handleRequest(const RequestType& req, ResponseType& resp);
+                virtual bool handleRequest(const RequestType& req, ResponseType& resp) /*= 0*/;
+
+            protected:
+                RequestHandler m_requestHandler;
         };
 
+        template <class RequestType, class ResponseType, class RequestHandler>
         class SOFA_ZY_ROS_CONNECTOR_API ZyROSConnectorServiceServerWorkerThread: public WorkerThread_SingleTask
         {
             public:
-                ZyROSConnectorServiceServerWorkerThread(boost::shared_ptr<ZyROSConnectorServiceServer>&);
-
-                bool advertiseService();
-                bool stopAdvertisingService();
+                ZyROSConnectorServiceServerWorkerThread(boost::shared_ptr<ZyROSConnectorServiceServerImpl<RequestType, ResponseType, RequestHandler>>);
 
             protected:
                     void main();
@@ -118,7 +114,7 @@ namespace Zyklio
                 friend class ZyROSConnectorServiceServer;
 
                 void (ZyROSConnectorServiceServer::*m_func)(void);
-                boost::shared_ptr<ZyROSConnectorServiceServer> m_serviceServer;
+                boost::shared_ptr<ZyROSConnectorServiceServerImpl<RequestType, ResponseType, RequestHandler> > m_serviceServer;
         };
     }
 }

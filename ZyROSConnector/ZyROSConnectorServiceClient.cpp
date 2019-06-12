@@ -28,6 +28,7 @@ using namespace roscpp;
 using namespace roscpp_tutorials;
 using namespace rospy_tutorials;
 using namespace sensor_msgs;
+using namespace sofa_softrobots_msgs;
 using namespace std_srvs;
 using namespace tf;
 using namespace tf2_msgs;
@@ -52,6 +53,9 @@ template class ZyROSConnectorServiceClient<roscpp_tutorials::TwoInts, roscpp_tut
 template class ZyROSConnectorServiceClient<rospy_tutorials::AddTwoInts, rospy_tutorials::AddTwoIntsRequest, rospy_tutorials::AddTwoIntsResponse>;
 template class ZyROSConnectorServiceClient<rospy_tutorials::BadTwoInts, rospy_tutorials::BadTwoIntsRequest, rospy_tutorials::BadTwoIntsResponse>;
 template class ZyROSConnectorServiceClient<sensor_msgs::SetCameraInfo, sensor_msgs::SetCameraInfoRequest, sensor_msgs::SetCameraInfoResponse>;
+template class ZyROSConnectorServiceClient<sofa_softrobots_msgs::SoftRobotActuators, sofa_softrobots_msgs::SoftRobotActuatorsRequest, sofa_softrobots_msgs::SoftRobotActuatorsResponse>;
+template class ZyROSConnectorServiceClient<sofa_softrobots_msgs::SoftRobotCableActuators, sofa_softrobots_msgs::SoftRobotCableActuatorsRequest, sofa_softrobots_msgs::SoftRobotCableActuatorsResponse>;
+template class ZyROSConnectorServiceClient<sofa_softrobots_msgs::SoftRobotSurfacePressureActuators, sofa_softrobots_msgs::SoftRobotSurfacePressureActuatorsRequest, sofa_softrobots_msgs::SoftRobotSurfacePressureActuatorsResponse>;
 template class ZyROSConnectorServiceClient<std_srvs::Empty, std_srvs::EmptyRequest, std_srvs::EmptyResponse>;
 template class ZyROSConnectorServiceClient<std_srvs::SetBool, std_srvs::SetBoolRequest, std_srvs::SetBoolResponse>;
 template class ZyROSConnectorServiceClient<std_srvs::Trigger, std_srvs::TriggerRequest, std_srvs::TriggerResponse>;
@@ -177,6 +181,24 @@ boost::shared_ptr<ZyROSServiceClient> ZyROSConnectorServiceClientFactory::create
 	{
 		supported = true;
 		serviceClient.reset(new ZyROSConnectorServiceClient<sensor_msgs::SetCameraInfo, sensor_msgs::SetCameraInfoRequest, sensor_msgs::SetCameraInfoResponse>(rosNode, serviceURI, 10));
+	}
+	// Service client instance for ROS service type: sofa_softrobots_msgs/SoftRobotActuators
+	if (serviceType == "sofa_softrobots_msgs::SoftRobotActuators")
+	{
+		supported = true;
+		serviceClient.reset(new ZyROSConnectorServiceClient<sofa_softrobots_msgs::SoftRobotActuators, sofa_softrobots_msgs::SoftRobotActuatorsRequest, sofa_softrobots_msgs::SoftRobotActuatorsResponse>(rosNode, serviceURI, 10));
+	}
+	// Service client instance for ROS service type: sofa_softrobots_msgs/SoftRobotCableActuators
+	if (serviceType == "sofa_softrobots_msgs::SoftRobotCableActuators")
+	{
+		supported = true;
+		serviceClient.reset(new ZyROSConnectorServiceClient<sofa_softrobots_msgs::SoftRobotCableActuators, sofa_softrobots_msgs::SoftRobotCableActuatorsRequest, sofa_softrobots_msgs::SoftRobotCableActuatorsResponse>(rosNode, serviceURI, 10));
+	}
+	// Service client instance for ROS service type: sofa_softrobots_msgs/SoftRobotSurfacePressureActuators
+	if (serviceType == "sofa_softrobots_msgs::SoftRobotSurfacePressureActuators")
+	{
+		supported = true;
+		serviceClient.reset(new ZyROSConnectorServiceClient<sofa_softrobots_msgs::SoftRobotSurfacePressureActuators, sofa_softrobots_msgs::SoftRobotSurfacePressureActuatorsRequest, sofa_softrobots_msgs::SoftRobotSurfacePressureActuatorsResponse>(rosNode, serviceURI, 10));
 	}
 	// Service client instance for ROS service type: std_srvs/Empty
 	if (serviceType == "std_srvs::Empty")

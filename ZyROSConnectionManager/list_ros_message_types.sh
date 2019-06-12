@@ -60,6 +60,6 @@ service_types=$(rossrv list)
 echo "=== Known ROS service types ==="
 echo $service_types
 
-echo "Calling Python script for C++ source file generation."
+echo "Calling Python script for C++ source file generation. Command: python $SCRIPT_BASE_DIR/generate_message_and_service_files.py $OUTPUT_DIRECTORY $message_types $service_types"
 
 python $SCRIPT_BASE_DIR/generate_message_and_service_files.py "$OUTPUT_DIRECTORY" "$message_types" "$service_types"

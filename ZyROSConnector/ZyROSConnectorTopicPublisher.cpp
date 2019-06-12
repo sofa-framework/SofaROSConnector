@@ -537,6 +537,9 @@ template class ZyROSConnectorTopicPublisher<smach_msgs::SmachContainerStatus>;
 // Publisher and subscriber proxy class instantiation for ROS message type: smach_msgs/SmachContainerStructure
 template class ZyROSConnectorTopicPublisher<smach_msgs::SmachContainerStructure>;
 
+// Publisher and subscriber proxy class instantiation for ROS message type: sofa_softrobots_msgs/BodyTransforms
+template class ZyROSConnectorTopicPublisher<sofa_softrobots_msgs::BodyTransforms>;
+
 // Publisher and subscriber proxy class instantiation for ROS message type: std_msgs/Bool
 template class ZyROSConnectorTopicPublisher<std_msgs::Bool>;
 
@@ -1677,6 +1680,12 @@ boost::shared_ptr<ZyROSPublisher> ZyROSConnectorMessagePublisherFactory::createT
 	{
 		supported = true;
 		topicPublisher.reset(new ZyROSConnectorTopicPublisher<smach_msgs::SmachContainerStructure>(rosNode, topicURI, 50));
+	}
+	// Publisher instance for ROS message type: sofa_softrobots_msgs/BodyTransforms
+	if (messageType == "sofa_softrobots_msgs::BodyTransforms")
+	{
+		supported = true;
+		topicPublisher.reset(new ZyROSConnectorTopicPublisher<sofa_softrobots_msgs::BodyTransforms>(rosNode, topicURI, 50));
 	}
 	// Publisher instance for ROS message type: std_msgs/Bool
 	if (messageType == "std_msgs::Bool")

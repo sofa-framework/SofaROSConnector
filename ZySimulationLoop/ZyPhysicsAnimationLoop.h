@@ -31,7 +31,7 @@
 #include <Winsock2.h>
 #endif
 
-#include "initZySimulationLoop.h".
+#include "initZySimulationLoop.h"
 
 #include <SofaConstraint/FreeMotionAnimationLoop.h>
 #include <sofa/simulation/MechanicalOperations.h>
