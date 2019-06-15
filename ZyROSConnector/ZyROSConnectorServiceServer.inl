@@ -22,24 +22,6 @@ bool ZyROSConnectorServiceServer::advertiseService()
     return false;
 }
 
-bool ZyROSConnectorServiceServer::stopAdvertisingService()
-{
-    return false;
-}
-
-template <class RequestType, class ResponseType, class RequestHandler>
-ZyROSConnectorServiceServerImpl<RequestType, ResponseType, RequestHandler>::ZyROSConnectorServiceServerImpl(ros::NodeHandlePtr rosNode, const std::string& serviceURI):
-    ZyROSConnectorServiceServer(rosNode, serviceURI)
-{
-
-}
-
-template <class RequestType, class ResponseType, class RequestHandler>
-ZyROSConnectorServiceServerImpl<RequestType, ResponseType, RequestHandler>::~ZyROSConnectorServiceServerImpl()
-{
-
-}
-
 template <class RequestType, class ResponseType, class RequestHandler>
 bool ZyROSConnectorServiceServerImpl<RequestType, ResponseType, RequestHandler>::advertiseService()
 {
@@ -59,13 +41,13 @@ bool ZyROSConnectorServiceServerImpl<RequestType, ResponseType, RequestHandler>:
     }
     else
     {
-        msg_error("ZyROSConnectorServiceServerImpl") << "Failed to advertise ROS service!";
+        msg_error("ZyROSConnectorServiceServer") << "Failed to advertise ROS service!";
         return false;
     }
 }
 
-template <class RequestType, class ResponseType, class RequestHandler>
-bool ZyROSConnectorServiceServerImpl<RequestType, ResponseType, RequestHandler>::stopAdvertisingService()
+
+bool ZyROSConnectorServiceServer::stopAdvertisingService()
 {
     if (m_d->m_rosServer)
     {
@@ -116,16 +98,16 @@ bool ZyROSConnectorServiceServerImpl<RequestType, ResponseType, RequestHandler>:
 bool ZyROSConnectorServiceServerImpl<RequestType, ResponseType, RequestHandler>::stopAdvertisingService()
 {
 
-}
+}*/
 
 // Placeholder callback method for service requests.
 // There is no generic way to provide default handling for service requests.
-// Custom logic for providing response data has to be implemented in derived classes.
-template <class RequestType, class ResponseType, class RequestHandler>
+// Custom logic for providing response data has to be implemented in derived classes, if more sophisticated logic for handling requests ist required.
+/* template <class RequestType, class ResponseType, class RequestHandler>
 bool ZyROSConnectorServiceServerImpl<RequestType, ResponseType, RequestHandler>::handleRequest(const RequestType& req, ResponseType& resp)
 {
     msg_info("ZyROSConnectorServiceServerImpl") << "handleRequest called.";
-    RequestHandler rq_handler(req, resp);
+    RequestHandler rq_handler(req, resp, nullptr);
 
     bool handler_status = rq_handler.handleRequest();
 

@@ -7,6 +7,7 @@ The contents will be overwritten and re-generated.
 
 
 
+
 #include "ZyROSConnectorServiceServer.inl"
 
 using namespace Zyklio::ROSConnector;
@@ -74,61 +75,7 @@ void ZyROSConnectorServiceServer::serverLoop()
     }
 }
 
-ZyROSConnectorServiceServerWorkerThread::ZyROSConnectorServiceServerWorkerThread(boost::shared_ptr<ZyROSConnectorServiceServer>& service_server): WorkerThread_SingleTask("ROSServiceServerWorker")
-{
-    // Run directly after start call, no initial pause necessary
-    m_start_paused = false;
-    this->m_serviceServer = service_server;
-    m_func = &ZyROSConnectorServiceServer::serverLoop;
-}
-
-void ZyROSConnectorServiceServerWorkerThread::main()
-{
-    msg_info("ZyROSConnectorServiceServerWorkerThread") << "Entering main function of ZyROSConnectorServiceServerWorkerThread";
-    // read and store current thread id
-    m_id = get_current_thread_id();
-
-    // signal that the thread is running
-    signal_state(running);
-
-    // perform on-start custom action
-    on_start();
-
-    if (m_start_paused)
-    {
-        m_request = rq_idle;
-        signal_state(paused);
-    }
-
-    // can throw const boost::thread_interrupted
-    // if interrupt() was call in any interrupt
-    // point
-    try
-    {
-        if (m_serviceServer->advertiseService())
-        {
-            (m_serviceServer.get()->*m_func)();
-            m_serviceServer->stopAdvertisingService();
-        }
-    }
-    catch (const boost::thread_interrupted& ex)
-    {
-        SOFA_UNUSED(ex);
-        msg_warning("ZyROSConnectorServiceServerWorkerThread") << "Thread " << m_name << ": Caught boost::thread_interrupted";
-    }
-
-    // update state
-    signal_state(completed);
-
-    // perform on-exit custom action
-    // after the state was updated
-    on_exit();
-    // clear id
-    m_id = INVALID_THREAD_ID;
-}
-
         
-
 #include <control_msgs/QueryCalibrationStateRequest.h>
 #include <control_msgs/QueryCalibrationStateResponse.h>
 #include <control_msgs/QueryCalibrationState.h>

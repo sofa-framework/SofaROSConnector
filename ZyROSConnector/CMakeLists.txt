@@ -19,6 +19,15 @@ set(HEADER_FILES
         ZyROSConnectorServiceServer.inl
 )
 
+set(SOURCE_FILES
+    ZyROSConnector.cpp
+    ZyROSConnectorServiceClient.cpp
+    ZyROSConnectorServiceServer.cpp
+    ZyROSConnectorTopicPublisher.cpp
+    ZyROSConnectorTopicSubscriber.cpp
+    ZyROSConnectorWorkerThread.cpp
+)
+
 find_package(ROS QUIET REQUIRED)
 message(STATUS "ROS found: ${ROS_FOUND}")
 find_package(Boost COMPONENTS regex thread signals QUIET REQUIRED)
@@ -52,7 +61,7 @@ add_definitions(-DROS_BUILD_SHARED_LIBS)
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
 
 target_link_libraries(${PROJECT_NAME} SofaCore SofaHelper SofaDefaultType SofaBaseCollision SofaConstraint SofaSimulationCommon SofaMiscFem tinyxml newmat)
-target_link_libraries(${PROJECT_NAME} ZyMultiThreading ZyROSConnectorBindings)
+target_link_libraries(${PROJECT_NAME} ZyMultiThreading)
 target_link_libraries(${PROJECT_NAME} ZyGripping)
 target_link_libraries(${PROJECT_NAME} ZySOFAControllers)
 target_link_libraries(${PROJECT_NAME} ZyVelocityApproximation)

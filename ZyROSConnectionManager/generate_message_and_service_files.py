@@ -243,8 +243,7 @@ void ZyROSConnectorTopicPublisher<MessageType>::publishMessageQueue()
                         message_cpp_file.write('template class ZyROSConnectorTopicSubscriber<' + message_cpp_type + '>;\n')
                         message_cpp_file.write('\n')
 
-                        message_cpp_file.write('boost::shared_ptr<ZyROSListener> ZyROSConnectorMessageSubscriberFactory::createTopicSubscriber(ros::NodeHandlePtr rosNode, const std::string& topicURI, const std::string& messageType)\n')
-
+            message_cpp_file.write('boost::shared_ptr<ZyROSListener> ZyROSConnectorMessageSubscriberFactory::createTopicSubscriber(ros::NodeHandlePtr rosNode, const std::string& topicURI, const std::string& messageType)\n')
             message_cpp_file.write('{\n')
 
             message_cpp_file.write('\tbool supported = false;\n')
@@ -438,6 +437,7 @@ ZyROSServiceClient::ZyROSServiceClient(): m_uuid(boost::uuids::random_generator(
         """
 
         self.__ros_service_server_cpp_source_static = """
+
 #include "ZyROSConnectorServiceServer.inl"
 
 using namespace Zyklio::ROSConnector;
@@ -478,6 +478,8 @@ void ZyROSConnectorServiceServer::shutdownServer()
 
 void ZyROSConnectorServiceServer::serverLoop()
 {
+    msg_info("ZyROSConnectorServiceServer") << "Entering serverLoop.";
+
     ros::Rate service_server_rate(25);
     m_serverThreadActive = true;
     while (ros::ok())
@@ -490,6 +492,12 @@ void ZyROSConnectorServiceServer::serverLoop()
 
     m_serverThreadActive = false;
 
+    if (m_d->m_rosServer)
+    {
+        msg_info("ZyROSConnectorServiceServer") << "Shutting down ROS service server.";
+        m_d->m_rosServer.shutdown();
+    }
+
     if (m_d->m_rosNodeHandle)
     {
         msg_info("ZyROSConnectorServiceServer") << "Shutting down service server ROS node.";
@@ -497,64 +505,9 @@ void ZyROSConnectorServiceServer::serverLoop()
     }
 }
 
-ZyROSConnectorServiceServerWorkerThread::ZyROSConnectorServiceServerWorkerThread(boost::shared_ptr<ZyROSConnectorServiceServer>& service_server): WorkerThread_SingleTask("ROSServiceServerWorker")
-{
-    // Run directly after start call, no initial pause necessary
-    m_start_paused = false;
-    this->m_serviceServer = service_server;
-    m_func = &ZyROSConnectorServiceServer::serverLoop;
-}
-
-void ZyROSConnectorServiceServerWorkerThread::main()
-{
-    msg_info("ZyROSConnectorServiceServerWorkerThread") << "Entering main function of ZyROSConnectorServiceServerWorkerThread";
-    // read and store current thread id
-    m_id = get_current_thread_id();
-
-    // signal that the thread is running
-    signal_state(running);
-
-    // perform on-start custom action
-    on_start();
-
-    if (m_start_paused)
-    {
-        m_request = rq_idle;
-        signal_state(paused);
-    }
-
-    // can throw const boost::thread_interrupted
-    // if interrupt() was call in any interrupt
-    // point
-    try
-    {
-        if (m_serviceServer->advertiseService())
-        {
-            (m_serviceServer.get()->*m_func)();
-            m_serviceServer->stopAdvertisingService();
-        }
-    }
-    catch (const boost::thread_interrupted& ex)
-    {
-        SOFA_UNUSED(ex);
-        msg_warning("ZyROSConnectorServiceServerWorkerThread") << "Thread " << m_name << ": Caught boost::thread_interrupted";
-    }
-
-    // update state
-    signal_state(completed);
-
-    // perform on-exit custom action
-    // after the state was updated
-    on_exit();
-    // clear id
-    m_id = INVALID_THREAD_ID;
-}
-
         """
 
         self.__excluded_service_names = [] # These break compilation when included directly under ROS kinetic
-
-        self.__excluded_service_names = ['rosapi/GetParam'] # These break compilation when included directly under ROS kinetic
 
     def generate_binding_sources(self):
         self.logger.info('Generating ROS service binding sources. Service definitions passed: ' + str(len(self.__ros_service_types)))
@@ -766,6 +719,7 @@ void ZyROSConnectorServiceServerWorkerThread::main()
                     service_cpp_file.write('template class ZyROSConnectorServiceServerWorkerThread<' + service_cpp_request_type + ', ' + service_cpp_response_type + ', ' + service_cpp_request_handler + '>;\n')
 
             service_cpp_file.close()
+
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG)

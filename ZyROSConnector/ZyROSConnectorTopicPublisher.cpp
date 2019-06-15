@@ -5,6 +5,8 @@ Please do not modify it by hand.
 The contents will be overwritten and re-generated.
 ************************************************************************/
 
+
+
 #include "ZyROSConnectorTopicPublisher.inl"
 
 using namespace Zyklio::ROSConnector;
@@ -50,6 +52,8 @@ void ZyROSConnectorTopicPublisher<MessageType>::publishMessageQueue()
     }
     lock.unlock();
 }
+        
+
 #include <ZyROS_MessageType_Instantiations_Publishers.h>
 
 
@@ -2038,3 +2042,4 @@ boost::shared_ptr<ZyROSPublisher> ZyROSConnectorMessagePublisherFactory::createT
 		msg_warning("ZyROSConnectorMessagePublisherFactory") << "ROS message type NOT supported: " << messageType;
 	}	return topicPublisher;
 }
+

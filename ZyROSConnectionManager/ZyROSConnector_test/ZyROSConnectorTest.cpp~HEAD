@@ -344,16 +344,16 @@ template <class Request, class Response>
 struct AddTwoIntsRequestHandler: public ZyROSConnectorServerRequestHandler<Request, Response>
 {
     public:
-        AddTwoIntsRequestHandler(/*const Request& req, Response& resp, */void* param = nullptr): ZyROSConnectorServerRequestHandler<Request, Response>(param)
+        AddTwoIntsRequestHandler(const Request& req, Response& resp): ZyROSConnectorServerRequestHandler<Request, Response>(req, resp)
         {
 
         }
 
-        bool handleRequest(const Request& req, Response& resp)
+        bool handleRequest()
         {
-            msg_info("AddTwoIntsRequestHandler") << "Received a request to add two integers: " << req.a << " + " << req.b;
-            resp.sum = req.a + req.b;
-            msg_info("AddTwoIntsRequestHandler") << "Result: " << resp.sum;
+            msg_info("AddTwoIntsRequestHandler") << "Received a request to add two integers: " << this->req.a << " + " << this->req.b;
+            this->resp.sum = this->req.a + this->req.b;
+            msg_info("AddTwoIntsRequestHandler") << "Result: " << this->resp.sum;
             return true;
         }
 };
@@ -362,18 +362,18 @@ template <class Request, class Response>
 struct ArrayOfFloatsRequestHandler: public ZyROSConnectorServerRequestHandler<Request, Response>
 {
     public:
-        ArrayOfFloatsRequestHandler(/*const Request& req, Response& resp,*/ void* param = nullptr): ZyROSConnectorServerRequestHandler<Request, Response>(param)
+        ArrayOfFloatsRequestHandler(const Request& req, Response& resp): ZyROSConnectorServerRequestHandler<Request, Response>(req, resp)
         {
 
         }
 
-        bool handleRequest(const Request& req, Response& resp)
+        bool handleRequest()
         {
-            msg_info("ArrayOfFloatsRequestHandler") << "Received a request to return an array of floats of size: " << req.FloatsToReturn.data;
-            resp.return_values.data.resize(req.FloatsToReturn.data);
-            for (int k = 0; k < req.FloatsToReturn.data; k++)
+            msg_info("ArrayOfFloatsRequestHandler") << "Received a request to return an array of floats of size: " << this->req.FloatsToReturn.data;
+            this->resp.return_values.data.resize(this->req.FloatsToReturn.data);
+            for (int k = 0; k < this->req.FloatsToReturn.data; k++)
             {
-                resp.return_values.data[k] = 1.0f * k;
+                this->resp.return_values.data[k] = 1.0f * k;
             }
             return true;
         }
@@ -384,8 +384,8 @@ template class ZyROSConnectorServiceServerImpl<rospy_tutorials::AddTwoIntsReques
 class AddTwoIntsServiceServer: public ZyROSConnectorServiceServerImpl<rospy_tutorials::AddTwoIntsRequest, rospy_tutorials::AddTwoIntsResponse, AddTwoIntsRequestHandler<rospy_tutorials::AddTwoIntsRequest, rospy_tutorials::AddTwoIntsResponse>>
 {
     public:
-    AddTwoIntsServiceServer(const std::string& service_uri):
-        ZyROSConnectorServiceServerImpl<rospy_tutorials::AddTwoIntsRequest, rospy_tutorials::AddTwoIntsResponse, AddTwoIntsRequestHandler<rospy_tutorials::AddTwoIntsRequest, rospy_tutorials::AddTwoIntsResponse>>(service_uri)
+    AddTwoIntsServiceServer(ros::NodeHandlePtr node_handle, const std::string& service_uri):
+        ZyROSConnectorServiceServerImpl<rospy_tutorials::AddTwoIntsRequest, rospy_tutorials::AddTwoIntsResponse, AddTwoIntsRequestHandler<rospy_tutorials::AddTwoIntsRequest, rospy_tutorials::AddTwoIntsResponse>>(node_handle, service_uri)
     {
 
     }
@@ -394,30 +394,18 @@ class AddTwoIntsServiceServer: public ZyROSConnectorServiceServerImpl<rospy_tuto
     {}
 };
 
-template <class RequestType, class ResponseType, class RequestHandler>
-class ArrayOfFloatsServiceServer: public ZyROSConnectorServiceServerImpl<RequestType, ResponseType, RequestHandler>
+class ArrayOfFloatsServiceServer: public ZyROSConnectorServiceServerImpl<zyrosconnector_test::ArrayOfFloatsRequest, zyrosconnector_test::ArrayOfFloatsResponse, ArrayOfFloatsRequestHandler<zyrosconnector_test::ArrayOfFloatsRequest, zyrosconnector_test::ArrayOfFloatsResponse>>
 {
     public:
-    ArrayOfFloatsServiceServer(const std::string& service_uri):
-        ZyROSConnectorServiceServerImpl<RequestType, ResponseType, RequestHandler>(service_uri)
+    ArrayOfFloatsServiceServer(ros::NodeHandlePtr node_handle, const std::string& service_uri):
+        ZyROSConnectorServiceServerImpl<zyrosconnector_test::ArrayOfFloatsRequest, zyrosconnector_test::ArrayOfFloatsResponse, ArrayOfFloatsRequestHandler<zyrosconnector_test::ArrayOfFloatsRequest, zyrosconnector_test::ArrayOfFloatsResponse>>(node_handle, service_uri)
     {
 
     }
 
     ~ArrayOfFloatsServiceServer()
     {}
-
-    bool handleRequest(const RequestType&, ResponseType&);
 };
-
-template <class RequestType, class ResponseType, class RequestHandler>
-bool ArrayOfFloatsServiceServer<RequestType, ResponseType, RequestHandler>::handleRequest(const RequestType& req, ResponseType& resp)
-{
-    msg_info("ArrayOfFloatsServiceServer") << "handleRequest called.";
-    return this->m_requestHandler.handleRequest(req, resp);
-}
-
-template class ArrayOfFloatsServiceServer<zyrosconnector_test::ArrayOfFloatsRequest, zyrosconnector_test::ArrayOfFloatsResponse, ArrayOfFloatsRequestHandler<zyrosconnector_test::ArrayOfFloatsRequest, zyrosconnector_test::ArrayOfFloatsResponse>>;
 
 int main(int argc, char** argv)
 {
@@ -705,9 +693,9 @@ int main(int argc, char** argv)
                 }
 
                 // Test ROS service server, part 1
-                boost::shared_ptr< ZyROSConnectorServiceServerImpl<zyrosconnector_test::ArrayOfFloatsRequest, zyrosconnector_test::ArrayOfFloatsResponse, ArrayOfFloatsRequestHandler<zyrosconnector_test::ArrayOfFloatsRequest, zyrosconnector_test::ArrayOfFloatsResponse>> > array_of_floats_server;
-                array_of_floats_server.reset(new ArrayOfFloatsServiceServer<zyrosconnector_test::ArrayOfFloatsRequest, zyrosconnector_test::ArrayOfFloatsResponse, ArrayOfFloatsRequestHandler<zyrosconnector_test::ArrayOfFloatsRequest, zyrosconnector_test::ArrayOfFloatsResponse> >("/ZyROSConnector/array_of_floats"));
-                ZyROSConnectorServiceServerWorkerThread<zyrosconnector_test::ArrayOfFloatsRequest, zyrosconnector_test::ArrayOfFloatsResponse, ArrayOfFloatsRequestHandler<zyrosconnector_test::ArrayOfFloatsRequest, zyrosconnector_test::ArrayOfFloatsResponse> >* service_worker_aof = new ZyROSConnectorServiceServerWorkerThread<zyrosconnector_test::ArrayOfFloatsRequest, zyrosconnector_test::ArrayOfFloatsResponse, ArrayOfFloatsRequestHandler<zyrosconnector_test::ArrayOfFloatsRequest, zyrosconnector_test::ArrayOfFloatsResponse> >(array_of_floats_server);
+                boost::shared_ptr<ZyROSConnectorServiceServer> array_of_floats_server;
+                array_of_floats_server.reset(new ArrayOfFloatsServiceServer(test_fixture.m_rosConnector->getRosNodeHandle(), "/ZyROSConnector/array_of_floats"));
+                ZyROSConnectorServiceServerWorkerThread* service_worker_aof = new ZyROSConnectorServiceServerWorkerThread(array_of_floats_server);
 
                 if (service_worker_aof->start())
                 {

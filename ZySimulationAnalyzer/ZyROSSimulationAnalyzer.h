@@ -40,7 +40,6 @@
 #include <sofa/simulation/VectorOperations.h>
 
 #include <ZyROSPublishingHandler.h>
-#include "ZyROSTopicPublisher_Float32MultiArray.h"
 
 #include <boost/date_time/posix_time/posix_time.hpp> 
 

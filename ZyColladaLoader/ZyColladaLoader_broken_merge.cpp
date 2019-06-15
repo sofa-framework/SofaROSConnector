@@ -28,7 +28,7 @@
 #include <SofaBaseMechanics/MechanicalObject.h>
 #include <SofaBaseMechanics/UniformMass.h>
 #include <SofaBaseTopology/MeshTopology.h>
-#include <SofaOpenglVisual/OglModel.h>
+#include <SofaOpenglVisual/OglModel.h>												
 #include <SofaMeshCollision/TriangleModel.h>
 #include <SofaMeshCollision/LineModel.h>
 #include <SofaMeshCollision/PointModel.h>
@@ -40,6 +40,7 @@
 #include <SofaBoundaryCondition/SkeletalMotionConstraint.inl>
 #include <sofa/core/visual/VisualParams.h>
 #include <sofa/helper/system/SetDirectory.h>
+#include <string>
 #include <stack>
 #include <algorithm>
 
@@ -80,7 +81,7 @@ using namespace sofa::gui::qt;
 #include <assimp/Importer.hpp>
 #include <assimp/importerdesc.h>
 #include <assimp/DefaultLogger.hpp>
-
+#include <assimp/scene.h>
 #include <ColladaParser.h>
 #include <ColladaLoader.h>
 
@@ -150,7 +151,7 @@ using sofa::component::odesolver::EulerImplicitSolver;
 #include <deformationMapping/LinearMapping.h>
 #endif
 
-#define DEMOSCENE_HASH_STRING "80d4ca0fd58eed84cb448619adeb6d80"
+#define DEMOSCENE_HASH_STRING "80d4ca0fd58eed84cb448619adeb6d80" 
 
 // Defined in ColladaParser.h
 // #define DBG(x)  std::cout << x
@@ -184,105 +185,105 @@ int ZyColladaLoaderClass = core::RegisterObject("Specific scene loader for Colla
 class ZyColladaLoaderPrivate
 {
 public:
-    struct KinematicModelStructure
-    {
-    public:
-        KinematicModelStructure() {}
+	struct KinematicModelStructure
+	{
+	public:
+		KinematicModelStructure() {}
 
-        KinematicModelStructure(const KinematicModelStructure& other)
-        {
-            if (this != &other)
-            {
-                modelName = other.modelName;
-                rootJoint = other.rootJoint;
-                for (std::map<unsigned int, std::vector<std::string> >::const_iterator it = other.kinematicJointsByLevel.begin(); it != other.kinematicJointsByLevel.end(); ++it)
-                {
-                    kinematicJointsByLevel.insert(std::make_pair(it->first, std::vector<std::string>()));
-                    for (int k = 0; k < it->second.size(); ++k)
-                        kinematicJointsByLevel[it->first].push_back(it->second[k]);
-                }
-            }
-        }
+		KinematicModelStructure(const KinematicModelStructure& other)
+		{
+			if (this != &other)
+			{
+				modelName = other.modelName;
+				rootJoint = other.rootJoint;
+				for (std::map<unsigned int, std::vector<std::string> >::const_iterator it = other.kinematicJointsByLevel.begin(); it != other.kinematicJointsByLevel.end(); ++it)
+				{
+					kinematicJointsByLevel.insert(std::make_pair(it->first, std::vector<std::string>()));
+					for (int k = 0; k < it->second.size(); ++k)
+						kinematicJointsByLevel[it->first].push_back(it->second[k]);
+				}
+			}
+		}
 
-        KinematicModelStructure& operator=(const KinematicModelStructure& other)
-        {
-            if (this != &other)
-            {
-                modelName = other.modelName;
-                rootJoint = other.rootJoint;
-                for (std::map<unsigned int, std::vector<std::string> >::const_iterator it = other.kinematicJointsByLevel.begin(); it != other.kinematicJointsByLevel.end(); ++it)
-                {
-                    kinematicJointsByLevel.insert(std::make_pair(it->first, std::vector<std::string>()));
-                    for (int k = 0; k < it->second.size(); ++k)
-                        kinematicJointsByLevel[it->first].push_back(it->second[k]);
-                }
-            }
-            return *this;
-        }
+		KinematicModelStructure& operator=(const KinematicModelStructure& other)
+		{
+			if (this != &other)
+			{
+				modelName = other.modelName;
+				rootJoint = other.rootJoint;
+				for (std::map<unsigned int, std::vector<std::string> >::const_iterator it = other.kinematicJointsByLevel.begin(); it != other.kinematicJointsByLevel.end(); ++it)
+				{
+					kinematicJointsByLevel.insert(std::make_pair(it->first, std::vector<std::string>()));
+					for (int k = 0; k < it->second.size(); ++k)
+						kinematicJointsByLevel[it->first].push_back(it->second[k]);
+				}
+			}
+			return *this;
+		}
 
-        std::string modelName;
-        std::string rootJoint;
-        std::map<unsigned int, std::vector<std::string> > kinematicJointsByLevel;
-    };
+		std::string modelName;
+		std::string rootJoint;
+		std::map<unsigned int, std::vector<std::string> > kinematicJointsByLevel;
+	};
 
-    std::map<std::string, KinematicModelStructure> kinematicsModels;
+	std::map<std::string, KinematicModelStructure> kinematicsModels;
 
-    // FA: Copy/paste, but who cares anyway?
-    void DecomposeAiMatrix(const aiMatrix4x4& trans, Vec3d & translation, Quat &quaternion) {
-        Vec3d rotation, scale;
-        DecomposeAiMatrix(trans, translation, scale, quaternion, rotation);
-    }
+	// FA: Copy/paste, but who cares anyway?
+	void DecomposeAiMatrix(const aiMatrix4x4& trans, Vec3d & translation, Quat &quaternion) {
+		Vec3d rotation, scale;
+		DecomposeAiMatrix(trans, translation, scale, quaternion, rotation);
+	}
 
-    void DecomposeAiMatrix(const aiMatrix4x4& trans, Vec3d & translation, Vec3d& scale, Quat &quaternion, Vec3d & rotation) {
-        aiVector3D aiScale, aiTranslation;
-        aiQuaternion aiRotation;
-        trans.Decompose(aiScale, aiRotation, aiTranslation);
-        Quat q(aiRotation.x, aiRotation.y, aiRotation.z, aiRotation.w);
+	void DecomposeAiMatrix(const aiMatrix4x4& trans, Vec3d & translation, Vec3d& scale, Quat &quaternion, Vec3d & rotation) {
+		aiVector3D aiScale, aiTranslation;
+		aiQuaternion aiRotation;
+		trans.Decompose(aiScale, aiRotation, aiTranslation);
+		Quat q(aiRotation.x, aiRotation.y, aiRotation.z, aiRotation.w);
 
-        translation.set(aiTranslation.x, aiTranslation.y, aiTranslation.z);
-        scale.set(aiScale.x, aiScale.y, aiScale.z);
-        rotation.set(q.toEulerVector() * (180.0 / M_PI));
-        quaternion = q;
-    }
+		translation.set(aiTranslation.x, aiTranslation.y, aiTranslation.z);
+		scale.set(aiScale.x, aiScale.y, aiScale.z);
+		rotation.set(q.toEulerVector() * (180.0 / M_PI));
+		quaternion = q;
+	}
 
     void buildJointHierarchyRec(Assimp::ColladaArschFotze* colladaLoader, Assimp::ColladaParser* parser, const Assimp::Collada::KinematicsModel& kinModel, const std::string& rootJoint, const std::map<std::string, std::string>& kinematicModelInstances, ColladaTransformHelper* transformHelper = NULL)
-    {
-        KinematicModelStructure k_ms;
-        k_ms.modelName = kinModel.name;
-        k_ms.rootJoint = rootJoint;
+	{
+		KinematicModelStructure k_ms;
+		k_ms.modelName = kinModel.name;
+		k_ms.rootJoint = rootJoint;
 
-        std::vector<std::string> childJoints;
+		std::vector<std::string> childJoints;
 
-        std::cout << "====== Build joint hierarchy starting from: " << rootJoint << " ======" << std::endl;
-        for (std::map<std::string, std::string>::const_iterator lit = kinModel.preLinks.begin(); lit != kinModel.preLinks.end(); ++lit)
-        {
-            if (lit->second.compare(rootJoint) == 0)
-            {
-                std::cout << " Level 0 joint added: " << lit->first << std::endl;
-                childJoints.push_back(lit->first);
-            }
-        }
+		std::cout << "====== Build joint hierarchy starting from: " << rootJoint << " ======" << std::endl;
+		for (std::map<std::string, std::string>::const_iterator lit = kinModel.preLinks.begin(); lit != kinModel.preLinks.end(); ++lit)
+		{
+			if (lit->second.compare(rootJoint) == 0)
+			{
+				std::cout << " Level 0 joint added: " << lit->first << std::endl;
+				childJoints.push_back(lit->first);
+			}
+		}
 
-        k_ms.kinematicJointsByLevel.insert(std::make_pair(0, childJoints));
+		k_ms.kinematicJointsByLevel.insert(std::make_pair(0, childJoints));
 
-        for (int k = 0; k < childJoints.size(); ++k)
-        {
-            this->buildJointHierarchyRecHelper(kinModel, childJoints[k], k_ms, 1);
-        }
+		for (int k = 0; k < childJoints.size(); ++k)
+		{
+			this->buildJointHierarchyRecHelper(kinModel, childJoints[k], k_ms, 1);
+		}
 
-        std::cout << "===========================================================================================" << std::endl;
-        std::cout << "====== Model " << k_ms.modelName << ": Match links by level with relative transforms ======" << std::endl;
-        std::cout << "===========================================================================================" << std::endl;
+		std::cout << "===========================================================================================" << std::endl;
+		std::cout << "====== Model " << k_ms.modelName << ": Match links by level with relative transforms ======" << std::endl;
+		std::cout << "===========================================================================================" << std::endl;
 
-        // Testing with origin-centered model for the SVH hand
-        std::string root_joint_name;
-        if (k_ms.kinematicJointsByLevel.find(0) != k_ms.kinematicJointsByLevel.end())
-        {
-            // Assign root joint of SVH for name mapping test
-            root_joint_name = k_ms.kinematicJointsByLevel[0].front();
-            std::cout << " -> Root joint mapping: " << root_joint_name << std::endl;
-        }
-        transformHelper->createJointParentTransform(k_ms.modelName, Vector3(0, 0, 0), Quaternion(0, 0, 0, 1) /*, root_joint_name*/);
+		// Testing with origin-centered model for the SVH hand
+		std::string root_joint_name;
+		if (k_ms.kinematicJointsByLevel.find(0) != k_ms.kinematicJointsByLevel.end())
+		{
+			// Assign root joint of SVH for name mapping test
+			root_joint_name = k_ms.kinematicJointsByLevel[0].front();
+			std::cout << " -> Root joint mapping: " << root_joint_name << std::endl;
+		}
+		transformHelper->createJointParentTransform(k_ms.modelName, Vector3(0, 0, 0), Quaternion(0, 0, 0, 1) /*, root_joint_name*/);
 
         std::cout << "===================================================" << std::endl;
         std::cout << "KinematicsModels known: " << this->kinematicsModels.size() << std::endl;
@@ -304,116 +305,116 @@ public:
         std::cout << "===================================================" << std::endl;
 
         if (rtm_it != relativeTransforms.end())
-        {
-            const Assimp::RelativeTransformStack& rt_stack = rtm_it->second;
-            for (std::map<unsigned int, std::vector<std::string> >::const_iterator kbl_it = k_ms.kinematicJointsByLevel.begin(); kbl_it != k_ms.kinematicJointsByLevel.end(); ++kbl_it)
-            {
-                std::cout << " - Links in level " << kbl_it->first << ": " << kbl_it->second.size() << std::endl;
-                const std::vector<std::string>& linksInLevel = kbl_it->second;
-                for (size_t m = 0; m < linksInLevel.size(); ++m)
-                {
-                    std::cout << "    - link " << linksInLevel[m] << std::endl;
+		{
+			const Assimp::RelativeTransformStack& rt_stack = rtm_it->second;
+			for (std::map<unsigned int, std::vector<std::string> >::const_iterator kbl_it = k_ms.kinematicJointsByLevel.begin(); kbl_it != k_ms.kinematicJointsByLevel.end(); ++kbl_it)
+			{
+				std::cout << " - Links in level " << kbl_it->first << ": " << kbl_it->second.size() << std::endl;
+				const std::vector<std::string>& linksInLevel = kbl_it->second;
+				for (size_t m = 0; m < linksInLevel.size(); ++m)
+				{
+					std::cout << "    - link " << linksInLevel[m] << std::endl;
+					
+					std::map<std::string, std::vector<std::pair<unsigned int, Assimp::Collada::Transform> > > transformsByIndex;
 
-                    std::map<std::string, std::vector<std::pair<unsigned int, Assimp::Collada::Transform> > > transformsByIndex;
+					for (size_t n = 0; n < rt_stack.transformStack.size(); ++n)
+					{	
+						if (rt_stack.transformStack[n].first.compare(linksInLevel[m]) == 0)
+						{
+							const Assimp::RelativeTransformEntry& rt_entry = rt_stack.transformStack[n].second;
+							const Assimp::Collada::Transform& tf = rt_stack.transformStack[n].second.transform;
 
-                    for (size_t n = 0; n < rt_stack.transformStack.size(); ++n)
-                    {
-                        if (rt_stack.transformStack[n].first.compare(linksInLevel[m]) == 0)
-                        {
-                            const Assimp::RelativeTransformEntry& rt_entry = rt_stack.transformStack[n].second;
-                            const Assimp::Collada::Transform& tf = rt_stack.transformStack[n].second.transform;
+							if (transformsByIndex.find(rt_entry.indicesToPostLinks.begin()->second) == transformsByIndex.end())
+								transformsByIndex.insert(std::make_pair(rt_entry.indicesToPostLinks.begin()->second, std::vector<std::pair<unsigned int, Assimp::Collada::Transform> >()));
 
-                            if (transformsByIndex.find(rt_entry.indicesToPostLinks.begin()->second) == transformsByIndex.end())
-                                transformsByIndex.insert(std::make_pair(rt_entry.indicesToPostLinks.begin()->second, std::vector<std::pair<unsigned int, Assimp::Collada::Transform> >()));
+							std::cout << "      -> matching transform: ";
+							if (tf.mType == Assimp::Collada::TF_TRANSLATE)
+								std::cout << "postLink index " << rt_entry.indicesToPostLinks.begin()->first << ", translation by " << tf.f[0] << ", " << tf.f[1] << ", " << tf.f[2];
+							else if (tf.mType == Assimp::Collada::TF_ROTATE)
+								std::cout << "postLink index " << rt_entry.indicesToPostLinks.begin()->first << ", rotation    around " << tf.f[0] << "," << tf.f[1] << "," << tf.f[2] << " by " << tf.f[3] << " deg.";
 
-                            std::cout << "      -> matching transform: ";
-                            if (tf.mType == Assimp::Collada::TF_TRANSLATE)
-                                std::cout << "postLink index " << rt_entry.indicesToPostLinks.begin()->first << ", translation by " << tf.f[0] << ", " << tf.f[1] << ", " << tf.f[2];
-                            else if (tf.mType == Assimp::Collada::TF_ROTATE)
-                                std::cout << "postLink index " << rt_entry.indicesToPostLinks.begin()->first << ", rotation    around " << tf.f[0] << "," << tf.f[1] << "," << tf.f[2] << " by " << tf.f[3] << " deg.";
+							transformsByIndex[rt_entry.indicesToPostLinks.begin()->second].push_back(std::make_pair(rt_entry.indicesToPostLinks.begin()->first, tf));
 
-                            transformsByIndex[rt_entry.indicesToPostLinks.begin()->second].push_back(std::make_pair(rt_entry.indicesToPostLinks.begin()->first, tf));
+							std::cout << " from " << rt_entry.elementId << " to: ";
+							if (rt_entry.indicesToPostLinks.size() == 1)
+							{
+								std::cout << rt_entry.indicesToPostLinks.begin()->second;
+							}
+							else
+							{
+								std::cout << rt_entry.indicesToPostLinks.size() << " post-links.";
+							}
+							std::cout << std::endl;
+						}
+					}
 
-                            std::cout << " from " << rt_entry.elementId << " to: ";
-                            if (rt_entry.indicesToPostLinks.size() == 1)
-                            {
-                                std::cout << rt_entry.indicesToPostLinks.begin()->second;
-                            }
-                            else
-                            {
-                                std::cout << rt_entry.indicesToPostLinks.size() << " post-links.";
-                            }
-                            std::cout << std::endl;
-                        }
-                    }
+					std::cout << "      ===== SORTED POST-LINK LIST WITH TRANSFORMS =====" << std::endl;
+					for (std::map<std::string, std::vector<std::pair<unsigned int, Assimp::Collada::Transform> > >::const_iterator tr_it = transformsByIndex.begin(); tr_it != transformsByIndex.end(); ++tr_it)
+					{
+						std::cout << "     -> post-link " << tr_it->first << ": " << std::endl;
+						const std::vector<std::pair<unsigned int, Assimp::Collada::Transform > >& pl_transforms = tr_it->second;
 
-                    std::cout << "      ===== SORTED POST-LINK LIST WITH TRANSFORMS =====" << std::endl;
-                    for (std::map<std::string, std::vector<std::pair<unsigned int, Assimp::Collada::Transform> > >::const_iterator tr_it = transformsByIndex.begin(); tr_it != transformsByIndex.end(); ++tr_it)
-                    {
-                        std::cout << "     -> post-link " << tr_it->first << ": " << std::endl;
-                        const std::vector<std::pair<unsigned int, Assimp::Collada::Transform > >& pl_transforms = tr_it->second;
+						std::vector<Assimp::Collada::Transform> relativeTransforms;
+						for (size_t m = 0; m < pl_transforms.size(); ++m)
+						{
+							if (pl_transforms[m].second.mType == Assimp::Collada::TF_TRANSLATE)
+							{
+								std::cout << "      postLink index " << pl_transforms[m].first << ", translation by " << pl_transforms[m].second.f[0] << ", " << pl_transforms[m].second.f[1] << ", " << pl_transforms[m].second.f[2] << std::endl;
+								relativeTransforms.push_back(pl_transforms[m].second);
+							}
+							else if (pl_transforms[m].second.mType == Assimp::Collada::TF_ROTATE)
+							{
+								std::cout << "      postLink index " << pl_transforms[m].first << ", rotation    around " << pl_transforms[m].second.f[0] << "," << pl_transforms[m].second.f[1] << "," << pl_transforms[m].second.f[2] << " by " << pl_transforms[m].second.f[3] << " deg." << std::endl;
+								relativeTransforms.push_back(pl_transforms[m].second);
+							}
+						}
 
-                        std::vector<Assimp::Collada::Transform> relativeTransforms;
-                        for (size_t m = 0; m < pl_transforms.size(); ++m)
-                        {
-                            if (pl_transforms[m].second.mType == Assimp::Collada::TF_TRANSLATE)
-                            {
-                                std::cout << "      postLink index " << pl_transforms[m].first << ", translation by " << pl_transforms[m].second.f[0] << ", " << pl_transforms[m].second.f[1] << ", " << pl_transforms[m].second.f[2] << std::endl;
-                                relativeTransforms.push_back(pl_transforms[m].second);
-                            }
-                            else if (pl_transforms[m].second.mType == Assimp::Collada::TF_ROTATE)
-                            {
-                                std::cout << "      postLink index " << pl_transforms[m].first << ", rotation    around " << pl_transforms[m].second.f[0] << "," << pl_transforms[m].second.f[1] << "," << pl_transforms[m].second.f[2] << " by " << pl_transforms[m].second.f[3] << " deg." << std::endl;
-                                relativeTransforms.push_back(pl_transforms[m].second);
-                            }
-                        }
+						aiQuaternion rotation;
+						aiVector3D position;
 
-                        aiQuaternion rotation;
-                        aiVector3D position;
+						aiMatrix4x4 pl_matrix = parser->CalculateResultTransform(relativeTransforms);
+						pl_matrix.DecomposeNoScaling(rotation, position);
 
-                        aiMatrix4x4 pl_matrix = parser->CalculateResultTransform(relativeTransforms);
-                        pl_matrix.DecomposeNoScaling(rotation, position);
+						Vector3 pl_translation(position.x, position.y, position.z);
+						Quaternion pl_quaternion(rotation.x, rotation.y, rotation.z, rotation.w);
 
-                        Vector3 pl_translation(position.x, position.y, position.z);
-                        Quaternion pl_quaternion(rotation.x, rotation.y, rotation.z, rotation.w);
-
-                        std::cout << "    --> resulting relative transform: translation = " << pl_translation << ", quaternion = " << pl_quaternion << std::endl;
-                        transformHelper->addJointTransform(k_ms.modelName, linksInLevel[m], tr_it->first, pl_translation, pl_quaternion);
-                    }
-                }
-            }
-        }
+						std::cout << "    --> resulting relative transform: translation = " << pl_translation << ", quaternion = " << pl_quaternion << std::endl;
+						transformHelper->addJointTransform(k_ms.modelName, linksInLevel[m], tr_it->first, pl_translation, pl_quaternion);
+					}
+				}
+			}
+		}
         else
         {
             std::cerr << "" << std::endl;
         }
 
         std::cout << "Adding to kinematicsModels: " << k_ms.modelName << std::endl;
-        kinematicsModels[k_ms.modelName] = k_ms;
-    }
+		kinematicsModels[k_ms.modelName] = k_ms;
+	}
 
-    void buildJointHierarchyRecHelper(const Assimp::Collada::KinematicsModel& kinModel, const std::string& rootJoint, KinematicModelStructure& kms, unsigned int level)
-    {
-        std::cout << " buildJointHierarchyRecHelper(): level = " << level << ", rootJoint = " << rootJoint << std::endl;
-        std::vector<std::string> childJoints;
-        for (std::map<std::string, std::string>::const_iterator lit = kinModel.preLinks.begin(); lit != kinModel.preLinks.end(); ++lit)
-        {
-            if (lit->second.compare(rootJoint) == 0)
-            {
-                std::cout << " Level " << level << " joint added: " << lit->first << std::endl;
-                kms.kinematicJointsByLevel[level].push_back(lit->first);
-                childJoints.push_back(lit->first);
-            }
-        }
+	void buildJointHierarchyRecHelper(const Assimp::Collada::KinematicsModel& kinModel, const std::string& rootJoint, KinematicModelStructure& kms, unsigned int level)
+	{
+		std::cout << " buildJointHierarchyRecHelper(): level = " << level << ", rootJoint = " << rootJoint << std::endl;
+		std::vector<std::string> childJoints;
+		for (std::map<std::string, std::string>::const_iterator lit = kinModel.preLinks.begin(); lit != kinModel.preLinks.end(); ++lit)
+		{
+			if (lit->second.compare(rootJoint) == 0)
+			{
+				std::cout << " Level " << level << " joint added: " << lit->first << std::endl;
+				kms.kinematicJointsByLevel[level].push_back(lit->first);
+				childJoints.push_back(lit->first);
+			}
+		}
 
-        if (childJoints.size() > 0)
-        {
-            for (int k = 0; k < childJoints.size(); ++k)
-            {
-                this->buildJointHierarchyRecHelper(kinModel, childJoints[k], kms, level + 1);
-            }
-        }
-    }
+		if (childJoints.size() > 0)
+		{
+			for (int k = 0; k < childJoints.size(); ++k)
+			{
+				this->buildJointHierarchyRecHelper(kinModel, childJoints[k], kms, level + 1);
+			}
+		}
+	}
 };
 
 ZyColladaLoader::ZyColladaLoader() : SceneLoader()
@@ -430,16 +431,16 @@ ZyColladaLoader::ZyColladaLoader() : SceneLoader()
 {
     d = new ZyColladaLoaderPrivate();
     m_transformHelper = new ColladaTransformHelper();
-    importer = new Assimp::Importer();
+	importer = new Assimp::Importer();
 }
 
 ZyColladaLoader::~ZyColladaLoader()
 {
     importer->FreeScene();
-    delete importer;
-    importer = NULL;
-    delete d;
-    d = NULL;
+	delete importer; 
+	importer = NULL;
+	delete d;
+	d = NULL;
     if (m_transformHelper)
     {
         delete m_transformHelper;
@@ -577,7 +578,7 @@ void ZyColladaLoader::draw(const sofa::core::visual::VisualParams *vparams)
 {
     if (m_transformHelper != NULL)
         m_transformHelper->draw(vparams);
-
+        
                     /*static Vec<4,float> red  (1.0,0.2,0.2,1);
                     static Vec<4,float> green(0.2,1.0,0.2,1);
                     static Vec<4,float> blue (0.2,0.2,1.0,1);
@@ -591,7 +592,7 @@ void ZyColladaLoader::draw(const sofa::core::visual::VisualParams *vparams)
                             DrawLine(vparams, t.jointTrans+t.obj1Quat.rotate(t.obj1Trans), t.jointTrans+t.obj1Quat.rotate(t.obj1Trans)+t.obj2Trans, blue);
                         }
                     }*/
-
+                    
 }
 
 int ZyColladaLoader::CalcNumAxes(aiVector3D &vec) {
@@ -756,7 +757,7 @@ int ZyColladaLoader::CreateArticulatedJointHierarchy(std::stringstream &ss, aiJo
            << std::setw(i * 4) << "" << "{" << std::endl
            << std::setw(i * 4) << "" << "    OFFSET    " << j->mTranslationRel.x << " " << j->mTranslationRel.y << " " << j->mTranslationRel.z << "" << std::endl
            << std::setw(i * 4) << "" << "    CHANNELS  " << numAxes << " " << GetAxes(j->mAxis, j->mType) << "" << std::endl;
-
+											 
 #if 0
         if (this->m_transformHelper != NULL)
         {
@@ -1243,47 +1244,47 @@ bool ZyColladaLoader::readDAE(std::ifstream &file, const char* filename)
     // importing scene
     const aiScene* currentAiScene = importer->ReadFile(m_filename.getValue(), 0);
 
-    if (!currentAiScene)
-    {
-        serr << "Collada import failed: " << importer->GetErrorString() << sendl;
-        return false;
-    }
+	if (!currentAiScene)
+	{
+		serr << "Collada import failed: " << importer->GetErrorString() << sendl;
+		return false;
+	}
 
     //tst Anfang
     //std::map<std::string, Assimp::Collada::Mesh*> meshesInFile;
     //tst Ende
 
-    //std::string fileExtension(importer.GetImporterInfo(0)->mFileExtensions);
-    std::cout << "=== COLLADA parser data evaluation ===" << std::endl;
-    //std::cout << " fileExtension(s) = " << fileExtension << std::endl;
-    //if (fileExtension.compare("dae") == 0)
-    {
-        std::map<std::string, std::string> kinematicModelInstances;
-        std::map<std::string, std::string> kinematicModelInstancesParams;
-        std::map<std::string, unsigned int> kinematicModelInstanceReferences;
+	//std::string fileExtension(importer.GetImporterInfo(0)->mFileExtensions);
+	std::cout << "=== COLLADA parser data evaluation ===" << std::endl;
+	//std::cout << " fileExtension(s) = " << fileExtension << std::endl;
+	//if (fileExtension.compare("dae") == 0)
+	{
+		std::map<std::string, std::string> kinematicModelInstances;
+		std::map<std::string, std::string> kinematicModelInstancesParams;
+		std::map<std::string, unsigned int> kinematicModelInstanceReferences;
 
-        Assimp::BaseImporter* baseImporter = importer->GetImporter("dae");
-        if (baseImporter != NULL)
-        {
-            std::cout << " Our ColladaLoader instance was retrieved successfully." << std::endl;
+		Assimp::BaseImporter* baseImporter = importer->GetImporter("dae");
+		if (baseImporter != NULL)
+		{
+			std::cout << " Our ColladaLoader instance was retrieved successfully." << std::endl;
             Assimp::ColladaArschFotze* colladaLoader = dynamic_cast<Assimp::ColladaArschFotze*>(baseImporter);
 
-            if (colladaLoader != NULL)
-            {
+			if (colladaLoader != NULL)
+			{
                 std::vector<Assimp::ColladaArschFotze::ParserStruct>& colladaParsers = colladaLoader->getParsers();
 
-                std::cout << " Parser instances: " << colladaParsers.size() << std::endl;
-                unsigned int parserCount = 0;
+				std::cout << " Parser instances: " << colladaParsers.size() << std::endl;
+				unsigned int parserCount = 0;
                 for (std::vector<Assimp::ColladaArschFotze::ParserStruct>::iterator pit = colladaParsers.begin(); pit != colladaParsers.end(); ++pit)
-                {
-                    //Assimp::ColladaLoader::ParserStruct& ps = *pit;
-                    Assimp::ColladaParser* parser = pit->parser;
-                    std::cout << " Parser " << parserCount << std::endl;
-                    Assimp::ColladaParser::InstanceKinematicsModelLibrary& instKinModels = parser->getInstanceKinematicsModelLibrary();
-                    Assimp::ColladaParser::KinematicsModelLibrary& kinModels = parser->getKinematicsModelLibrary();
-                    Assimp::ColladaParser::InstanceJointLibrary& instJoints = parser->getInstanceJointLibrary();
-                    Assimp::ColladaParser::JointLibrary& joints = parser->getJointLibrary();
-                    Assimp::ColladaParser::LinkLibrary& links = parser->getLinkLibrary();
+				{
+					//Assimp::ColladaLoader::ParserStruct& ps = *pit;
+					Assimp::ColladaParser* parser = pit->parser;
+					std::cout << " Parser " << parserCount << std::endl;
+					Assimp::ColladaParser::InstanceKinematicsModelLibrary& instKinModels = parser->getInstanceKinematicsModelLibrary();
+					Assimp::ColladaParser::KinematicsModelLibrary& kinModels = parser->getKinematicsModelLibrary();
+					Assimp::ColladaParser::InstanceJointLibrary& instJoints = parser->getInstanceJointLibrary();
+					Assimp::ColladaParser::JointLibrary& joints = parser->getJointLibrary();
+					Assimp::ColladaParser::LinkLibrary& links = parser->getLinkLibrary();
 
                     Assimp::ColladaParser::KinematicsModelLibrary& kinModelContainers = parser->getKinematicsModelLibraryContainers();
                     // tst Anfang
@@ -1294,138 +1295,138 @@ bool ZyColladaLoader::readDAE(std::ifstream &file, const char* filename)
                     }*/
                     // tst Ende
 
+					
+					std::cout << "  * InstanceKinematicsModel count: " << instKinModels.size() << std::endl;
+					for (Assimp::ColladaParser::InstanceKinematicsModelLibrary::iterator it = instKinModels.begin(); it != instKinModels.end(); ++it)
+					{
+						std::cout << "   - " << it->first << ": id = " << it->second.id << " -- sid = " << it->second.sid << " -- url = " << it->second.url << std::endl;
+						if (kinematicModelInstances.find(it->second.id) == kinematicModelInstances.end())
+						{
+							kinematicModelInstances.insert(std::make_pair(it->second.id, it->second.url));
+							kinematicModelInstancesParams.insert(std::make_pair(it->second.id, it->second.param));
+						}
+						if (kinematicModelInstanceReferences.find(it->second.id) == kinematicModelInstanceReferences.end())
+						{
+							kinematicModelInstanceReferences.insert(std::make_pair(it->second.id, 1));
+						}
+						else
+						{
+							kinematicModelInstanceReferences[it->second.id] += 1;
+						}
+					}
 
-                    std::cout << "  * InstanceKinematicsModel count: " << instKinModels.size() << std::endl;
-                    for (Assimp::ColladaParser::InstanceKinematicsModelLibrary::iterator it = instKinModels.begin(); it != instKinModels.end(); ++it)
-                    {
-                        std::cout << "   - " << it->first << ": id = " << it->second.id << " -- sid = " << it->second.sid << " -- url = " << it->second.url << std::endl;
-                        if (kinematicModelInstances.find(it->second.id) == kinematicModelInstances.end())
-                        {
-                            kinematicModelInstances.insert(std::make_pair(it->second.id, it->second.url));
-                            kinematicModelInstancesParams.insert(std::make_pair(it->second.id, it->second.param));
-                        }
-                        if (kinematicModelInstanceReferences.find(it->second.id) == kinematicModelInstanceReferences.end())
-                        {
-                            kinematicModelInstanceReferences.insert(std::make_pair(it->second.id, 1));
-                        }
-                        else
-                        {
-                            kinematicModelInstanceReferences[it->second.id] += 1;
-                        }
-                    }
+					std::cout << "    ==> Model instances identified: " << kinematicModelInstances.size() << std::endl;
+					for (std::map<std::string, std::string>::const_iterator nit = kinematicModelInstances.begin(); nit != kinematicModelInstances.end(); ++nit)
+						std::cout << "     - " << nit->first << ": " << nit->second << ", referenced " << kinematicModelInstanceReferences[nit->first] << " times." << std::endl;
 
-                    std::cout << "    ==> Model instances identified: " << kinematicModelInstances.size() << std::endl;
-                    for (std::map<std::string, std::string>::const_iterator nit = kinematicModelInstances.begin(); nit != kinematicModelInstances.end(); ++nit)
-                        std::cout << "     - " << nit->first << ": " << nit->second << ", referenced " << kinematicModelInstanceReferences[nit->first] << " times." << std::endl;
+					std::cout << "  * KinematicsModel count: " << kinModels.size() << std::endl;
+					for (Assimp::ColladaParser::KinematicsModelLibrary::iterator it = kinModels.begin(); it != kinModels.end(); ++it)
+					{
+						std::string kin_model_instance_id;
+						std::cout << "   - " << it->first << ": id = " << it->second.id << " -- name = " << it->second.name << std::endl;
+						/*for (std::map<std::string, std::string>::const_iterator nit = kinematicModelInstances.begin(); nit != kinematicModelInstances.end(); ++nit)
+						{
+							if (nit->second.compare(it->second.id) == 0)
+							{
+								std::cout << "    --> found matching instance_kinematics_model: " << nit->first << std::endl;
+								kin_model_instance_id = nit->first;
+							}
+						}*/
 
-                    std::cout << "  * KinematicsModel count: " << kinModels.size() << std::endl;
-                    for (Assimp::ColladaParser::KinematicsModelLibrary::iterator it = kinModels.begin(); it != kinModels.end(); ++it)
-                    {
-                        std::string kin_model_instance_id;
-                        std::cout << "   - " << it->first << ": id = " << it->second.id << " -- name = " << it->second.name << std::endl;
-                        /*for (std::map<std::string, std::string>::const_iterator nit = kinematicModelInstances.begin(); nit != kinematicModelInstances.end(); ++nit)
-                        {
-                            if (nit->second.compare(it->second.id) == 0)
-                            {
-                                std::cout << "    --> found matching instance_kinematics_model: " << nit->first << std::endl;
-                                kin_model_instance_id = nit->first;
-                            }
-                        }*/
+						std::cout << "      search for identifier '" << it->second.id << "' in KinematicModels container..." << std::endl;
+						std::cout << "      identifiers in KinematicModels container: ";
+						for (std::map<std::string, Assimp::Collada::KinematicsModel>::const_iterator kmit = kinModelContainers.begin(); kmit != kinModelContainers.end(); ++kmit)
+						{
+							std::cout << it->first << ";";
+						}
+						std::cout << std::endl;
 
-                        std::cout << "      search for identifier '" << it->second.id << "' in KinematicModels container..." << std::endl;
-                        std::cout << "      identifiers in KinematicModels container: ";
-                        for (std::map<std::string, Assimp::Collada::KinematicsModel>::const_iterator kmit = kinModelContainers.begin(); kmit != kinModelContainers.end(); ++kmit)
-                        {
-                            std::cout << it->first << ";";
-                        }
-                        std::cout << std::endl;
+						if (kinModelContainers.find(it->second.id) != kinModelContainers.end())
+						{
+							Assimp::Collada::KinematicsModel& kin_model_container = kinModelContainers[it->second.id];
+							Assimp::Collada::KinematicsModel& kin_model = kinModels[it->second.id];
 
-                        if (kinModelContainers.find(it->second.id) != kinModelContainers.end())
-                        {
-                            Assimp::Collada::KinematicsModel& kin_model_container = kinModelContainers[it->second.id];
-                            Assimp::Collada::KinematicsModel& kin_model = kinModels[it->second.id];
+							std::cout << "     --> found matching KinematicModel container; instance_joints count = " << kin_model_container.jointInstances.size() << std::endl;
+							/*for (int k = 0; k < kin_model_container.jointInstances.size(); ++k)
+							{
+								std::string jointInstanceName = kin_model_container.jointInstances[k];
+								if (jointInstanceName.at(0) == '#')
+									jointInstanceName = jointInstanceName.substr(1);
 
-                            std::cout << "     --> found matching KinematicModel container; instance_joints count = " << kin_model_container.jointInstances.size() << std::endl;
-                            /*for (int k = 0; k < kin_model_container.jointInstances.size(); ++k)
-                            {
-                                std::string jointInstanceName = kin_model_container.jointInstances[k];
-                                if (jointInstanceName.at(0) == '#')
-                                    jointInstanceName = jointInstanceName.substr(1);
+								std::cout << "         * looking for joint_instance '" << jointInstanceName << "'" << std::endl;
+							}*/
 
-                                std::cout << "         * looking for joint_instance '" << jointInstanceName << "'" << std::endl;
-                            }*/
+							std::cout << "      rootLinkName = " << kin_model.rootLinkName << std::endl;
+							std::cout << "      number of post-link entries = " <<  kin_model.links.size() << ", number of pre-link entries = " << kin_model.preLinks.size() << std::endl;
+							std::cout << "      ====== Parent -> child relations ======" << std::endl;
 
-                            std::cout << "      rootLinkName = " << kin_model.rootLinkName << std::endl;
-                            std::cout << "      number of post-link entries = " <<  kin_model.links.size() << ", number of pre-link entries = " << kin_model.preLinks.size() << std::endl;
-                            std::cout << "      ====== Parent -> child relations ======" << std::endl;
+							std::string rootJoint;
 
-                            std::string rootJoint;
+							for (std::multimap<std::string, std::string>::const_iterator lit = kin_model.links.begin(); lit != kin_model.links.end(); ++lit)
+							{
+								std::cout << "      -> " << lit->first << " is parent of " << lit->second << std::endl;
+							}
+							std::cout << "      ====== Child -> parent relations ======" << std::endl;
+							for (std::map<std::string, std::string>::const_iterator lit = kin_model.preLinks.begin(); lit != kin_model.preLinks.end(); ++lit)
+							{
+								std::cout << "      -> " << lit->first << " is child of " << lit->second << std::endl;
+								if (lit->second.empty())
+								{
+									rootJoint = lit->first;
+									std::cout << "      found rootJoint: " << rootJoint << std::endl;
+								}
+							}
 
-                            for (std::multimap<std::string, std::string>::const_iterator lit = kin_model.links.begin(); lit != kin_model.links.end(); ++lit)
-                            {
-                                std::cout << "      -> " << lit->first << " is parent of " << lit->second << std::endl;
-                            }
-                            std::cout << "      ====== Child -> parent relations ======" << std::endl;
-                            for (std::map<std::string, std::string>::const_iterator lit = kin_model.preLinks.begin(); lit != kin_model.preLinks.end(); ++lit)
-                            {
-                                std::cout << "      -> " << lit->first << " is child of " << lit->second << std::endl;
-                                if (lit->second.empty())
-                                {
-                                    rootJoint = lit->first;
-                                    std::cout << "      found rootJoint: " << rootJoint << std::endl;
-                                }
-                            }
+							if (!rootJoint.empty())
+							{
+								d->buildJointHierarchyRec(colladaLoader, parser, kin_model, rootJoint, kinematicModelInstancesParams, m_transformHelper);
 
-                            if (!rootJoint.empty())
-                            {
-                                d->buildJointHierarchyRec(colladaLoader, parser, kin_model, rootJoint, kinematicModelInstancesParams, m_transformHelper);
+								std::cout << "================================================" << std::endl;
+								std::cout << "-------- TRANSFORM HIERARCHY DUMP BEGIN --------" << std::endl;
+								std::cout << "================================================" << std::endl;
+								m_transformHelper->dumpJointHierarchies();
+								std::cout << "================================================" << std::endl;
+								std::cout << "-------- TRANSFORM HIERARCHY DUMP END   --------" << std::endl;
+								std::cout << "================================================" << std::endl;
+							}
+						}
+						else
+						{
+							std::cout << "    WARNING: No KinematicModel container found for " << it->second.id << std::endl;
+						}
+					}
 
-                                std::cout << "================================================" << std::endl;
-                                std::cout << "-------- TRANSFORM HIERARCHY DUMP BEGIN --------" << std::endl;
-                                std::cout << "================================================" << std::endl;
-                                m_transformHelper->dumpJointHierarchies();
-                                std::cout << "================================================" << std::endl;
-                                std::cout << "-------- TRANSFORM HIERARCHY DUMP END   --------" << std::endl;
-                                std::cout << "================================================" << std::endl;
-                            }
-                        }
-                        else
-                        {
-                            std::cout << "    WARNING: No KinematicModel container found for " << it->second.id << std::endl;
-                        }
-                    }
+					/*std::cout << "  * InstanceJoint count: " << instJoints.size() << std::endl;
+					for (Assimp::ColladaParser::InstanceJointLibrary::iterator it = instJoints.begin(); it != instJoints.end(); ++it)
+					{
+						std::cout << "   - " << it->first << ": kinmodId = " << it->second.kinmodId << " -- kinmodName = " << it->second.kinmodName << " -- sid = " << it->second.sid << " -- url = " << it->second.url << std::endl;
+					}
 
-                    /*std::cout << "  * InstanceJoint count: " << instJoints.size() << std::endl;
-                    for (Assimp::ColladaParser::InstanceJointLibrary::iterator it = instJoints.begin(); it != instJoints.end(); ++it)
-                    {
-                        std::cout << "   - " << it->first << ": kinmodId = " << it->second.kinmodId << " -- kinmodName = " << it->second.kinmodName << " -- sid = " << it->second.sid << " -- url = " << it->second.url << std::endl;
-                    }
+					std::cout << "  * Joints count: " << joints.size() << std::endl;
+					for (Assimp::ColladaParser::JointLibrary::iterator it = joints.begin(); it != joints.end(); ++it)
+					{
+						std::cout << "   - " << it->first << ": id = " << it->second.id << " -- name = " << it->second.name << std::endl;
+					}
 
-                    std::cout << "  * Joints count: " << joints.size() << std::endl;
-                    for (Assimp::ColladaParser::JointLibrary::iterator it = joints.begin(); it != joints.end(); ++it)
-                    {
-                        std::cout << "   - " << it->first << ": id = " << it->second.id << " -- name = " << it->second.name << std::endl;
-                    }
+					std::cout << "  * Links count: " << links.size() << std::endl;
+					for (Assimp::ColladaParser::LinkLibrary::iterator it = links.begin(); it != links.end(); ++it)
+					{
+						std::cout << "   - " << it->first << ": id = " << it->second.id << " -- kinmodId = " << it->second.kinmodId << " -- kinmodName = " << it->second.kinmodName << " -- joint = " << it->second.joint << std::endl;
+					}*/
 
-                    std::cout << "  * Links count: " << links.size() << std::endl;
-                    for (Assimp::ColladaParser::LinkLibrary::iterator it = links.begin(); it != links.end(); ++it)
-                    {
-                        std::cout << "   - " << it->first << ": id = " << it->second.id << " -- kinmodId = " << it->second.kinmodId << " -- kinmodName = " << it->second.kinmodName << " -- joint = " << it->second.joint << std::endl;
-                    }*/
-
-                    parserCount++;
-                }
-            }
-            else
-            {
-                std::cout << "dynamic_cast to ColladaLoader failed! Should not happen..." << std::endl;
-            }
-        }
-        else
-        {
-            std::cout << "assimp reports missing .dae support! Should not happen..." << std::endl;
-        }
-    }
+					parserCount++;
+				}
+			}
+			else
+			{
+				std::cout << "dynamic_cast to ColladaLoader failed! Should not happen..." << std::endl;
+			}
+		}
+		else
+		{
+			std::cout << "assimp reports missing .dae support! Should not happen..." << std::endl;
+		}
+	}
 
     // asd anfang
     /*for (unsigned int fff = 0; fff < currentAiScene->mNumMeshes; ++fff)
@@ -1795,7 +1796,7 @@ bool ZyColladaLoader::readDAE(std::ifstream &file, const char* filename)
                         robCon->setToolController(arbitraryControl.get());
                     }
 #endif
-
+                    
                     // get min and max values and write to ArbitraryControl
                     std::vector<double> minValues;
                     std::vector<double> maxValues;
@@ -2517,7 +2518,7 @@ bool ZyColladaLoader::readDAE(std::ifstream &file, const char* filename)
                                     currentUniformMass->setTotalMass(p->mass);
 
                                     // Zyklio TODO: This used to be setRayleighMass!
-                                    // currentUniformMass->setMass(1.0);
+									// currentUniformMass->setMass(1.0);
 
                                     if (isAttatchedToJoint && !isForceSensitiveTool)
                                     {
@@ -2623,8 +2624,8 @@ bool ZyColladaLoader::readDAE(std::ifstream &file, const char* filename)
                             nameStream << "Kinematics_" << ji.mName;
                             rigidRigidMapping->setName(nameStream.str());
 
-                            // FA: multTest for Schunk Demo with SVH hand
-                            // rigidRigidMapping->globalToLocalCoords.setValue(true);
+							// FA: multTest for Schunk Demo with SVH hand
+							// rigidRigidMapping->globalToLocalCoords.setValue(true);
 
                             currentSubNode->addObject(rigidRigidMapping);
                         }
@@ -2877,7 +2878,7 @@ bool ZyColladaLoader::readDAE(std::ifstream &file, const char* filename)
                                     seqQuads.push_back(quads[k]);
                             }
                         }
-                    }
+                    }                    
 
                     // generating a second MechanicalObject and filling up its properties
                     MechanicalObject<Vec3dTypes>::SPtr currentTransMechanicalObject = sofa::core::objectmodel::New<MechanicalObject<Vec3dTypes> >();
@@ -3063,8 +3064,8 @@ bool ZyColladaLoader::readDAE(std::ifstream &file, const char* filename)
 
                             currentRigidMapping->setName(nameStream.str());
 
-                            // FA: Test for Schunk Demo with the SVH
-                            // currentRigidMapping->globalToLocalCoords.setValue(true);
+							// FA: Test for Schunk Demo with the SVH
+							// currentRigidMapping->globalToLocalCoords.setValue(true);
 
                             if (isSubMesh) {
                                 // Directly couple subMesh to the Base Node of the parent
@@ -3248,20 +3249,11 @@ bool ZyColladaLoader::readDAE(std::ifstream &file, const char* filename)
                             {
                                 visualMesh = getAiMeshByName(p->mVisualModel->C_Str(), currentAiScene);
                                 //collisionMesh = meshesInFile[p->mCollisionModel->C_Str()];
-
+                                
                                 if (visualMesh)
                                 {
                                     std::cout << "Visual model: " << visualMesh->mName.C_Str() << std::endl;
                                 }
-                                /*else
-                                {
-                                    std::cout << "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" << std::endl;
-                                }*/
-                            }
-                            /*else
-                            {
-                                std::cout << "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" << std::endl;
-                            }*/
                         }
 
                         aiMesh* currentMeshTmp = currentAiMesh;
@@ -3509,7 +3501,7 @@ noTrianglesEnd:  // Badass hack goto (for other types than triangles)
                     }
 
                     // Zykl.io begin
-                    if (switchedModels)
+                    if (switchedModels) 
                     {
                     // Zykl.io end
                         // Zykl.io begin
@@ -3610,7 +3602,13 @@ noTrianglesEnd:  // Badass hack goto (for other types than triangles)
     return true;
 }
 
-bool ZyColladaLoader::fillSkeletalInfo(const aiScene* scene, aiNode* meshParentNode, aiNode* meshNode, aiMatrix4x4 meshTransformation, aiMesh* mesh, helper::vector<SkeletonJoint<Rigid3dTypes> >& skeletonJoints, helper::vector<SkeletonBone>& skeletonBones) const
+bool ZyColladaLoader::fillSkeletalInfo(const aiScene* scene,
+                                       aiNode* meshParentNode,
+                                       aiNode* meshNode,
+                                       aiMatrix4x4 meshTransformation,
+                                       aiMesh* mesh,
+                                       helper::vector<SkeletonJoint<Rigid3dTypes> >& skeletonJoints,
+                                       helper::vector<SkeletonBone>& skeletonBones) const
 {
     //std::cout << "fillSkeletalInfo : begin" << std::endl;
 
@@ -3897,3 +3895,4 @@ aiMesh* ZyColladaLoader::getAiMeshByName(std::string meshName, const aiScene* co
 } // namespace component
 
 } // namespace sofa
+

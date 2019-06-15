@@ -135,7 +135,7 @@ void ZyROSConnector::rosLoop()
 	m_connectorThreadActive = true;
 	m_runCondition.notify_all();
 	while (ros::ok())
-        {
+    {
         // Clean up ROS subscribers that are no longer active
         for (size_t k = 0; k < m_d->m_connectorThread->m_activeSubscribers.size(); ++k)
         {
@@ -164,6 +164,7 @@ void ZyROSConnector::rosLoop()
                     m_d->m_connectorThread->m_serviceClients[k]->dispatchRequests();
             }
         }
+
 		ros::getGlobalCallbackQueue()->callAvailable(ros::WallDuration(0.01));
 	}
 
@@ -253,9 +254,9 @@ void ZyROSConnector::startConnector()
 #endif
 
 	if (master_uri_env != NULL)
-	      msg_warning() << "After _putenv -- Connecting to ROS master: " << master_uri_env;
+      msg_warning() << "After _putenv -- Connecting to ROS master: " << master_uri_env;
 	else
-	      msg_error() << "No ROS_MASTER_URI set! Did putenv fail?";
+      msg_error() << "No ROS_MASTER_URI set! Did putenv fail?";
 
 	if (!ros::isInitialized())
 	{

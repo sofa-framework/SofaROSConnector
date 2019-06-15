@@ -30,6 +30,9 @@ namespace Zyklio
     {
         using namespace Zyklio::MultiThreading;
 
+        /*template <class RequestType, class ResponseType, class RequestHandler>
+        class SOFA_ZY_ROS_CONNECTOR_API ZyROSConnectorServiceServerImpl;*/
+
         // Data members in private implementation
         class ZyROSConnectorServiceServerPrivate;
         class SOFA_ZY_ROS_CONNECTOR_API ZyROSConnectorServiceServer
