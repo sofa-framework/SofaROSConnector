@@ -62,9 +62,9 @@ add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
 
 target_link_libraries(${PROJECT_NAME} SofaCore SofaHelper SofaDefaultType SofaBaseCollision SofaConstraint SofaSimulationCommon SofaMiscFem tinyxml newmat)
 target_link_libraries(${PROJECT_NAME} ZyMultiThreading)
-target_link_libraries(${PROJECT_NAME} ZyGripping)
+# target_link_libraries(${PROJECT_NAME} ZyGripping)
 target_link_libraries(${PROJECT_NAME} ZySOFAControllers)
-target_link_libraries(${PROJECT_NAME} ZyVelocityApproximation)
+# target_link_libraries(${PROJECT_NAME} ZyVelocityApproximation)
 target_link_libraries(${PROJECT_NAME} ${ROS_LIBRARY} ${ROS_CPP_LIBRARY} ${ROS_CPPCOMMON_LIBRARY} ${ROS_TIME_LIBRARY} ${ROS_CONSOLE_LIBRARY} ${ROS_CPP_SERIALIZATION_LIBRARY})
 
 target_link_libraries(${PROJECT_NAME} ${Boost_REGEX_LIBRARY} ${Boost_THREAD_LIBRARY} ${Boost_SIGNALS_LIBRARY})
