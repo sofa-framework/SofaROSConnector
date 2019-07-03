@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<Node 	 name="Root"  dt="0.04" gravity="0 0 -9.81" >
+	
+	<!-- <RequiredPlugin name="ObbTreeGPU"/> -->
+	<RequiredPlugin name="ZyROSConnectionManager"/>
+        <!--<RequiredPlugin name="TruPhysics"/>-->
+	<RequiredPlugin name="SofaPython"/>
+	
+	<!--<RequiredPlugin name="TruVelocityApproximation"/>
+        <RequiredPlugin name="TruGripping"/>-->
+	<RequiredPlugin name="TruColladaLoader"/>
+	
+	<InteractiveCamera name="interactiveCamera0" />
+	
+	<VisualStyle name="displayFlags"  displayFlags="showVisual showBehavior hideCollision hideMapping hideRendering hideNormals" />
+	<BackgroundSetting name="backgroundSetting" color='0.0 0.4 0.8'/>
+    <OglSceneFrame name="oglSceneFrame" style="Arrows" alignment="TopRight"/>
+	
+	<LocalMinDistance name="localMinDistance0" alarmDistance="2" contactDistance="1" angleCone="0.25" coneFactor="0.8" useLMDFilters="0"/>
+	<BruteForceDetection name="bruteForceDetection3"/>
+	
+	<TruPhysicsAnimationLoop name="AnimationLoop"  solveVelocityConstraintFirst="1" />
+	<RuleBasedContactManager name="Response" response="FrictionContact" rules="* * FrictionContact?mu=0.99999" />
+
+	<DefaultPipeline name="defaultPipeline1"/>
+		
+	<TruColladaLoader name="DAE_blendfix"  filename="ur10_withEGP.dae"  generateCollisionModels="1"  explicitWhitelist="1" useContactManifolds="0" />
+	
+    <GenericConstraintSolver name="genericConstraintSolver"  maxIterations="10000"  tolerance="0.000000001" />
+	<PythonScriptController filename="controller_manuell.py" classname="robotJointController" />
+	
+	<TruVelocityApproximator name="truPhysicsObjectManager"  rosControl="true"  selectedVertex="9960"  jointNameInJointStatesMsg="elbow_joint"  collisionNodePath="DAE_blendfix_scene/ur10/world_joint/shoulder_pan_joint/shoulder_lift_joint/elbow_joint/wrist_1_joint/wrist_2_joint/VIZ_wrist_2_link_0_002/rigid_18/mesh_18"  doWhat="velocity" />
+		
+	<TruRosConnectionManager name="truPhysicsRos" rosMasterURI="http://10.2.2.13:11311" rosTopics="/joint_states_throttle:::sensor_msgs::JointStates"/>
+	
+	<!-- <TruSimulationAnalyzer name="truAnalysis" targetName="falling_1_Object" linInput="0.0193195864558" rotInput="1.17648899555" targetMinHeight="-100.0" targetIterations="10" targetMovementTolerance="1.0"/> -->
+	
+	
+</Node>
+

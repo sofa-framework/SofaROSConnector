@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<Node 	 name="Root"  dt="0.04" gravity="0 0 -9.81" >
+	
+	<RequiredPlugin name="SofaMiscCollision"/>
+	<RequiredPlugin name="ZyROSConnectionManager"/>
+        <RequiredPlugin name="SofaPython"/>
+	
+	<RequiredPlugin name="ZyVelocityApproximation"/>
+        <RequiredPlugin name="ZyROSKinematics"/>
+	<RequiredPlugin name="ZyColladaLoader"/>
+	
+	<InteractiveCamera name="interactiveCamera0" />
+	
+	<VisualStyle name="displayFlags"  displayFlags="showVisual showBehavior hideCollision hideMapping hideRendering hideNormals" />
+	<BackgroundSetting name="backgroundSetting" color='0.0 0.4 0.8'/>
+        <OglSceneFrame name="oglSceneFrame" style="Arrows" alignment="TopRight"/>
+	
+	<LocalMinDistance name="localMinDistance0" alarmDistance="2" contactDistance="1" angleCone="0.25" coneFactor="0.8" useLMDFilters="0"/>
+	<BruteForceDetection name="bruteForceDetection3"/>
+	
+	<FreeMotionAnimationLoop name="AnimationLoop"  solveVelocityConstraintFirst="1" />
+	<RuleBasedContactManager name="Response" response="FrictionContact" rules="* * FrictionContact?mu=0.99999" />
+
+	<DefaultPipeline name="defaultPipeline1"/>
+		
+	<ZyColladaLoader name="DAE_blendfix"  filename="ur10_withEGP.dae"  generateCollisionModels="0"  explicitWhitelist="1" useContactManifolds="0" />
+	
+        <GenericConstraintSolver name="genericConstraintSolver"  maxIterations="10000"  tolerance="0.000000001" />
+        <PythonScriptController filename="controller_manuell.py" classname="ExampleController" printLog="true" />
+	
+	<ZyROSConnectionManager name="rosConnectionManager" rosMasterURI="http://127.0.0.1:11311" rosTopics="/joint_states:::sensor_msgs::JointState"/>
+        <!--<ZyROSConnectionManager name="rosConnectionManager" rosMasterURI="http://10.8.0.2:11311" rosTopics="/joint_states:::sensor_msgs::JointState"/>-->
+        
+        <ZyVelocityApproximator name="zyObjectManager" rosControl="true" selectedVertex="9960" jointNameInJointStatesMsg="elbow_joint" collisionNodePath="DAE_blendfix_scene/ur10/world_joint/shoulder_pan_joint/shoulder_lift_joint/elbow_joint/wrist_1_joint/wrist_2_joint/VIZ_wrist_2_link_0_002/rigid_18/mesh_18" doWhat="velocity"/>
+	<ZyROSKinematics name="zyROSKinematics" topicName="/joint_states" arbitraryControllerPath="DAE_blendfix_scene/KinematicsModels/ur10_kinematics_model.ur10_kinematics_model."/>
+</Node>
+
