@@ -38,7 +38,7 @@ namespace Zyklio
 
         using namespace sofa;
 
-        SOFA_DECL_CLASS(ZyROSSimulationAnalyzer);
+        SOFA_DECL_CLASS(ZyROSSimulationAnalyzer)
 
         int TruSimulationAnalyzerClass = core::RegisterObject("Component to determine if a simulation was successful")
         .add< ZyROSSimulationAnalyzer >()

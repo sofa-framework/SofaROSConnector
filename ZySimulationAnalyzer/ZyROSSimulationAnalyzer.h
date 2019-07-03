@@ -40,6 +40,9 @@
 #include <sofa/simulation/VectorOperations.h>
 
 #include <ZyROSPublishingHandler.h>
+#include <ZyROSConnectorTopicPublisher.h>
+
+#include <std_msgs/Float32MultiArray.h>
 
 #include <boost/date_time/posix_time/posix_time.hpp> 
 
@@ -74,7 +77,7 @@ namespace Zyklio
             void setRotInput(float rot) { rotInput = rot; }
 
             Zyklio::ROSPublishing::ZyROSPublishingHandler publishingHandler;
-            Zyklio::ROSConnector::ZyROSFloat32MultiArrayPublisher* simResultPublisher;
+            Zyklio::ROSConnector::ZyROSConnectorTopicPublisher<std_msgs::Float32MultiArray>* simResultPublisher;
             bool connectionManagerFound;
 
             //boost::posix_time::ptime theTime;

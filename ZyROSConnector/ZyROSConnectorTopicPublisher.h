@@ -31,8 +31,8 @@ namespace Zyklio
                 ZyROSPublisher(const ZyROSPublisher&);
                 ZyROSPublisher& operator=(const ZyROSPublisher&);
 
-                virtual void cleanup() { msg_warning("ZyROSPublisher") << "cleanup() not implemented for a ZyROSPublisher."; }
-                virtual void publishMessageQueue() { msg_warning("ZyROSPublisher") << "publishMessageQueue() not implemented for a ZyROSPublisher."; }
+                virtual void cleanup() {}
+                virtual void publishMessageQueue() {}
 
                 const boost::uuids::uuid& getUuid() { return m_uuid; }
 
